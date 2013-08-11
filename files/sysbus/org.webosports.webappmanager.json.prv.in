@@ -1,0 +1,14 @@
+{
+    "role": {
+        "exeName":"@WEBOS_INSTALL_SBINDIR@/WebAppMgr",
+        "type": "regular",
+        "allowedNames": ["org.webosports.webappmanager",""]
+    },
+    "permissions": [
+        {
+            "service":"org.webosports.webappmanager",
+            "inbound":["*"],
+            "outbound":["*"]
+        }
+    ]
+}

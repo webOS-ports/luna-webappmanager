@@ -19,15 +19,17 @@
 #define WEBAPPMANAGERSERVICE_H_
 
 #include <glib.h>
-#include <lunaservice.h>
+#include <luna-service2/lunaservice.h>
 
 namespace luna
 {
 
+class WebAppManager;
+
 class WebAppManagerService
 {
 public:
-    WebAppManagerService(GMainLoop *mainLoop);
+    WebAppManagerService(WebAppManager *webAppManager, GMainLoop *mainLoop);
     ~WebAppManagerService();
 
     static bool onLaunchAppCb(LSHandle *handle, LSMessage *message, void *data);
@@ -38,7 +40,10 @@ public:
 private:
     void startService();
 
+    bool onLaunchApp(LSHandle *handle, LSMessage *message);
+
 private:
+    WebAppManager *mWebAppManager;
     GMainLoop *mMainLoop;
     LSPalmService *mService;
     LSHandle *mPrivateBus;

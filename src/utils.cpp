@@ -15,24 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include <QDebug>
-#include <QStringList>
-#include <systemd/sd-daemon.h>
+#include <QString>
+#include <QJsonDocument>
+#include <QJsonObject>
 
-#include "webappmanager.h"
-
-int main(int argc, char **argv)
+QString jsonObjectToString(const QJsonObject &object)
 {
-    if (qgetenv("DISPLAY").isEmpty()) {
-        setenv("EGL_PLATFORM", "wayland", 1);
-        setenv("QT_QPA_PLATFORM", "wayland", 1);
-        setenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1", 1);
-    }
-
-    luna::WebAppManager webAppManager(argc, argv);
-
-    if (webAppManager.arguments().indexOf("--systemd") >= 0)
-        sd_notify(0, "READY=1");
-
-    return webAppManager.exec();
+    QJsonDocument doc;
+    doc.setObject(object);
+    return QString(doc.toJson());
 }

@@ -1,5 +1,3 @@
-add_subdirectory(webkitbundle)
-
 include_directories(
     ${Qt5WebKit_PRIVATE_INCLUDE_DIRS}
     ${Qt5Quick_PRIVATE_INCLUDE_DIRS}
@@ -7,24 +5,32 @@ include_directories(
     ${LS2_INCLUDE_DIRS}
     ${PBNJSON_C_INCLUDE_DIRS})
 
-set(HEADERS
-    webappmanager.h
-    webappmanagerservice.h
-    lunaserviceutils.h)
-
 set(SOURCES
     main.cpp
+    utils.cpp
     webappmanager.cpp
     webappmanagerservice.cpp
-    lunaserviceutils.cpp)
+    lunaserviceutils.cpp
+    webapplication.cpp
+    applicationdescription.cpp)
 
-add_executable(luna-webappmanager ${SOURCES})
-qt5_use_modules(luna-webappmanager Quick Gui WebKit)
+set(HEADERS
+    utils.h
+    webappmanager.h
+    webappmanagerservice.h
+    lunaserviceutils.h
+    webapplication.h
+    applicationdescription.h)
 
-target_link_libraries(luna-webappmanager
+qt5_add_resources(RESOURCES resources.qrc)
+
+add_executable(WebAppMgr ${SOURCES} ${HEADERS} ${RESOURCES})
+qt5_use_modules(WebAppMgr Quick Gui WebKit)
+target_link_libraries(WebAppMgr
     ${LS2_LIBRARIES}
-    ${GLIB_LIBRARIES}
+    ${GLIB2_LIBRARIES}
     ${SYSTEMD_DAEMON_LIBRARIES}
     ${PBNJSON_C_LIBRARIES})
 
-install(TARGETS luna-webappmanager DESTINATION bin)
+webos_build_daemon()
+webos_build_system_bus_files()

@@ -15,19 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include <WebKit2/WKBundleInitialize.h>
-#include "webkitbundle.h"
+#ifndef UTILS_H
+#define UTILS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class QString;
+class QJsonObject;
 
-WK_EXPORT void WKBundleInitialize(WKBundleRef bundle, WKTypeRef initializationUserData)
-{
-	static luna::WebkitBundle _bundle;
-	_bundle.initialize(bundle);
-}
+QString jsonObjectToString(const QJsonObject &object);
 
-#ifdef __cplusplus
-}
-#endif
+#endif // UTILS_H

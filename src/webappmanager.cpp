@@ -15,8 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#include <QDebug>
+
+#include "applicationdescription.h"
 #include "webappmanager.h"
 #include "webappmanagerservice.h"
+#include "webapplication.h"
 
 namespace luna
 {
@@ -24,19 +28,58 @@ namespace luna
 WebAppManager::WebAppManager(int &argc, char **argv)
     : QGuiApplication(argc, argv),
       mMainLoop(0),
-      mService(0)
+      mService(0),
+      mNextProcessId(1)
 {
-    setApplicationName("luna-webappmanager");
+    setApplicationName("WebAppMgr");
+    setQuitOnLastWindowClosed(false);
 
     mMainLoop = g_main_loop_new(g_main_context_default(), TRUE);
 
-    mService = new WebAppManagerService(mMainLoop);
+    mService = new WebAppManagerService(this, mMainLoop);
 }
 
 WebAppManager::~WebAppManager()
 {
     delete mService;
     g_main_loop_unref(mMainLoop);
+}
+
+void WebAppManager::launchApp(const QString &appDesc, const QString &arguments)
+{
+    ApplicationDescription *desc = new ApplicationDescription(appDesc);
+
+    if (mApplications.contains(desc->id())) {
+        qWarning("Application %s is already running; preventing "
+                 "it from being started again", desc->id().toUtf8().constData());
+        desc->deleteLater();
+        return;
+    }
+
+    WebApplication *app = new WebApplication(desc, mNextProcessId++);
+    connect(app, SIGNAL(closed()), this, SLOT(onApplicationWindowClosed()));
+
+    qDebug() << "Starting application" << app->id();
+    app->run();
+
+    // FIXME revisit wether we allow only one instance per application (e.g. whats
+    // with multiple windows per application?)
+    mApplications.insert(app->id(), app);
+}
+
+void WebAppManager::onApplicationWindowClosed()
+{
+    WebApplication *app = static_cast<WebApplication*>(sender());
+
+    if (!mApplications.contains(app->id())) {
+        qWarning("Got close event from not running application!?");
+        return;
+    }
+
+    mApplications.remove(app->id());
+
+    qDebug() << "Application" << app->id() << "was closed";
+    app->deleteLater();
 }
 
 } // namespace luna

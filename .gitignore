@@ -13,3 +13,8 @@ qrc_*
 *.so
 install_manifest.txt
 src/luna-webappmanager
+luna-webappmanager.config
+luna-webappmanager.creator
+luna-webappmanager.creator.user
+luna-webappmanager.files
+luna-webappmanager.includes

@@ -15,8 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include <pbnjson.h>
+#include <QDebug>
+#include <QJsonDocument>
+#include <QJsonObject>
 
+#include "utils.h"
+#include "webappmanager.h"
 #include "webappmanagerservice.h"
 #include "lunaserviceutils.h"
 
@@ -41,8 +45,9 @@ static LSMethod privateServiceMethods[] = {
     { },
 };
 
-WebAppManagerService::WebAppManagerService(GMainLoop *mainLoop)
-    : mMainLoop(mainLoop),
+WebAppManagerService::WebAppManagerService(WebAppManager *webAppManager, GMainLoop *mainLoop)
+    : mWebAppManager(webAppManager),
+      mMainLoop(mainLoop),
       mService(0),
       mPrivateBus(0)
 {
@@ -100,25 +105,60 @@ failed:
     }
 }
 
-bool WebAppManagerService::onLaunchAppCb(LSHandle *handle, LSMessage *message, void *context)
+bool WebAppManagerService::onLaunchAppCb(LSHandle *handle, LSMessage *message, void *data)
+{
+    WebAppManagerService *service = static_cast<WebAppManagerService*>(data);
+    return service->onLaunchApp(handle, message);
+}
+
+bool WebAppManagerService::onLaunchApp(LSHandle *handle, LSMessage *message)
+{
+    QByteArray payload(LSMessageGetPayload(message));
+    if (payload.isEmpty()) {
+        qWarning("No payload provided");
+        luna_service_message_reply_error_bad_json(handle, message);
+        return true;
+    }
+
+    QJsonDocument document = QJsonDocument::fromJson(payload);
+    if (!document.isObject()) {
+        luna_service_message_reply_error_bad_json(handle, message);
+        return true;
+    }
+
+    QJsonObject rootObject = document.object();
+    if (!(rootObject.contains("appDesc") && rootObject.value("appDesc").isObject())) {
+        luna_service_message_reply_error_bad_json(handle, message);
+        return true;
+    }
+
+    QString appDesc = jsonObjectToString(rootObject.value("appDesc").toObject());
+    QString params = "";
+
+    if (rootObject.contains("params") && rootObject.value("params").isObject()) {
+        params = jsonObjectToString(rootObject.value("params").toObject());
+    }
+
+    mWebAppManager->launchApp(appDesc, params);
+
+    luna_service_message_reply_success(handle, message);
+
+    return true;
+}
+
+bool WebAppManagerService::onKillAppCb(LSHandle *handle, LSMessage *message, void *data)
 {
     luna_service_message_reply_error_not_implemented(handle, message);
     return true;
 }
 
-bool WebAppManagerService::onKillAppCb(LSHandle *handle, LSMessage *message, void *context)
+bool WebAppManagerService::onListRunningAppsCb(LSHandle *handle, LSMessage *message, void *data)
 {
     luna_service_message_reply_error_not_implemented(handle, message);
     return true;
 }
 
-bool WebAppManagerService::onListRunningAppsCb(LSHandle *handle, LSMessage *message, void *context)
-{
-    luna_service_message_reply_error_not_implemented(handle, message);
-    return true;
-}
-
-bool WebAppManagerService::onIsAppRunningCb(LSHandle *handle, LSMessage *message, void *context)
+bool WebAppManagerService::onIsAppRunningCb(LSHandle *handle, LSMessage *message, void *data)
 {
     luna_service_message_reply_error_not_implemented(handle, message);
     return true;

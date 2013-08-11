@@ -1,6 +1,12 @@
-luna-webapp
-===========
+webappmanager
+=============
 
+Summary
+-------
+webOS ports web application management daemon
+
+Description
+-----------
 This is the web application launcher for the Luna Next webOS UI platform. In difference to
 the tradional approach of having a webappmanager component we're intending to launch every
 application in it's own process by using WebKit2.

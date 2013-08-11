@@ -18,12 +18,15 @@
 #ifndef WEBAPPMANAGER_H_
 #define WEBAPPMANAGER_H_
 
+#include <QtGlobal>
 #include <glib.h>
 #include <QGuiApplication>
+#include <QMap>
 
 namespace luna
 {
 
+class WebApplication;
 class WebAppManagerService;
 
 class WebAppManager : public QGuiApplication
@@ -34,9 +37,16 @@ public:
     WebAppManager(int &argc, char **argv);
     virtual ~WebAppManager();
 
+    void launchApp(const QString &appDesc, const QString &arguments);
+
+private slots:
+    void onApplicationWindowClosed();
+
 private:
     GMainLoop *mMainLoop;
     WebAppManagerService *mService;
+    QMap<QString, WebApplication*> mApplications;
+    quint64 mNextProcessId;
 };
 
 } // namespace luna
