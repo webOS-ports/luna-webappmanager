@@ -15,28 +15,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include "webappmanager.h"
-#include "webappmanagerservice.h"
+#ifndef WEBAPPMANAGERSERVICE_H_
+#define WEBAPPMANAGERSERVICE_H_
+
+#include <glib.h>
+#include <lunaservice.h>
 
 namespace luna
 {
 
-WebAppManager::WebAppManager(int &argc, char **argv)
-    : QGuiApplication(argc, argv),
-      mMainLoop(0),
-      mService(0)
+class WebAppManagerService
 {
-    setApplicationName("luna-webappmanager");
+public:
+    WebAppManagerService(GMainLoop *mainLoop);
+    ~WebAppManagerService();
 
-    mMainLoop = g_main_loop_new(g_main_context_default(), TRUE);
+    static bool onLaunchAppCb(LSHandle *handle, LSMessage *message, void *data);
+    static bool onKillAppCb(LSHandle *handle, LSMessage *message, void *data);
+    static bool onIsAppRunningCb(LSHandle *handle, LSMessage *message, void *data);
+    static bool onListRunningAppsCb(LSHandle *handle, LSMessage *message, void *data);
 
-    mService = new WebAppManagerService(mMainLoop);
-}
+private:
+    void startService();
 
-WebAppManager::~WebAppManager()
-{
-    delete mService;
-    g_main_loop_unref(mMainLoop);
-}
+private:
+    GMainLoop *mMainLoop;
+    LSPalmService *mService;
+    LSHandle *mPrivateBus;
+};
 
 } // namespace luna
+
+#endif

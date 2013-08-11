@@ -18,10 +18,13 @@
 #ifndef WEBAPPMANAGER_H_
 #define WEBAPPMANAGER_H_
 
+#include <glib.h>
 #include <QGuiApplication>
 
 namespace luna
 {
+
+class WebAppManagerService;
 
 class WebAppManager : public QGuiApplication
 {
@@ -32,6 +35,8 @@ public:
     virtual ~WebAppManager();
 
 private:
+    GMainLoop *mMainLoop;
+    WebAppManagerService *mService;
 };
 
 } // namespace luna
