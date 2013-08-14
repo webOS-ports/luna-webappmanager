@@ -15,3 +15,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#ifndef BASEPLUGIN_H
+#define BASEPLUGIN_H
+
+#include <QObject>
+#include <QString>
+
+namespace luna
+{
+
+class WebApplication;
+
+class BasePlugin : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name)
+
+public:
+    explicit BasePlugin(const QString &name, WebApplication *application, QObject *parent = 0);
+
+    QString name() const;
+
+protected:
+    void callbackWithoutRemove(int id, const QString &parameters);
+    void callback(int id, const QString &parameters);
+    
+protected:
+    WebApplication *mApplication;
+
+private:
+    QString mName;
+};
+
+} // namespace luna
+
+#endif // BASEPLUGIN_H

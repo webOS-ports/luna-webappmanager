@@ -21,6 +21,7 @@ var pluginObjects = {}
 
 
 function addPlugin(pluginName, pluginObject) {
+    console.log("Adding plugin " + pluginName);
     pluginObjects[pluginName] = pluginObject
 }
 
@@ -39,6 +40,8 @@ function messageHandler(message) {
 }
 
 function execMethod(pluginName, functionName, params) {
+    console.log(pluginObjects[pluginName]);
+    console.log("PluginName: " + pluginName + " " + functionName + "params: " + params);
     if (typeof pluginObjects[pluginName][functionName] != "function")
         return false;
     pluginObjects[pluginName][functionName].apply(this, params);

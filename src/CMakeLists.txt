@@ -12,7 +12,11 @@ set(SOURCES
     webappmanagerservice.cpp
     lunaserviceutils.cpp
     webapplication.cpp
-    applicationdescription.cpp)
+    applicationdescription.cpp
+    plugins/lunaservicemgr.cpp
+    plugins/baseplugin.cpp
+    plugins/palmservicebridgeplugin.cpp
+    plugins/palmsystemplugin.cpp)
 
 set(HEADERS
     utils.h
@@ -20,7 +24,16 @@ set(HEADERS
     webappmanagerservice.h
     lunaserviceutils.h
     webapplication.h
-    applicationdescription.h)
+    applicationdescription.h
+    plugins/lunaservicemgr.h
+    plugins/baseplugin.h
+    plugins/palmservicebridgeplugin.h
+    plugins/palmsystemplugin.h)
+
+set(FRAMEWORK
+    js/webos.js)
+
+install (FILES ${FRAMEWORK} DESTINATION ${WEBOS_INSTALL_WEBOS_FRAMEWORKSDIR}/webos)
 
 qt5_add_resources(RESOURCES resources.qrc)
 

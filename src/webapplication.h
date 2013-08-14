@@ -19,10 +19,12 @@
 #define WINDOWEDWEBAPP_H_
 
 #include <QQuickView>
+#include <QMap>
 
 namespace luna
 {
 
+class BasePlugin;
 class ApplicationDescription;
 
 class WebApplication : public QQuickView
@@ -54,8 +56,12 @@ public slots:
     void executeScript(const QString &script);
 
 private:
+    QMap<QString, BasePlugin*> mPlugins;
     ApplicationDescription *mDescription;
     quint64 mProcessId;
+
+    void createPlugins();
+    void createAndInitializePlugin(BasePlugin *plugin);
 };
 
 } // namespace luna

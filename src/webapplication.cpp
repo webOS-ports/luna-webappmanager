@@ -21,6 +21,9 @@
 #include "applicationdescription.h"
 #include "webapplication.h"
 
+#include "plugins/baseplugin.h"
+#include "plugins/palmservicebridgeplugin.h"
+
 namespace luna
 {
 
@@ -30,12 +33,26 @@ WebApplication::WebApplication(ApplicationDescription *desc, quint64 processId)
 {
     setTitle(mDescription->title());
     setResizeMode(QQuickView::SizeRootObjectToView);
+
     rootContext()->setContextProperty("webapp", this);
     setSource(QUrl("qrc:///qml/main.qml"));
+
+    createPlugins();
 }
 
 WebApplication::~WebApplication()
 {
+}
+
+void WebApplication::createPlugins()
+{
+    createAndInitializePlugin(new PalmServiceBridgePlugin(this));
+}
+
+void WebApplication::createAndInitializePlugin(BasePlugin *plugin)
+{
+    mPlugins.insert(plugin->name(), plugin);
+    emit pluginWantsToBeAdded(plugin->name(), plugin);
 }
 
 void WebApplication::run()

@@ -25,6 +25,9 @@ Item {
 
     signal completed
 
+    width: 320
+    height: 480
+
     Flickable {
         id: webViewContainer
         anchors.fill: parent
@@ -35,19 +38,12 @@ Item {
 
             anchors.fill: parent
 
-             experimental.preferences.navigatorQtObjectEnabled: true
-             experimental.preferences.localStorageEnabled: true
-             experimental.preferences.offlineWebApplicationCacheEnabled: true
-             experimental.preferences.webGLEnabled: true
-
-            // FIXME maybe only enabled when we're started in development mode
+            experimental.preferences.navigatorQtObjectEnabled: true
+            experimental.preferences.localStorageEnabled: true
+            experimental.preferences.offlineWebApplicationCacheEnabled: true
+            experimental.preferences.webGLEnabled: true
             experimental.preferences.developerExtrasEnabled: true
 
-            // FIXME let the app decide which plugins it wants to use
-            experimental.userScripts: [
-                Qt.resolvedUrl("PalmSystem.js"),
-                Qt.resolvedUrl("PalmServiceBridge.js")
-            ]
             experimental.onMessageReceived: {
                 PluginManager.messageHandler(message);
             }
@@ -67,6 +63,7 @@ Item {
                 target: webapp
 
                 onJavaScriptExecNeeded: {
+                    console.log("Running script: "+script);
                     webView.experimental.evaluateJavaScript(script);
                 }
 

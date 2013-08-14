@@ -31,6 +31,9 @@ int main(int argc, char **argv)
 
     luna::WebAppManager webAppManager(argc, argv);
 
+    if (webAppManager.arguments().indexOf("--debug") >= 0)
+        setenv("QTWEBKIT_INSPECTOR_SERVER", "1122", 0);
+
     if (webAppManager.arguments().indexOf("--systemd") >= 0)
         sd_notify(0, "READY=1");
 
