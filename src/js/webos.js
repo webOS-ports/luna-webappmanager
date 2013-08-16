@@ -95,6 +95,24 @@ _webOS.execWithoutCallback = function(pluginName, functionName, parameters) {
 var unusedCallback = function() { }
 
 /*******************************************************************************
+ * Extensions to the DOM window object
+ *******************************************************************************/
+
+__systemWindowOpen = window.open;
+
+window.open = function(url, name, properties) {
+    var newWindow = {
+        events: { },
+        addEventListener: function (name, callback) { },
+        removeEventListener: function(name, callback) { },
+        focus: function() { },
+        close: function() { },
+    };
+
+    return newWindow;
+}
+
+/*******************************************************************************
  * PalmServiceBridge
  ******************************************************************************/
 
