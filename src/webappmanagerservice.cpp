@@ -111,6 +111,65 @@ bool WebAppManagerService::onLaunchAppCb(LSHandle *handle, LSMessage *message, v
     return service->onLaunchApp(handle, message);
 }
 
+/*!
+\page org_webosports_webappmanager
+\n
+\section org_webosports_webappmanager_launch_app launchApp
+
+\e Private
+
+org.webosports.webappmanager/launchApp
+
+Launch an web application.
+
+\subsection org_webosports_webappmanager_launch_app_syntax Syntax:
+\code
+{
+    "appDesc": string,
+    "params": string,
+    "launchingAppId": string,
+    "launchingProcId": string
+}
+\endcode
+
+\param appDesc Application description
+\param params Application parameters
+\param launchingAppId Application id of the application launching the new one
+
+\subsection org_webosports_webappmanager_launch_app_returns Returns:
+\code
+{
+    "returnValue": boolean,
+    "errorText": string,
+    "processId": string
+}
+\endcode
+
+\param returnValue Indicates if the call was successful.
+\param errorText Describes the error if call was not successful.
+\param processId Id of the new application process
+
+\subsection org_webosports_webappmanager_launch_app_examples Examples:
+\code
+luna-send -n 1 luna-send -n 1 palm://org.webosports.webappmanager/launchApp '{"appDesc":{"title":"Memos","icon":"","noWindow":false,"main":"/usr/palm/applications/org.webosports.app.memos/index.html","id":"org.webosports.app.memos"}}'
+\endcode
+
+Example response of a successful call:
+\code
+{
+    "returnValue": true,
+    "processId": "1001"
+}
+\endcode
+
+Example response for a failed call:
+\code
+{
+    "returnValue": false,
+    "errorText": "Can't find entry point for app"
+}
+\endcode
+*/
 bool WebAppManagerService::onLaunchApp(LSHandle *handle, LSMessage *message)
 {
     QByteArray payload(LSMessageGetPayload(message));
