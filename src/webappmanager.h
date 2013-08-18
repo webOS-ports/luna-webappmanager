@@ -37,7 +37,7 @@ public:
     WebAppManager(int &argc, char **argv);
     virtual ~WebAppManager();
 
-    void launchApp(const QString &appDesc, const QString &arguments);
+    WebApplication* launchApp(const QString &appDesc, const QString &arguments);
 
 private slots:
     void onApplicationWindowClosed();

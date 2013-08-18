@@ -27,7 +27,7 @@
 namespace luna
 {
 
-WebApplication::WebApplication(ApplicationDescription *desc, quint64 processId)
+WebApplication::WebApplication(ApplicationDescription *desc, const QString& processId)
     : mDescription(desc),
       mProcessId(processId)
 {
@@ -81,7 +81,7 @@ QString WebApplication::id() const
     return mDescription->id();
 }
 
-quint64 WebApplication::processId() const
+QString WebApplication::processId() const
 {
     return mProcessId;
 }

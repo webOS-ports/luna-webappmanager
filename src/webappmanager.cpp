@@ -29,7 +29,7 @@ WebAppManager::WebAppManager(int &argc, char **argv)
     : QGuiApplication(argc, argv),
       mMainLoop(0),
       mService(0),
-      mNextProcessId(1)
+      mNextProcessId(1000)
 {
     setApplicationName("WebAppMgr");
     setQuitOnLastWindowClosed(false);
@@ -45,7 +45,7 @@ WebAppManager::~WebAppManager()
     g_main_loop_unref(mMainLoop);
 }
 
-void WebAppManager::launchApp(const QString &appDesc, const QString &arguments)
+WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &arguments)
 {
     ApplicationDescription *desc = new ApplicationDescription(appDesc);
 
@@ -53,10 +53,10 @@ void WebAppManager::launchApp(const QString &appDesc, const QString &arguments)
         qWarning("Application %s is already running; preventing "
                  "it from being started again", desc->id().toUtf8().constData());
         desc->deleteLater();
-        return;
+        return 0;
     }
 
-    WebApplication *app = new WebApplication(desc, mNextProcessId++);
+    WebApplication *app = new WebApplication(desc, QString("%0").arg(mNextProcessId++));
     connect(app, SIGNAL(closed()), this, SLOT(onApplicationWindowClosed()));
 
     qDebug() << "Starting application" << app->id();
@@ -65,6 +65,8 @@ void WebAppManager::launchApp(const QString &appDesc, const QString &arguments)
     // FIXME revisit wether we allow only one instance per application (e.g. whats
     // with multiple windows per application?)
     mApplications.insert(app->id(), app);
+
+    return app;
 }
 
 void WebAppManager::onApplicationWindowClosed()

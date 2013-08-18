@@ -20,6 +20,7 @@
 #include <QJsonObject>
 
 #include "utils.h"
+#include "webapplication.h"
 #include "webappmanager.h"
 #include "webappmanagerservice.h"
 #include "lunaserviceutils.h"
@@ -179,13 +180,13 @@ bool WebAppManagerService::onLaunchApp(LSHandle *handle, LSMessage *message)
         return true;
     }
 
-    QJsonDocument document = QJsonDocument::fromJson(payload);
-    if (!document.isObject()) {
+    QJsonDocument requestDocument = QJsonDocument::fromJson(payload);
+    if (!requestDocument.isObject()) {
         luna_service_message_reply_error_bad_json(handle, message);
         return true;
     }
 
-    QJsonObject rootObject = document.object();
+    QJsonObject rootObject = requestDocument.object();
     if (!(rootObject.contains("appDesc") && rootObject.value("appDesc").isObject())) {
         luna_service_message_reply_error_bad_json(handle, message);
         return true;
@@ -198,9 +199,27 @@ bool WebAppManagerService::onLaunchApp(LSHandle *handle, LSMessage *message)
         params = jsonObjectToString(rootObject.value("params").toObject());
     }
 
-    mWebAppManager->launchApp(appDesc, params);
+    WebApplication *app = mWebAppManager->launchApp(appDesc, params);
 
-    luna_service_message_reply_success(handle, message);
+    QJsonObject response;
+
+    if (app)
+        response.insert("processId", QJsonValue(app->processId()));
+
+    response.insert("returnValue", QJsonValue(app != 0));
+
+    if (!app)
+        response.insert("errorText", QJsonValue(QString("Failed to launch application")));
+
+    QJsonDocument responseDocument(response);
+
+    LSError error;
+    LSErrorInit(&error);
+
+    if (!LSMessageReply(handle, message, responseDocument.toJson().constData(), &error)) {
+        LSErrorPrint(&error, stderr);
+        LSErrorFree(&error);
+    }
 
     return true;
 }

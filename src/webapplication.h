@@ -31,11 +31,11 @@ class WebApplication : public QQuickView
 {
     Q_OBJECT
     Q_PROPERTY(QString id READ id CONSTANT)
-    Q_PROPERTY(quint64 processId READ processId CONSTANT)
+    Q_PROPERTY(QString processId READ processId CONSTANT)
     Q_PROPERTY(QUrl url READ url CONSTANT)
 
 public:
-    WebApplication(ApplicationDescription *desc, quint64 processId);
+    WebApplication(ApplicationDescription *desc, const QString& processId);
     virtual ~WebApplication();
 
     void run();
@@ -43,7 +43,7 @@ public:
     virtual bool event(QEvent *event);
 
     QString id() const;
-    quint64 processId() const;
+    QString processId() const;
     QUrl url() const;
 
 signals:
@@ -58,7 +58,7 @@ public slots:
 private:
     QMap<QString, BasePlugin*> mPlugins;
     ApplicationDescription *mDescription;
-    quint64 mProcessId;
+    QString mProcessId;
 
     void createPlugins();
     void createAndInitializePlugin(BasePlugin *plugin);
