@@ -36,6 +36,7 @@ class ApplicationDescription : public QObject
 
 public:
     ApplicationDescription();
+    ApplicationDescription(const ApplicationDescription& other);
     ApplicationDescription(const QString &data);
     virtual ~ApplicationDescription();
 

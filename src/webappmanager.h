@@ -49,7 +49,7 @@ private:
     QMap<QString, WebApplication*> mApplications;
     quint64 mNextProcessId;
 
-    bool validateApplication(ApplicationDescription *desc);
+    bool validateApplication(const ApplicationDescription& desc);
 };
 
 } // namespace luna

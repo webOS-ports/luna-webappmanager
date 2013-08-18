@@ -45,9 +45,9 @@ WebAppManager::~WebAppManager()
     g_main_loop_unref(mMainLoop);
 }
 
-bool WebAppManager::validateApplication(ApplicationDescription *desc)
+bool WebAppManager::validateApplication(const ApplicationDescription& desc)
 {
-    if (desc->entryPoint().isLocalFile() && !QFile::exists(desc->entryPoint().toLocalFile()))
+    if (desc.entryPoint().isLocalFile() && !QFile::exists(desc.entryPoint().toLocalFile()))
         return false;
 
     return true;
@@ -55,19 +55,17 @@ bool WebAppManager::validateApplication(ApplicationDescription *desc)
 
 WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &arguments)
 {
-    ApplicationDescription *desc = new ApplicationDescription(appDesc);
+    ApplicationDescription desc(appDesc);
 
-    if (mApplications.contains(desc->id())) {
+    if (mApplications.contains(desc.id())) {
         qWarning("Application %s is already running; preventing "
-                 "it from being started again", desc->id().toUtf8().constData());
-        desc->deleteLater();
+                 "it from being started again", desc.id().toUtf8().constData());
         return 0;
     }
 
     if (!validateApplication(desc)) {
         qWarning("Got invalid application description for app %s",
-                 desc->id().toUtf8().constData());
-        desc->deleteLater();
+                 desc.id().toUtf8().constData());
         return 0;
     }
 

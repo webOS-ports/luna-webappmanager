@@ -27,11 +27,11 @@
 namespace luna
 {
 
-WebApplication::WebApplication(ApplicationDescription *desc, const QString& processId)
+WebApplication::WebApplication(const ApplicationDescription& desc, const QString& processId)
     : mDescription(desc),
       mProcessId(processId)
 {
-    setTitle(mDescription->title());
+    setTitle(mDescription.title());
     setResizeMode(QQuickView::SizeRootObjectToView);
 
     rootContext()->setContextProperty("webapp", this);
@@ -78,7 +78,7 @@ void WebApplication::loadFinished()
 
 QString WebApplication::id() const
 {
-    return mDescription->id();
+    return mDescription.id();
 }
 
 QString WebApplication::processId() const
@@ -88,7 +88,7 @@ QString WebApplication::processId() const
 
 QUrl WebApplication::url() const
 {
-    return mDescription->entryPoint();
+    return mDescription.entryPoint();
 }
 
 } // namespace luna

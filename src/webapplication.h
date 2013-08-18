@@ -21,11 +21,12 @@
 #include <QQuickView>
 #include <QMap>
 
+#include "applicationdescription.h"
+
 namespace luna
 {
 
 class BasePlugin;
-class ApplicationDescription;
 
 class WebApplication : public QQuickView
 {
@@ -35,7 +36,7 @@ class WebApplication : public QQuickView
     Q_PROPERTY(QUrl url READ url CONSTANT)
 
 public:
-    WebApplication(ApplicationDescription *desc, const QString& processId);
+    WebApplication(const ApplicationDescription& desc, const QString& processId);
     virtual ~WebApplication();
 
     void run();
@@ -57,7 +58,7 @@ public slots:
 
 private:
     QMap<QString, BasePlugin*> mPlugins;
-    ApplicationDescription *mDescription;
+    ApplicationDescription mDescription;
     QString mProcessId;
 
     void createPlugins();
