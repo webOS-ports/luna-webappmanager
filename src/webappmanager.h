@@ -26,6 +26,7 @@
 namespace luna
 {
 
+class ApplicationDescription;
 class WebApplication;
 class WebAppManagerService;
 
@@ -47,6 +48,8 @@ private:
     WebAppManagerService *mService;
     QMap<QString, WebApplication*> mApplications;
     quint64 mNextProcessId;
+
+    bool validateApplication(ApplicationDescription *desc);
 };
 
 } // namespace luna
