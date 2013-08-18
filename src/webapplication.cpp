@@ -22,6 +22,7 @@
 #include "webapplication.h"
 
 #include "plugins/baseplugin.h"
+#include "plugins/palmsystemplugin.h"
 #include "plugins/palmservicebridgeplugin.h"
 
 namespace luna
@@ -46,6 +47,7 @@ WebApplication::~WebApplication()
 
 void WebApplication::createPlugins()
 {
+    createAndInitializePlugin(new PalmSystemPlugin(this));
     createAndInitializePlugin(new PalmServiceBridgePlugin(this));
 }
 
