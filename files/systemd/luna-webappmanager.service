@@ -1,0 +1,11 @@
+[Unit]
+Description=The Luna Next WebApp manager
+After=webos-base.target
+
+[Service]
+Type=notify
+ExecStart=/usr/sbin/WebAppMgr --systemd
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
