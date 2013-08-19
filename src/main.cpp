@@ -21,12 +21,15 @@
 
 #include "webappmanager.h"
 
+#define XDG_RUNTIME_DIR_DEFAULT "/tmp/luna-session"
+
 int main(int argc, char **argv)
 {
     if (qgetenv("DISPLAY").isEmpty()) {
         setenv("EGL_PLATFORM", "wayland", 1);
         setenv("QT_QPA_PLATFORM", "wayland", 1);
         setenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1", 1);
+        setenv("XDG_RUNTIME_DIR", XDG_RUNTIME_DIR_DEFAULT, 0);
     }
 
     luna::WebAppManager webAppManager(argc, argv);
