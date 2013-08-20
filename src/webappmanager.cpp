@@ -45,6 +45,11 @@ WebAppManager::~WebAppManager()
     g_main_loop_unref(mMainLoop);
 }
 
+WebAppManagerService* WebAppManager::service() const
+{
+    return mService;
+}
+
 bool WebAppManager::validateApplication(const ApplicationDescription& desc)
 {
     if (desc.entryPoint().isLocalFile() && !QFile::exists(desc.entryPoint().toLocalFile()))
@@ -69,7 +74,7 @@ WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &
         return 0;
     }
 
-    WebApplication *app = new WebApplication(desc, QString("%0").arg(mNextProcessId++));
+    WebApplication *app = new WebApplication(this, desc, QString("%0").arg(mNextProcessId++));
     connect(app, SIGNAL(closed()), this, SLOT(onApplicationWindowClosed()));
 
     qDebug() << "Starting application" << app->id();

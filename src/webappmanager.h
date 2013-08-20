@@ -40,6 +40,8 @@ public:
 
     WebApplication* launchApp(const QString &appDesc, const QString &arguments);
 
+    WebAppManagerService* service() const;
+
 private slots:
     void onApplicationWindowClosed();
 

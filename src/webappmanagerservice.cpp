@@ -59,6 +59,11 @@ WebAppManagerService::~WebAppManagerService()
 {
 }
 
+LSHandle* WebAppManagerService::privateBus() const
+{
+    return mPrivateBus;
+}
+
 void WebAppManagerService::startService()
 {
     LSError lserror;

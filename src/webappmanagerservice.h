@@ -37,6 +37,8 @@ public:
     static bool onIsAppRunningCb(LSHandle *handle, LSMessage *message, void *data);
     static bool onListRunningAppsCb(LSHandle *handle, LSMessage *message, void *data);
 
+    LSHandle* privateBus() const;
+
 private:
     void startService();
 
