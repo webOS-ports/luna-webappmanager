@@ -76,6 +76,10 @@ _webOS.exec = function(successCallback, errorCallback, pluginName, functionName,
     _webOS.callbacks[scId] = successCallback;
     _webOS.callbacks[ecId] = errorCallback;
 
+    // if no parameters are supplied create an empty array
+    if (typeof parameters === 'undefined')
+        parameters = [];
+
     parameters.unshift(ecId);
     parameters.unshift(scId);
 
@@ -88,6 +92,10 @@ _webOS.exec = function(successCallback, errorCallback, pluginName, functionName,
  * @return bool true on success, false on error (e.g. function doesn't exist)
  */
 _webOS.execWithoutCallback = function(pluginName, functionName, parameters) {
+    // if no parameters are supplied create an empty array
+    if (typeof parameters === 'undefined')
+        parameters = [];
+
     navigator.qt.postMessage(JSON.stringify({messageType: "callPluginFunction", plugin: pluginName, func: functionName, params: parameters}))
     return true;
 }
