@@ -78,7 +78,7 @@ Item {
                     duration: 700
                 }
             }
-    }
+        }
 
         WebView {
             id: webView
