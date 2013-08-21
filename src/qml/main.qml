@@ -32,6 +32,54 @@ Item {
         id: webViewContainer
         anchors.fill: parent
 
+        Image {
+            id: loadingBackground
+
+            anchors.fill: parent
+            visible: !webapp.ready
+
+            // we have must be above everything else
+            z: 100
+
+            source: "images/loading-bg.png"
+
+            Image {
+                id: loadingGlow
+                anchors.centerIn: parent
+                source: "images/loading-glow.png"
+            }
+
+            Image {
+                id: appIcon
+                anchors.centerIn: loadingGlow
+                source: webapp.icon
+            }
+
+            SequentialAnimation {
+                id: loadingAnimation
+                running: true
+                loops: Animation.Infinite
+
+                NumberAnimation {
+                    target: loadingGlow
+                    properties: "opacity"
+                    from: 0.1
+                    to: 1.0
+                    easing.type: Easing.Linear
+                    duration: 700
+                }
+
+                NumberAnimation {
+                    target: loadingGlow
+                    properties: "opacity"
+                    from: 1.0
+                    to: 0.1
+                    easing.type: Easing.Linear
+                    duration: 700
+                }
+            }
+    }
+
         WebView {
             id: webView
             objectName: "webView"
@@ -64,7 +112,7 @@ Item {
 
                 onJavaScriptExecNeeded: {
                     console.log("Running script: "+script);
-                    webView.experimental.evaluateJavaScript(script);
+                    //webView.experimental.evaluateJavaScript(script);
                 }
 
                 onPluginWantsToBeAdded: {

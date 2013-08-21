@@ -30,7 +30,7 @@ class ApplicationDescription : public QObject
     Q_OBJECT
     Q_PROPERTY(QString id READ id CONSTANT)
     Q_PROPERTY(QString title READ title CONSTANT)
-    Q_PROPERTY(QString icon READ icon CONSTANT)
+    Q_PROPERTY(QUrl icon READ icon CONSTANT)
     Q_PROPERTY(QUrl entryPoint READ entryPoint CONSTANT)
     Q_PROPERTY(bool isHeadLess READ isHeadLess CONSTANT)
 
@@ -42,14 +42,14 @@ public:
 
     QString id() const;
     QString title() const;
-    QString icon() const;
+    QUrl icon() const;
     QUrl entryPoint() const;
     bool isHeadLess() const;
 
 private:
     QString mId;
     QString mTitle;
-    QString mIcon;
+    QUrl mIcon;
     QUrl mEntryPoint;
     bool mIsHeadLess;
 };

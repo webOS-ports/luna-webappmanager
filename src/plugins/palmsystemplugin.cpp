@@ -30,6 +30,7 @@ PalmSystemPlugin::PalmSystemPlugin(WebApplication *application, QObject *parent)
 
 void PalmSystemPlugin::stageReady()
 {
+    mApplication->stageReady();
 }
 
 void PalmSystemPlugin::activate()
@@ -42,6 +43,7 @@ void PalmSystemPlugin::deactivate()
 
 void PalmSystemPlugin::stagePreparing()
 {
+    mApplication->stagePreparing();
 }
 
 void PalmSystemPlugin::show()

@@ -36,8 +36,10 @@ class WebApplication : public QQuickView
     Q_PROPERTY(QString id READ id CONSTANT)
     Q_PROPERTY(QString processId READ processId CONSTANT)
     Q_PROPERTY(QUrl url READ url CONSTANT)
+    Q_PROPERTY(QUrl icon READ icon CONSTANT)
     Q_PROPERTY(QString identifier READ identifier CONSTANT)
     Q_PROPERTY(int activityId READ activityId CONSTANT)
+    Q_PROPERTY(bool ready READ ready NOTIFY readyChanged)
 
 public:
     WebApplication(WebAppManager *manager, const ApplicationDescription& desc, const QString& processId);
@@ -50,10 +52,15 @@ public:
     QString id() const;
     QString processId() const;
     QUrl url() const;
+    QUrl icon() const;
     QString identifier() const;
     int activityId() const;
+    bool ready() const;
 
     void setActivityId(int activityId);
+
+    void stagePreparing();
+    void stageReady();
 
     static bool activityManagerCallback(LSHandle *handle, LSMessage *message, void *user_data);
 
@@ -61,6 +68,7 @@ signals:
     void javaScriptExecNeeded(const QString &script);
     void pluginWantsToBeAdded(const QString &name, QObject *object);
     void closed();
+    void readyChanged();
 
 public slots:
     void loadFinished();
@@ -74,6 +82,7 @@ private:
     LSMessageToken mActivityManagerToken;
     QString mIdentifier;
     int mActivityId;
+    bool mReady;
 
     void createPlugins();
     void createAndInitializePlugin(BasePlugin *plugin);

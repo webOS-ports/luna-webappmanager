@@ -38,7 +38,8 @@ WebApplication::WebApplication(WebAppManager *manager, const ApplicationDescript
     mProcessId(processId),
     mActivityManagerToken(LSMESSAGE_TOKEN_INVALID),
     mIdentifier(mDescription.id() + "-" + mProcessId),
-    mActivityId(-1)
+    mActivityId(-1),
+    mReady(false)
 {
     setTitle(mDescription.title());
     setResizeMode(QQuickView::SizeRootObjectToView);
@@ -232,6 +233,17 @@ void WebApplication::loadFinished()
 {
 }
 
+void WebApplication::stagePreparing()
+{
+    mReady = false;
+}
+
+void WebApplication::stageReady()
+{
+    mReady = true;
+    readyChanged();
+}
+
 QString WebApplication::id() const
 {
     return mDescription.id();
@@ -247,6 +259,11 @@ QUrl WebApplication::url() const
     return mDescription.entryPoint();
 }
 
+QUrl WebApplication::icon() const
+{
+    return mDescription.icon();
+}
+
 QString WebApplication::identifier() const
 {
     return mIdentifier;
@@ -255,6 +272,11 @@ QString WebApplication::identifier() const
 int WebApplication::activityId() const
 {
     return mActivityId;
+}
+
+bool WebApplication::ready() const
+{
+    return mReady;
 }
 
 } // namespace luna

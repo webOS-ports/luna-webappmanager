@@ -1,3 +1,18 @@
+The following files are distributed under the Apache License, Version 2.0 as
+of http://github.com/openwebos/luna-sysmgr:
+
+src/qml/images/loading-bg.png
+src/qml/images/loading-glow.png
+src/qml/images/default-app-icon.png
+
+A copy of this license is included in the file COPYING-Apache-2.0
+
+-------------------------------------------------------------------------
+
+Everything else part of this repository is distributed under the terms of the
+GPLv3 licensed you can find a copy of below.
+
+
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 

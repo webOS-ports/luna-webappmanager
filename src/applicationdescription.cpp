@@ -17,6 +17,7 @@
 
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QFile>
 
 #include "applicationdescription.h"
 
@@ -61,6 +62,9 @@ ApplicationDescription::ApplicationDescription(const QString &data)
     mIsHeadLess = rootObject.value("noWindow").toBool();
     mTitle = rootObject.value("title").toString();
     mIcon = rootObject.value("icon").toString();
+
+    if (mIcon.isEmpty() || !mIcon.isLocalFile() || !QFile::exists(mIcon.toLocalFile()))
+        mIcon = QUrl("qrc:///qml/images/default-app-icon.png");
 }
 
 ApplicationDescription::~ApplicationDescription()
@@ -77,7 +81,7 @@ QString ApplicationDescription::title() const
     return mTitle;
 }
 
-QString ApplicationDescription::icon() const
+QUrl ApplicationDescription::icon() const
 {
     return mIcon;
 }
