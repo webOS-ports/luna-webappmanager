@@ -111,8 +111,7 @@ Item {
                 target: webapp
 
                 onJavaScriptExecNeeded: {
-                    console.log("Running script: "+script);
-                    //webView.experimental.evaluateJavaScript(script);
+                    webView.experimental.evaluateJavaScript(script);
                 }
 
                 onPluginWantsToBeAdded: {
