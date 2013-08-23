@@ -41,27 +41,33 @@ ApplicationDescription::ApplicationDescription(const QString &data)
 {
     QJsonDocument document = QJsonDocument::fromJson(data.toUtf8());
 
-    if (!document.isObject()) {
-        qWarning("Document doesn't has a root object");
+    if (!document.isObject())
         return;
-    }
 
     QJsonObject rootObject = document.object();
 
-    if (!(rootObject.contains("id") && rootObject.value("id").isString()) ||
-        !(rootObject.contains("main") && rootObject.value("main").isString()) ||
-        !(rootObject.contains("noWindow") && rootObject.value("noWindow").isBool()) ||
-        !(rootObject.contains("title") && rootObject.value("title").isString()) ||
-        !(rootObject.contains("icon") && rootObject.value("icon").isString())) {
-        qWarning("json for application description doesn't contain all required fields");
-        return;
-    }
+    if (rootObject.contains("id") && rootObject.value("id").isString())
+        mId = rootObject.value("id").toString();
 
-    mId = rootObject.value("id").toString();
-    mEntryPoint = QUrl::fromLocalFile(rootObject.value("main").toString());
-    mIsHeadLess = rootObject.value("noWindow").toBool();
-    mTitle = rootObject.value("title").toString();
-    mIcon = rootObject.value("icon").toString();
+    if (rootObject.contains("main") && rootObject.value("main").isString())
+        mEntryPoint = rootObject.value("main").toString();
+
+    if (rootObject.contains("noWindow") && rootObject.value("noWindow").isBool())
+        mIsHeadLess = rootObject.value("noWindow").toBool();
+
+    if (rootObject.contains("title") && rootObject.value("title").isString())
+        mTitle = rootObject.value("title").toString();
+
+    if (rootObject.contains("icon") && rootObject.value("icon").isString()) {
+        QString iconPath = rootObject.value("icon").toString();
+
+        // we're only allow locally stored icons so we must prefix them with file:// to
+        // store it in a QUrl object
+        if (!iconPath.startsWith("file://"))
+            iconPath.prepend("file://");
+
+        mIcon = iconPath;
+    }
 
     if (mIcon.isEmpty() || !mIcon.isLocalFile() || !QFile::exists(mIcon.toLocalFile()))
         mIcon = QUrl("qrc:///qml/images/default-app-icon.png");

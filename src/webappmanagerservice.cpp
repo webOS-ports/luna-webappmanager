@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
 
@@ -180,7 +179,6 @@ bool WebAppManagerService::onLaunchApp(LSHandle *handle, LSMessage *message)
 {
     QByteArray payload(LSMessageGetPayload(message));
     if (payload.isEmpty()) {
-        qWarning("No payload provided");
         luna_service_message_reply_error_bad_json(handle, message);
         return true;
     }
@@ -208,13 +206,14 @@ bool WebAppManagerService::onLaunchApp(LSHandle *handle, LSMessage *message)
 
     QJsonObject response;
 
-    if (app)
-        response.insert("processId", QJsonValue(app->processId()));
-
     response.insert("returnValue", QJsonValue(app != 0));
 
     if (!app)
         response.insert("errorText", QJsonValue(QString("Failed to launch application")));
+    else
+        response.insert("processId", QJsonValue(app->processId()));
+
+    response.insert("returnValue", QJsonValue(app != 0));
 
     QJsonDocument responseDocument(response);
 
