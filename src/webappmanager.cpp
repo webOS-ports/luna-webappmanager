@@ -17,6 +17,8 @@
 
 #include <QDebug>
 
+#include <QtWebKit/private/qquickwebview_p.h>
+
 #include "applicationdescription.h"
 #include "webappmanager.h"
 #include "webappmanagerservice.h"
@@ -37,6 +39,8 @@ WebAppManager::WebAppManager(int &argc, char **argv)
     mMainLoop = g_main_loop_new(g_main_context_default(), TRUE);
 
     mService = new WebAppManagerService(this, mMainLoop);
+
+    QQuickWebViewExperimental::setFlickableViewportEnabled(false);
 }
 
 WebAppManager::~WebAppManager()
