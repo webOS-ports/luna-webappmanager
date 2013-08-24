@@ -3,7 +3,8 @@ include_directories(
     ${Qt5Quick_PRIVATE_INCLUDE_DIRS}
     ${GLIB2_INCLUDE_DIRS}
     ${LS2_INCLUDE_DIRS}
-    ${PBNJSON_C_INCLUDE_DIRS})
+    ${PBNJSON_C_INCLUDE_DIRS}
+    ${LUNA_SYSMGR_COMMON_INCLUDE_DIRS})
 
 set(SOURCES
     main.cpp
@@ -42,7 +43,8 @@ target_link_libraries(WebAppMgr
     ${LS2_LIBRARIES}
     ${GLIB2_LIBRARIES}
     ${SYSTEMD_DAEMON_LIBRARIES}
-    ${PBNJSON_C_LIBRARIES})
+    ${PBNJSON_C_LIBRARIES}
+    ${LUNA_SYSMGR_COMMON_LIBRARIES})
 
 webos_build_daemon()
 webos_build_system_bus_files()

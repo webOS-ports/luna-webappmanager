@@ -26,8 +26,8 @@ Item {
 
     signal completed
 
-    width: 320
-    height: 480
+    width: Settings.displayWidth
+    height: Settings.displayHeight
 
     Flickable {
         id: webViewContainer

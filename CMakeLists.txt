@@ -37,5 +37,6 @@ pkg_check_modules(GLIB2 glib-2.0 REQUIRED)
 pkg_check_modules(LS2 luna-service2 REQUIRED)
 pkg_check_modules(SYSTEMD_DAEMON libsystemd-daemon REQUIRED)
 pkg_check_modules(PBNJSON_C pbnjson_c REQUIRED)
+pkg_check_modules(LUNA_SYSMGR_COMMON LunaSysMgrCommon REQUIRED)
 
 add_subdirectory(src)

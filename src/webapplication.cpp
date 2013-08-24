@@ -20,6 +20,8 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
+#include <QtWebKit/private/qquickwebview_p.h>
+
 #include "webappmanager.h"
 #include "webappmanagerservice.h"
 #include "applicationdescription.h"
@@ -28,6 +30,8 @@
 #include "plugins/baseplugin.h"
 #include "plugins/palmsystemplugin.h"
 #include "plugins/palmservicebridgeplugin.h"
+
+#include <Settings.h>
 
 namespace luna
 {
@@ -46,6 +50,18 @@ WebApplication::WebApplication(WebAppManager *manager, const ApplicationDescript
 
     rootContext()->setContextProperty("webapp", this);
     setSource(QUrl("qrc:///qml/main.qml"));
+
+    QQuickWebView *webView = rootObject()->findChild<QQuickWebView*>("webView");
+
+    qreal zoomFactor = Settings::LunaSettings()->layoutScale;
+
+    // correct zoom factor for some applications which are not scaled properly (aka
+    // the Open webOS core-apps ...)
+    if (Settings::LunaSettings()->compatApps.find(desc.id().toStdString()) !=
+        Settings::LunaSettings()->compatApps.end())
+        zoomFactor = Settings::LunaSettings()->layoutScaleCompat;
+
+    webView->setZoomFactor(zoomFactor);
 
     createActivity();
     createPlugins();
