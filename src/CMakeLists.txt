@@ -32,6 +32,10 @@ set(HEADERS
 
 qt5_add_resources(RESOURCES resources.qrc)
 
+# Install framework scripts for the case we're running on an unpatched qtwebkit
+set(WEBOS_FRAMEWORK qml/webos-api.js)
+install (FILES ${WEBOS_FRAMEWORK} DESTINATION ${WEBOS_INSTALL_WEBOS_FRAMEWORKSDIR}/webos)
+
 add_executable(WebAppMgr ${SOURCES} ${HEADERS} ${RESOURCES})
 qt5_use_modules(WebAppMgr Quick Gui WebKit)
 target_link_libraries(WebAppMgr

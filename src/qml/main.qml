@@ -92,9 +92,23 @@ Item {
             experimental.preferences.webGLEnabled: true
             experimental.preferences.developerExtrasEnabled: true
 
-            experimental.userScripts: [ Qt.resolvedUrl("webos-api.js") ]
-            experimental.userScriptsInjectAtStart: true
-            experimental.userScriptsForAllFrames: true
+            property variant userScripts: [ Qt.resolvedUrl("webos-api.js") ]
+            onUserScriptsChanged: {
+                // Only inject our user script for the webOS API when we have a patched
+                // qtwebkit otherwise it's up to the user to link the app to the required
+                // javascript file in it's header
+                if (experimental.hasOwnProperty('userScriptsInjectAtStart') &&
+                    experimental.hasOwnProperty('userScriptsForAllFrames')) {
+                    experimental.userScripts = webView.userScripts;
+                    experimental.userScriptsInjectAtStart = true;
+                    experimental.userScriptsForAllFrames = true;
+                }
+                else {
+                    console.log("WARNING: webOS API is not going to be installed for apps !!!!");
+                    console.log("WARNING: If you still want to use the webOS API you have to include");
+                    console.log("WARNING: the required scripts on your own.");
+                }
+            }
 
             experimental.onMessageReceived: {
                 PluginManager.messageHandler(message);
