@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>qml/main.qml</file>
         <file>qml/pluginmanager.js</file>
+        <file>qml/webos-api.js</file>
         <file>qml/images/loading-bg.png</file>
         <file>qml/images/loading-glow.png</file>
         <file>qml/images/default-app-icon.png</file>

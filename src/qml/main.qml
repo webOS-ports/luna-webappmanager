@@ -92,6 +92,10 @@ Item {
             experimental.preferences.webGLEnabled: true
             experimental.preferences.developerExtrasEnabled: true
 
+            experimental.userScripts: [ Qt.resolvedUrl("webos-api.js") ]
+            experimental.userScriptsInjectAtStart: true
+            experimental.userScriptsForAllFrames: true
+
             experimental.onMessageReceived: {
                 PluginManager.messageHandler(message);
             }

@@ -30,11 +30,6 @@ set(HEADERS
     plugins/palmservicebridgeplugin.h
     plugins/palmsystemplugin.h)
 
-set(FRAMEWORK
-    js/webos.js)
-
-install (FILES ${FRAMEWORK} DESTINATION ${WEBOS_INSTALL_WEBOS_FRAMEWORKSDIR}/webos)
-
 qt5_add_resources(RESOURCES resources.qrc)
 
 add_executable(WebAppMgr ${SOURCES} ${HEADERS} ${RESOURCES})
