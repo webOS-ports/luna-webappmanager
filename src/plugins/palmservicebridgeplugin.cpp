@@ -89,6 +89,11 @@ PalmServiceBridgePlugin::PalmServiceBridgePlugin(WebApplication *application, QO
 
 void PalmServiceBridgePlugin::createInstance(int successCallbackId, int errorCallbackId, unsigned int instanceId)
 {
+    if (mBridgeInstances.contains(instanceId)) {
+        callback(errorCallbackId, "Can't create another instance with an already existing id");
+        return;
+    }
+
     PalmServiceBridge *bridge = new PalmServiceBridge();
     connect(bridge, SIGNAL(callback(int,QString)), this, SLOT(callbackFromBridge(int,QString)));
     mBridgeInstances.insert(instanceId, bridge);
