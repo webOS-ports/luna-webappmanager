@@ -95,6 +95,11 @@ Item {
             experimental.preferences.webGLEnabled: true
             experimental.preferences.developerExtrasEnabled: true
 
+            experimental.preferences.standardFontFamily: "Prelude"
+            experimental.preferences.fixedFontFamily: "Courier new"
+            experimental.preferences.serifFontFamily: "Times New Roman"
+            experimental.preferences.cursiveFontFamilty: "Prelude"
+
             property variant userScripts: [ Qt.resolvedUrl("webos-api.js") ]
             onUserScriptsChanged: {
                 // Only inject our user script for the webOS API when we have a patched
