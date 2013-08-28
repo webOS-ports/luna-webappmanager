@@ -38,7 +38,7 @@ public:
     WebAppManager(int &argc, char **argv);
     virtual ~WebAppManager();
 
-    WebApplication* launchApp(const QString &appDesc, const QString &arguments);
+    WebApplication* launchApp(const QString &appDesc, const QString &parameters);
 
     WebAppManagerService* service() const;
 

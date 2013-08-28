@@ -40,9 +40,10 @@ class WebApplication : public QQuickView
     Q_PROPERTY(QString identifier READ identifier CONSTANT)
     Q_PROPERTY(int activityId READ activityId CONSTANT)
     Q_PROPERTY(bool ready READ ready NOTIFY readyChanged)
+    Q_PROPERTY(QString parameters READ parameters CONSTANT)
 
 public:
-    WebApplication(WebAppManager *manager, const ApplicationDescription& desc, const QString& processId);
+    WebApplication(WebAppManager *manager, const ApplicationDescription& desc, const QString& parameters, const QString& processId);
     virtual ~WebApplication();
 
     void run();
@@ -56,6 +57,7 @@ public:
     QString identifier() const;
     int activityId() const;
     bool ready() const;
+    QString parameters() const;
 
     void setActivityId(int activityId);
 
@@ -83,6 +85,7 @@ private:
     QString mIdentifier;
     int mActivityId;
     bool mReady;
+    QString mParameters;
 
     void createPlugins();
     void createAndInitializePlugin(BasePlugin *plugin);

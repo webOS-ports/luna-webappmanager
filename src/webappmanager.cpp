@@ -62,7 +62,7 @@ bool WebAppManager::validateApplication(const ApplicationDescription& desc)
     return true;
 }
 
-WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &arguments)
+WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &parameters)
 {
     ApplicationDescription desc(appDesc);
 
@@ -78,7 +78,8 @@ WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &
         return 0;
     }
 
-    WebApplication *app = new WebApplication(this, desc, QString("%0").arg(mNextProcessId++));
+    QString processId = QString("%0").arg(mNextProcessId++);
+    WebApplication *app = new WebApplication(this, desc, parameters, processId);
     connect(app, SIGNAL(closed()), this, SLOT(onApplicationWindowClosed()));
 
     qDebug() << "Starting application" << app->id();

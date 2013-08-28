@@ -36,14 +36,15 @@
 namespace luna
 {
 
-WebApplication::WebApplication(WebAppManager *manager, const ApplicationDescription& desc, const QString& processId) :
+WebApplication::WebApplication(WebAppManager *manager, const ApplicationDescription& desc, const QString& parameters, const QString& processId) :
     mManager(manager),
     mDescription(desc),
     mProcessId(processId),
     mActivityManagerToken(LSMESSAGE_TOKEN_INVALID),
     mIdentifier(mDescription.id() + "-" + mProcessId),
     mActivityId(-1),
-    mReady(false)
+    mReady(false),
+    mParameters(parameters)
 {
     setTitle(mDescription.title());
     setResizeMode(QQuickView::SizeRootObjectToView);
@@ -293,6 +294,11 @@ int WebApplication::activityId() const
 bool WebApplication::ready() const
 {
     return mReady;
+}
+
+QString WebApplication::parameters() const
+{
+    return mParameters;
 }
 
 } // namespace luna
