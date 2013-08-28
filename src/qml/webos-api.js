@@ -182,6 +182,10 @@ __PalmSystem.phoneRegion = "";
 __PalmSystem.windowOrientation = "";
 __PalmSystem.hasAlphaHole = false;
 
+/* Retrieve values for all properties on startup */
+_webOS.exec(function(parameters) { __PalmSystem.launchParams = parameters; },
+    unusedCallback, "PalmSystem", "getProperty", ["launchParams"]);
+
 /* Some internal settings we need for the implementation */
 __PalmSystem.bannerMessageCounter = 0;
 

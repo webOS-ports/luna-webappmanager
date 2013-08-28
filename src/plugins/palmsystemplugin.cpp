@@ -89,6 +89,9 @@ void PalmSystemPlugin::setProperty(const QString &name, const QVariant &value)
 
 void PalmSystemPlugin::getProperty(int successCallbackId, int errorCallbackId, const QString &name)
 {
+    if (name == "launchParams") {
+        callbackWithoutRemove(successCallbackId, mApplication->parameters());
+    }
 }
 
 } // namespace luna
