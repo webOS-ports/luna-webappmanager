@@ -94,6 +94,8 @@ Item {
             experimental.preferences.offlineWebApplicationCacheEnabled: true
             experimental.preferences.webGLEnabled: true
             experimental.preferences.developerExtrasEnabled: true
+            experimental.preferences.universalAccessFromFileURLsAllowed: true
+            experimental.preferences.fileAccessFromFileURLsAllowed: true
 
             experimental.preferences.standardFontFamily: "Prelude"
             experimental.preferences.fixedFontFamily: "Courier new"
