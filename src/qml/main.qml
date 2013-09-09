@@ -98,7 +98,7 @@ Item {
             experimental.preferences.standardFontFamily: "Prelude"
             experimental.preferences.fixedFontFamily: "Courier new"
             experimental.preferences.serifFontFamily: "Times New Roman"
-            experimental.preferences.cursiveFontFamilty: "Prelude"
+            experimental.preferences.cursiveFontFamily: "Prelude"
 
             property variant userScripts: [ Qt.resolvedUrl("webos-api.js") ]
             onUserScriptsChanged: {
