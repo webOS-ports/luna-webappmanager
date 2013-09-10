@@ -48,6 +48,8 @@ Item {
                 id: loadingGlow
                 anchors.centerIn: parent
                 source: "images/loading-glow.png"
+                width: Settings.splashIconSize
+                height: Settings.splashIconSize
             }
 
             Image {
