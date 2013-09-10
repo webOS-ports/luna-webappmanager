@@ -127,7 +127,7 @@ window.open = function(url, name, properties) {
 var __PalmSericeBridgeInstanceCounter = 0;
 
 function PalmServiceBridge() {
-    this.onservicecallback = null;
+    this.onservicecallback = function(msg) { };
 
     // As we're creating a class here we need to manage mutiple instances on
     // both sites.
@@ -135,14 +135,18 @@ function PalmServiceBridge() {
     _webOS.exec(unusedCallback, unusedCallback, "PalmServiceBridge", "createInstance", [this.instanceId]);
 }
 
+PalmServiceBridge.prototype.version = function() {
+    return "1.1";
+}
+
 PalmServiceBridge.prototype.destroy = function() {
     _webOS.exec(unusedCallback, unusedCallback, "PalmServiceBridge", "releaseInstance", [this.instanceId]);
 }
 
 PalmServiceBridge.prototype.call = function(method, url) {
+    var oncomplete = this.onservicecallback
     function callback(msg) {
-        if (this.onservicecalback !== null)
-            this.onservicecallback(msg)
+        oncomplete(msg);
     };
 
     _webOS.exec(callback, callback, "PalmServiceBridge", "call", [this.instanceId, method, url]);
@@ -165,7 +169,7 @@ window.PalmSystem = {}
 
 /* This is our internal reprensentation for all properties */
 __PalmSystem = {};
-__PalmSystem.launchParams = "";
+__PalmSystem.launchParams = "{}";
 __PalmSystem.locale = "";
 __PalmSystem.localeRegion = "";
 __PalmSystem.timeFormat = "";
@@ -183,7 +187,11 @@ __PalmSystem.windowOrientation = "";
 __PalmSystem.hasAlphaHole = false;
 
 /* Retrieve values for all properties on startup */
-_webOS.exec(function(parameters) { __PalmSystem.launchParams = parameters; },
+_webOS.exec(function(parameters) {
+        if (typeof parameters === "undefined")
+            parameters = "{}";
+        __PalmSystem.launchParams = parameters;
+    },
     unusedCallback, "PalmSystem", "getProperty", ["launchParams"]);
 
 /* Some internal settings we need for the implementation */
@@ -280,6 +288,58 @@ PalmSystem.addBannerMessage = function(msg, params, icon, soundClass, soundFile,
     return id.toString();
 }
 
+PalmSystem.removeBannerMessage = function(id) {
+    _webOS.execWithoutCallback("PalmSystem", "removeBannerMessage", [id]);
+}
+
+PalmSystem.clearBannerMessages = function() {
+    _webOS.execWithoutCallback("PalmSystem", "clearBannerMessages");
+}
+
+PalmSystem.playSoundNotification = function(soundClass, file, duration, wakeUpScreen) {
+    _webOS.execWithoutCallback("PalmSystem", "playSoundNotification", [soundClass, file, duration, wakeUpScreen]);
+}
+
+PalmSystem.simulateMouseClick = function(pageX, pageY, pressed) {
+    _webOS.execWithoutCallback("PalmSystem", "simulateMouseClick", [pageX, pageY, pressed]);
+}
+
+PalmSystem.paste = function() {
+    _webOS.execWithoutCallback("PalmSystem", "paste");
+}
+
+PalmSystem.copiedToClipboard = function() {
+    _webOS.execWithoutCallback("PalmSystem", "copiedToClipboard");
+}
+
+PalmSystem.pastedFromClipboard = function() {
+    _webOS.execWithoutCallback("PalmSystem", "pastedFromClipboard");
+}
+
+PalmSystem.setWindowOrientation = function(orientation) {
+    _webOS.execWithoutCallback("PalmSystem", "setWindowOrientation", [orientation]);
+}
+
+PalmSystem.encrypt = function(key, str) {
+    return "";
+}
+
+PalmSystem.decrypt = function(key, str) {
+    return "";
+}
+
+PalmSystem.shutdown = function() {
+    _webOS.execWithoutCallback("PalmSystem", "shutdown");
+}
+
+PalmSystem.markFirstUseDone = function() {
+    _webOS.execWithoutCallback("PalmSystem", "markFirstUseDone");
+}
+
+PalmSystem.enableFullScreenMode = function(enable) {
+    _webOS.execWithoutCallback("PalmSystem", "enableFullScreenMode", [enable]);
+}
+
 PalmSystem.activate = function() {
     _webOS.execWithoutCallback("PalmSystem", "activate");
 }
@@ -296,6 +356,14 @@ PalmSystem.stageReady = function() {
     _webOS.execWithoutCallback("PalmSystem", "stageReady");
 }
 
+PalmSystem.setAlertSound = function(soundClass, file) {
+    _webOS.execWithoutCallback("PalmSystem", "setAlertSound", [soundClass, file]);
+}
+
+PalmSystem.receivePageUpDownInLandscape = function(enable) {
+    _webOS.execWithoutCallback("PalmSystem", "receivePageUpDownInLandscape", [enable]);
+}
+
 PalmSystem.show = function() {
     _webOS.execWithoutCallback("PalmSystem", "show");
 }
@@ -304,10 +372,40 @@ PalmSystem.hide = function() {
     _webOS.execWithoutCallback("PalmSystem", "hide");
 }
 
-PalmSystem.setWindowProperties = function(props) {
-    webOS.execWithoutCallback("PalmSystem", "setWindowProperties", [props]);
+PalmSystem.enableDockMode = function(enable) {
+    _webOS.execWithoutCallback("PalmSystem", "enableDockMode", [enable]);
 }
 
-PalmSystem.enableFullScreenMode = function() {
-    webOS.execWithoutCallback("PalmSystem", "enableFullScreenMode");
+PalmSystem.getLocalizedString = function(str) {
+    return "";
+}
+
+PalmSystem.addNewContentIndicator = function() {
+    return "";
+}
+
+PalmSystem.removeNewContentIndicator = function(id) {
+}
+
+PalmSystem.runAnimationLoop = function(domObj, onStep, onComplete, curve, duration, start, end) {
+}
+
+PalmSystem.setActiveBannerWindowWidth = function() {
+    _webOS.execWithoutCallback("PalmSystem", "setActiveBannerWindowWidth");
+}
+
+PalmSystem.cancelVibrations = function() {
+    _webOS.execWithoutCallback("PalmSystem", "cancelVibrations");
+}
+
+PalmSystem.setWindowProperties = function(props) {
+    _webOS.execWithoutCallback("PalmSystem", "setWindowProperties", [props]);
+}
+
+PalmSystem.getResource = function(a, b) {
+    return "";
+}
+
+function palmGetResource(a, b) {
+    return PalmSystem.getResource(a, b);
 }
