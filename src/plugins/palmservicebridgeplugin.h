@@ -32,7 +32,7 @@ class PalmServiceBridge : public QObject,
 {
     Q_OBJECT
 public:
-    explicit PalmServiceBridge(QObject *parent = 0);
+    explicit PalmServiceBridge(const QString& identifier = "", bool usePrivateBus = false, QObject *parent = 0);
 
     void call(int successCallbackId, int errorCallbackId, const QString &uri, const QString &payload);
     void cancel(int successCallbackId, int errorCallbackId);
@@ -68,6 +68,8 @@ private slots:
 
 private:
     QMap<unsigned int, PalmServiceBridge*> mBridgeInstances;
+
+    bool isPrivilegedApplcation(const QString& id);
 };
 
 } // namespace luna

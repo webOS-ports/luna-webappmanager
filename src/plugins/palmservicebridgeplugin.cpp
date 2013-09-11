@@ -24,11 +24,11 @@
 namespace luna
 {
 
-PalmServiceBridge::PalmServiceBridge(QObject *parent) :
+PalmServiceBridge::PalmServiceBridge(const QString& identifier, bool usePrivateBus, QObject *parent) :
     QObject(parent),
     mCanceled(false),
-    mUsePrivateBus(false),
-    mIdentifier(""),
+    mUsePrivateBus(usePrivateBus),
+    mIdentifier(identifier),
     mSuccessCallbackId(0),
     mErrorCallbackId(0),
     mCallActive(false)
@@ -87,6 +87,14 @@ PalmServiceBridgePlugin::PalmServiceBridgePlugin(WebApplication *application, QO
 {
 }
 
+bool PalmServiceBridgePlugin::isPrivilegedApplcation(const QString& id)
+{
+    return id.startsWith("com.palm.") ||
+           id.startsWith("com.webos.") ||
+           id.startsWith("org.webosports.") ||
+           id.startsWith("org.webosinternals.");
+}
+
 void PalmServiceBridgePlugin::createInstance(int successCallbackId, int errorCallbackId, unsigned int instanceId)
 {
     if (mBridgeInstances.contains(instanceId)) {
@@ -94,7 +102,7 @@ void PalmServiceBridgePlugin::createInstance(int successCallbackId, int errorCal
         return;
     }
 
-    PalmServiceBridge *bridge = new PalmServiceBridge();
+    PalmServiceBridge *bridge = new PalmServiceBridge(mApplication->id(), isPrivilegedApplcation(mApplication->id()));
     connect(bridge, SIGNAL(callback(int,QString)), this, SLOT(callbackFromBridge(int,QString)));
     mBridgeInstances.insert(instanceId, bridge);
 }
