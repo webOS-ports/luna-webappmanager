@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 #include <QQuickView>
 #include "webapplication.h"
 #include "palmsystemplugin.h"
@@ -98,6 +101,33 @@ void PalmSystemPlugin::getProperty(int successCallbackId, int errorCallbackId, c
     else if (name == "activityId") {
         callbackWithoutRemove(successCallbackId, mApplication->activityId());
     }
+}
+
+void PalmSystemPlugin::initializeProperties(int successCallbackId, int errorCallbackId)
+{
+    QJsonObject rootObj;
+
+    rootObj.insert("launchParams", QJsonValue(mApplication->parameters()));
+    rootObj.insert("hasAlphaHole", QJsonValue(false));
+    rootObj.insert("locale", QJsonValue(QString("")));
+    rootObj.insert("localeRegion", QJsonValue(QString("")));
+    rootObj.insert("timeFormat", QJsonValue(QString("")));
+    rootObj.insert("timeZone", QJsonValue(QString("")));
+    rootObj.insert("isMinimal", QJsonValue(QString("")));
+    rootObj.insert("identifier", QJsonValue(mApplication->id()));
+    rootObj.insert("version", QJsonValue(QString("")));
+    rootObj.insert("screenOrientation", QJsonValue(QString("")));
+    rootObj.insert("windowOrientation", QJsonValue(QString("")));
+    rootObj.insert("specifiedWindowOrientation", QJsonValue(QString("")));
+    rootObj.insert("videoOrientation", QJsonValue(QString("")));
+    rootObj.insert("deviceInfo", QJsonValue(QString("{\"modelName\":\"unknown\",\"platformVersion\":\"0.0.0\"}")));
+    rootObj.insert("isActivated", QJsonValue(true));
+    rootObj.insert("activityId", QJsonValue(mApplication->activityId()));
+    rootObj.insert("phoneRegion", QJsonValue(QString("")));
+
+    QJsonDocument document(rootObj);
+
+    callback(successCallbackId, document.toJson());
 }
 
 } // namespace luna

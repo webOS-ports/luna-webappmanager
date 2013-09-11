@@ -190,6 +190,31 @@ __PalmSystem.phoneRegion = "";
 /* Some internal settings we need for the implementation */
 __PalmSystem.bannerMessageCounter = 0;
 
+/* Retrieve values for all properties on startup */
+_webOS.exec(function(properties) {
+        if (typeof properties === "undefined")
+            return;
+
+        __PalmSystem.launchParams = properties.launchParams;
+        __PalmSystem.hasAlphaHole = properties.hasAlphaHole;
+        __PalmSystem.locale = properties.locale;
+        __PalmSystem.localeRegion = properties.localeRegion;
+        __PalmSystem.timeFormat = properties.timeFormat;
+        __PalmSystem.timeZone = properties.timeZone;
+        __PalmSystem.isMinimal = properties.isMinimal;
+        __PalmSystem.identifier = properties.identifier;
+        __PalmSystem.version = properties.version;
+        __PalmSystem.screenOrientation = properties.screenOrientation;
+        __PalmSystem.windowOrientation = properties.windowOrientation;
+        __PalmSystem.specifiedWindowOrientation = properties.specifiedWindowOrientation;
+        __PalmSystem.videoOrientation = properties.videoOrientation;
+        __PalmSystem.deviceInfo = properties.deviceInfo;
+        __PalmSystem.isActivated = properties.isActivated;
+        __PalmSystem.activityId = properties.activityId;
+        __PalmSystem.phoneRegion = properties.phoneRegion;
+    },
+    unusedCallback, "PalmSystem", "initializeProperties");
+
 /* Register our property change event handler */
 _webOS.exec(function(name, value) {
         if (!__PalmSystem.hasOwnProperty(name))

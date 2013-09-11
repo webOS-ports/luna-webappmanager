@@ -102,6 +102,7 @@ public slots:
     void registerPropertyChangeHandler(int successCallbackId, int errorCallbackId);
     void setProperty(const QString &name, const QVariant &value);
     void getProperty(int successCallbackId, int errorCallbackId, const QString &name);
+    void initializeProperties(int successCallbackId, int errorCallbackId);
 
 private:
     int mPropertyChangeHandlerCallbackId;
