@@ -37,7 +37,7 @@ PalmServiceBridge::PalmServiceBridge(QObject *parent) :
 
 void PalmServiceBridge::serviceResponse(const char *body)
 {
-    QString arguments(body == NULL ? "" : body);
+    QString arguments = QString("'%1'").arg((body == NULL ? "" : body));
     callback(mSuccessCallbackId, arguments);
     mCallActive = false;
 }
