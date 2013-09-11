@@ -92,6 +92,12 @@ void PalmSystemPlugin::getProperty(int successCallbackId, int errorCallbackId, c
     if (name == "launchParams") {
         callbackWithoutRemove(successCallbackId, mApplication->parameters());
     }
+    else if (name == "identifier") {
+        callbackWithoutRemove(successCallbackId, mApplication->id());
+    }
+    else if (name == "activityId") {
+        callbackWithoutRemove(successCallbackId, mApplication->activityId());
+    }
 }
 
 } // namespace luna

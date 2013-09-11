@@ -144,10 +144,10 @@ PalmServiceBridge.prototype.destroy = function() {
 }
 
 PalmServiceBridge.prototype.call = function(method, url) {
-    var oncomplete = this.onservicecallback
+    var oncomplete = this.onservicecallback;
     function callback(msg) {
         oncomplete(msg);
-    };
+    }
 
     _webOS.exec(callback, callback, "PalmServiceBridge", "call", [this.instanceId, method, url]);
 }
@@ -170,6 +170,7 @@ window.PalmSystem = {}
 /* This is our internal reprensentation for all properties */
 __PalmSystem = {};
 __PalmSystem.launchParams = "{}";
+__PalmSystem.hasAlphaHole = false;
 __PalmSystem.locale = "";
 __PalmSystem.localeRegion = "";
 __PalmSystem.timeFormat = "";
@@ -178,21 +179,13 @@ __PalmSystem.isMinimal = false;
 __PalmSystem.identifier = "";
 __PalmSystem.version = "";
 __PalmSystem.screenOrientation = "";
+__PalmSystem.windowOrientation = "";
 __PalmSystem.specifiedWindowOrientation = "";
 __PalmSystem.videoOrientation = "";
+__PalmSystem.deviceInfo = "{\"modelName\":\"unknown\",\"platformVersion\":\"0.0.0\"}";
 __PalmSystem.isActivated = true;
 __PalmSystem.activityId = 0;
 __PalmSystem.phoneRegion = "";
-__PalmSystem.windowOrientation = "";
-__PalmSystem.hasAlphaHole = false;
-
-/* Retrieve values for all properties on startup */
-_webOS.exec(function(parameters) {
-        if (typeof parameters === "undefined")
-            parameters = "{}";
-        __PalmSystem.launchParams = parameters;
-    },
-    unusedCallback, "PalmSystem", "getProperty", ["launchParams"]);
 
 /* Some internal settings we need for the implementation */
 __PalmSystem.bannerMessageCounter = 0;
@@ -209,6 +202,13 @@ _webOS.exec(function(name, value) {
 
 Object.defineProperty(window.PalmSystem, "launchParams", {
   get: function() { return __PalmSystem.launchParams; }
+});
+
+Object.defineProperty(window.PalmSystem, "hasAlphaHole", {
+  get: function() { return __PalmSystem.hasAlphaHole; },
+  set: function(value) {
+      _webOS.exec(unusedCallback, unusedCallback, "PalmSystem", "setProperty", ["hasAlphaHole", value]);
+  }
 });
 
 Object.defineProperty(window.PalmSystem, "locale", {
@@ -243,38 +243,35 @@ Object.defineProperty(window.PalmSystem, "screenOrientation", {
   get: function() { return __PalmSystem.screenOrientation; }
 });
 
+Object.defineProperty(window.PalmSystem, "windowOrientation", {
+  get: function() { return __PalmSystem.windowOrientation; },
+  set: function(value) {
+      _webOS.exec(unusedCallback, unusedCallback, "PalmSystem", "setProperty", ["windowOrientation", value]);
+  }
+});
+
 Object.defineProperty(window.PalmSystem, "specifiedWindowOrientation", {
   get: function() { return __PalmSystem.specifiedWindowOrientation; }
 });
 
 Object.defineProperty(window.PalmSystem, "videoOrientation", {
-  get: function() { return __PalmSystem.specifiedWindowOrientation; }
+  get: function() { return __PalmSystem.videoOrientation; }
 });
+
+Object.defineProperty(window.PalmSystem, "deviceInfo", {
+  get: function() { return __PalmSystem.deviceInfo; }
+});
+
 Object.defineProperty(window.PalmSystem, "isActivated", {
-  get: function() { return __PalmSystem.specifiedWindowOrientation; }
+  get: function() { return __PalmSystem.isActivated; }
 });
 
 Object.defineProperty(window.PalmSystem, "activityId", {
-  get: function() { return __PalmSystem.specifiedWindowOrientation; }
+  get: function() { return __PalmSystem.activityId; }
 });
 
 Object.defineProperty(window.PalmSystem, "phoneRegion", {
-  get: function() { return __PalmSystem.specifiedWindowOrientation; }
-});
-
-/* read-write */
-Object.defineProperty(window.PalmSystem, "windowOrientation", {
-  get: function() { return __PalmSystem.windowOrientation; },
-  set: function(value) {
-      _webOS.exec(unusedCallback, unusedCallback, "PalmSystem", "setProperty", ["hasAlphaRole", value]);
-  }
-});
-
-Object.defineProperty(window.PalmSystem, "hasAlphaHole", {
-  get: function() { return __PalmSystem.hasAlphaHole; },
-  set: function(value) {
-      _webOS.exec(unusedCallback, unusedCallback, "PalmSystem", "setProperty", ["hasAlphaRole", value]);
-  }
+  get: function() { return __PalmSystem.phoneRegion; }
 });
 
 PalmSystem.getIdentifier = function() {
@@ -400,6 +397,71 @@ PalmSystem.cancelVibrations = function() {
 
 PalmSystem.setWindowProperties = function(props) {
     _webOS.execWithoutCallback("PalmSystem", "setWindowProperties", [props]);
+}
+
+PalmSystem.addActiveCallBanner = function(icon, message, timeStart) {
+    return true;
+}
+
+PalmSystem.removeActiveCallBanner = function() {
+}
+
+PalmSystem.updateActiveCallBanner = function(icon, message, timeStart) {
+}
+
+PalmSystem.applyLaunchFeedback = function(offsetX, offsetY) {
+    _webOS.execWithoutCallback("PalmSystem", "applyLaunchFeedback");
+}
+
+PalmSystem.launcherReady = function() {
+    _webOS.execWithoutCallback("PalmSystem", "launcherReady");
+}
+
+PalmSystem.getDeviceKeys = function(key) {
+    return "";
+}
+
+PalmSystem.repaint = function() {
+    _webOS.execWithoutCallback("PalmSystem", "repaint");
+}
+
+PalmSystem.hideSpellingWidget = function() {
+    _webOS.execWithoutCallback("PalmSystem", "hideSpellingWidget");
+}
+
+PalmSystem.printFrame = function(frameName, lpsJobid, widthPx, heightPx, printDpi, landscape, reverseOrder) {
+}
+
+PalmSystem.editorFocused = function(focused, fieldType, fieldActions) {
+    _webOS.execWithoutCallback("PalmSystem", "editorFocused", [focused, fieldType, fieldActions]);
+}
+
+PalmSystem.allowResizeOnPositiveSpaceChange = function(allowResize) {
+    _webOS.execWithoutCallback("PalmSystem", "allowResizeOnPositiveSpaceChange", [allowResize]);
+}
+
+PalmSystem.keepAlive = function(keep) {
+    _webOS.execWithoutCallback("PalmSystem", "keepAlive", [keep]);
+}
+
+PalmSystem.useSimulatedMouseClicks = function(uses) {
+    _webOS.execWithoutCallback("PalmSystem", "useSimulatedMouseClicks", [uses]);
+}
+
+PalmSystem.handleTapAndHoldEvent = function(pageX, pageY) {
+    _webOS.execWithoutCallback("PalmSystem", "handleTapAndHoldEvent", [pageX, pageY]);
+}
+
+PalmSystem.setManualKeyboardEnabled = function(enabled) {
+    _webOS.execWithoutCallback("PalmSystem", "setManualKeyboardEnabled", [enabled]);
+}
+
+PalmSystem.keyboardShow = function(fieldType) {
+    _webOS.execWithoutCallback("PalmSystem", "keyboardShow", [fieldType]);
+}
+
+PalmSystem.keyboardHide = function() {
+    _webOS.execWithoutCallback("PalmSystem", "keyboardHide");
 }
 
 PalmSystem.getResource = function(a, b) {
