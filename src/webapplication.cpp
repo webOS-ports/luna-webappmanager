@@ -222,6 +222,12 @@ void WebApplication::run()
     showMaximized();
 }
 
+void WebApplication::relaunch(const QString &parameters)
+{
+    mParameters = parameters;
+    executeScript(QString("_webOS.relaunch(\"%1\");").arg(parameters));
+}
+
 bool WebApplication::event(QEvent *event)
 {
     switch (event->type()) {

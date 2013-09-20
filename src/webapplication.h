@@ -47,6 +47,7 @@ public:
     virtual ~WebApplication();
 
     void run();
+    void relaunch(const QString& parameters);
 
     virtual bool event(QEvent *event);
 

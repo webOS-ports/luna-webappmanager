@@ -67,9 +67,9 @@ WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &
     ApplicationDescription desc(appDesc);
 
     if (mApplications.contains(desc.id())) {
-        qWarning("Application %s is already running; preventing "
-                 "it from being started again", desc.id().toUtf8().constData());
-        return 0;
+        WebApplication *application = mApplications.value(desc.id());
+        application->relaunch(parameters);
+        return application;
     }
 
     if (!validateApplication(desc)) {
