@@ -32,7 +32,7 @@ class ApplicationDescription : public QObject
     Q_PROPERTY(QString title READ title CONSTANT)
     Q_PROPERTY(QUrl icon READ icon CONSTANT)
     Q_PROPERTY(QUrl entryPoint READ entryPoint CONSTANT)
-    Q_PROPERTY(bool isHeadLess READ isHeadLess CONSTANT)
+    Q_PROPERTY(bool headless READ headless CONSTANT)
 
 public:
     ApplicationDescription();
@@ -44,14 +44,14 @@ public:
     QString title() const;
     QUrl icon() const;
     QUrl entryPoint() const;
-    bool isHeadLess() const;
+    bool headless() const;
 
 private:
     QString mId;
     QString mTitle;
     QUrl mIcon;
     QUrl mEntryPoint;
-    bool mIsHeadLess;
+    bool mHeadless;
 };
 
 } // namespace luna

@@ -41,6 +41,7 @@ class WebApplication : public QQuickView
     Q_PROPERTY(int activityId READ activityId CONSTANT)
     Q_PROPERTY(bool ready READ ready NOTIFY readyChanged)
     Q_PROPERTY(QString parameters READ parameters CONSTANT)
+    Q_PROPERTY(bool headless READ headless CONSTANT)
 
 public:
     WebApplication(WebAppManager *manager, const ApplicationDescription& desc, const QString& parameters, const QString& processId);
@@ -59,6 +60,7 @@ public:
     int activityId() const;
     bool ready() const;
     QString parameters() const;
+    bool headless() const;
 
     void setActivityId(int activityId);
 

@@ -33,7 +33,7 @@ ApplicationDescription::ApplicationDescription(const ApplicationDescription& oth
     mTitle(other.title()),
     mIcon(other.icon()),
     mEntryPoint(other.entryPoint()),
-    mIsHeadLess(other.isHeadLess())
+    mHeadless(other.headless())
 {
 }
 
@@ -53,7 +53,7 @@ ApplicationDescription::ApplicationDescription(const QString &data)
         mEntryPoint = rootObject.value("main").toString();
 
     if (rootObject.contains("noWindow") && rootObject.value("noWindow").isBool())
-        mIsHeadLess = rootObject.value("noWindow").toBool();
+        mHeadless = rootObject.value("noWindow").toBool();
 
     if (rootObject.contains("title") && rootObject.value("title").isString())
         mTitle = rootObject.value("title").toString();
@@ -97,9 +97,9 @@ QUrl ApplicationDescription::entryPoint() const
     return mEntryPoint;
 }
 
-bool ApplicationDescription::isHeadLess() const
+bool ApplicationDescription::headless() const
 {
-    return mIsHeadLess;
+    return mHeadless;
 }
 
 }

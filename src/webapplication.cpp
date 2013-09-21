@@ -307,4 +307,9 @@ QString WebApplication::parameters() const
     return mParameters;
 }
 
+bool WebApplication::headless() const
+{
+    return mDescription.headless();
+}
+
 } // namespace luna
