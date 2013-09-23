@@ -19,21 +19,23 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QQuickView>
+
 #include "webapplication.h"
+#include "webapplicationwindow.h"
 #include "palmsystemplugin.h"
 
 namespace luna
 {
 
-PalmSystemPlugin::PalmSystemPlugin(WebApplication *application, QObject *parent) :
-    BasePlugin("PalmSystem", application, parent),
+PalmSystemPlugin::PalmSystemPlugin(WebApplicationWindow *applicationWindow, QObject *parent) :
+    BasePlugin("PalmSystem", applicationWindow, parent),
     mPropertyChangeHandlerCallbackId(0)
 {
 }
 
 void PalmSystemPlugin::stageReady()
 {
-    mApplication->stageReady();
+    mApplicationWindow->application()->stageReady();
 }
 
 void PalmSystemPlugin::activate()
@@ -46,17 +48,17 @@ void PalmSystemPlugin::deactivate()
 
 void PalmSystemPlugin::stagePreparing()
 {
-    mApplication->stagePreparing();
+    mApplicationWindow->application()->stagePreparing();
 }
 
 void PalmSystemPlugin::show()
 {
-    mApplication->show();
+    mApplicationWindow->show();
 }
 
 void PalmSystemPlugin::hide()
 {
-    mApplication->hide();
+    mApplicationWindow->hide();
 }
 
 void PalmSystemPlugin::setWindowProperties(const QString &properties)
@@ -93,13 +95,13 @@ void PalmSystemPlugin::setProperty(const QString &name, const QVariant &value)
 void PalmSystemPlugin::getProperty(int successCallbackId, int errorCallbackId, const QString &name)
 {
     if (name == "launchParams") {
-        callbackWithoutRemove(successCallbackId, mApplication->parameters());
+        callbackWithoutRemove(successCallbackId, mApplicationWindow->application()->parameters());
     }
     else if (name == "identifier") {
-        callbackWithoutRemove(successCallbackId, mApplication->id());
+        callbackWithoutRemove(successCallbackId, mApplicationWindow->application()->id());
     }
     else if (name == "activityId") {
-        callbackWithoutRemove(successCallbackId, mApplication->activityId());
+        callbackWithoutRemove(successCallbackId, QString("%1").arg(mApplicationWindow->application()->activityId()));
     }
 }
 
@@ -107,14 +109,14 @@ void PalmSystemPlugin::initializeProperties(int successCallbackId, int errorCall
 {
     QJsonObject rootObj;
 
-    rootObj.insert("launchParams", QJsonValue(mApplication->parameters()));
+    rootObj.insert("launchParams", QJsonValue(mApplicationWindow->application()->parameters()));
     rootObj.insert("hasAlphaHole", QJsonValue(false));
     rootObj.insert("locale", QJsonValue(QString("")));
     rootObj.insert("localeRegion", QJsonValue(QString("")));
     rootObj.insert("timeFormat", QJsonValue(QString("")));
     rootObj.insert("timeZone", QJsonValue(QString("")));
     rootObj.insert("isMinimal", QJsonValue(QString("")));
-    rootObj.insert("identifier", QJsonValue(mApplication->id()));
+    rootObj.insert("identifier", QJsonValue(mApplicationWindow->application()->id()));
     rootObj.insert("version", QJsonValue(QString("")));
     rootObj.insert("screenOrientation", QJsonValue(QString("")));
     rootObj.insert("windowOrientation", QJsonValue(QString("")));
@@ -122,7 +124,7 @@ void PalmSystemPlugin::initializeProperties(int successCallbackId, int errorCall
     rootObj.insert("videoOrientation", QJsonValue(QString("")));
     rootObj.insert("deviceInfo", QJsonValue(QString("{\"modelName\":\"unknown\",\"platformVersion\":\"0.0.0\"}")));
     rootObj.insert("isActivated", QJsonValue(true));
-    rootObj.insert("activityId", QJsonValue(mApplication->activityId()));
+    rootObj.insert("activityId", QJsonValue(mApplicationWindow->application()   ->activityId()));
     rootObj.insert("phoneRegion", QJsonValue(QString("")));
 
     QJsonDocument document(rootObj);

@@ -55,7 +55,7 @@ class PalmServiceBridgePlugin : public BasePlugin
 {
     Q_OBJECT
 public:
-    explicit PalmServiceBridgePlugin(WebApplication *application, QObject *parent = 0);
+    explicit PalmServiceBridgePlugin(WebApplicationWindow *applicationWindow, QObject *parent = 0);
 
 public slots:
     void createInstance(int successCallbackId, int errorCallbackId, unsigned int instanceId);

@@ -13,6 +13,7 @@ set(SOURCES
     webappmanagerservice.cpp
     lunaserviceutils.cpp
     webapplication.cpp
+    webapplicationwindow.cpp
     applicationdescription.cpp
     plugins/lunaservicemgr.cpp
     plugins/baseplugin.cpp
@@ -25,6 +26,7 @@ set(HEADERS
     webappmanagerservice.h
     lunaserviceutils.h
     webapplication.h
+    webapplicationwindow.h
     applicationdescription.h
     plugins/lunaservicemgr.h
     plugins/baseplugin.h

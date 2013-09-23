@@ -29,7 +29,7 @@ class PalmSystemPlugin : public BasePlugin
 {
     Q_OBJECT
 public:
-    explicit PalmSystemPlugin(WebApplication *application, QObject *parent = 0);
+    explicit PalmSystemPlugin(WebApplicationWindow *applicationWindow, QObject *parent = 0);
 
 public slots:
 

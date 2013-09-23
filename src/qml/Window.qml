@@ -15,38 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef BASEPLUGIN_H
-#define BASEPLUGIN_H
+import QtQuick 2.0
+import QtQuick.Window 2.0
+import LunaNext 0.1
+import "."
 
-#include <QObject>
-#include <QString>
+Window {
+    id: root
 
-namespace luna
-{
+    width: Settings.displayWidth
+    height: Settings.displayHeight
 
-class WebApplicationWindow;
-
-class BasePlugin : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(QString name READ name)
-
-public:
-    explicit BasePlugin(const QString &name, WebApplicationWindow *applicationWindow, QObject *parent = 0);
-
-    QString name() const;
-
-protected:
-    void callbackWithoutRemove(int id, const QString &parameters);
-    void callback(int id, const QString &parameters);
-    
-protected:
-    WebApplicationWindow *mApplicationWindow;
-
-private:
-    QString mName;
-};
-
-} // namespace luna
-
-#endif // BASEPLUGIN_H
+    ApplicationContainer {
+        id: appContainer
+    }
+}

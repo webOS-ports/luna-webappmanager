@@ -16,14 +16,14 @@
  */
 
 #include "baseplugin.h"
-#include "webapplication.h"
+#include "webapplicationwindow.h"
 
 namespace luna
 {
 
-BasePlugin::BasePlugin(const QString &name, WebApplication *application, QObject *parent) :
+BasePlugin::BasePlugin(const QString &name, WebApplicationWindow *applicationWindow, QObject *parent) :
     QObject(parent),
-    mApplication(application),
+    mApplicationWindow(applicationWindow),
     mName(name)
 {
 }
@@ -44,7 +44,7 @@ void BasePlugin::callback(int id, const QString &parameters)
         script = QString("_webOS.callback(%1);").arg(id);
     }
 
-    mApplication->executeScript(script);
+    mApplicationWindow->executeScript(script);
 }
 
 void BasePlugin::callbackWithoutRemove(int id, const QString &parameters)
@@ -58,7 +58,7 @@ void BasePlugin::callbackWithoutRemove(int id, const QString &parameters)
         script = QString("_webOS.callbackWithoutRemove(%1);").arg(id);
     }
 
-    mApplication->executeScript(script);
+    mApplicationWindow->executeScript(script);
 }
 
 } // namespace luna

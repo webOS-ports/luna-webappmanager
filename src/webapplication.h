@@ -29,8 +29,9 @@ namespace luna
 
 class WebAppManager;
 class BasePlugin;
+class WebApplicationWindow;
 
-class WebApplication : public QQuickView
+class WebApplication : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString id READ id CONSTANT)
@@ -44,13 +45,11 @@ class WebApplication : public QQuickView
     Q_PROPERTY(bool headless READ headless CONSTANT)
 
 public:
-    WebApplication(WebAppManager *manager, const ApplicationDescription& desc, const QString& parameters, const QString& processId);
+    WebApplication(WebAppManager *manager, const ApplicationDescription& desc, const QString& parameters, const QString& processId, QObject *parent = 0);
     virtual ~WebApplication();
 
     void run();
     void relaunch(const QString& parameters);
-
-    virtual bool event(QEvent *event);
 
     QString id() const;
     QString processId() const;
@@ -67,21 +66,16 @@ public:
     void stagePreparing();
     void stageReady();
 
+    void changeActivityFocus(bool focus);
+
     static bool activityManagerCallback(LSHandle *handle, LSMessage *message, void *user_data);
 
 signals:
-    void javaScriptExecNeeded(const QString &script);
-    void pluginWantsToBeAdded(const QString &name, QObject *object);
-    void closed();
     void readyChanged();
-
-public slots:
-    void loadFinished();
-    void executeScript(const QString &script);
+    void closed();
 
 private:
     WebAppManager *mManager;
-    QMap<QString, BasePlugin*> mPlugins;
     ApplicationDescription mDescription;
     QString mProcessId;
     LSMessageToken mActivityManagerToken;
@@ -89,13 +83,10 @@ private:
     int mActivityId;
     bool mReady;
     QString mParameters;
-
-    void createPlugins();
-    void createAndInitializePlugin(BasePlugin *plugin);
+    WebApplicationWindow *mMainWindow;
 
     void createActivity();
     void destroyActivity();
-    void changeActivityFocus(bool focus);
 };
 
 } // namespace luna

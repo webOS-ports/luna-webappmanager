@@ -26,17 +26,15 @@
 #include "webappmanagerservice.h"
 #include "applicationdescription.h"
 #include "webapplication.h"
-
-#include "plugins/baseplugin.h"
-#include "plugins/palmsystemplugin.h"
-#include "plugins/palmservicebridgeplugin.h"
+#include "webapplicationwindow.h"
 
 #include <Settings.h>
 
 namespace luna
 {
 
-WebApplication::WebApplication(WebAppManager *manager, const ApplicationDescription& desc, const QString& parameters, const QString& processId) :
+WebApplication::WebApplication(WebAppManager *manager, const ApplicationDescription& desc, const QString& parameters, const QString& processId, QObject *parent) :
+    QObject(parent),
     mManager(manager),
     mDescription(desc),
     mProcessId(processId),
@@ -44,45 +42,22 @@ WebApplication::WebApplication(WebAppManager *manager, const ApplicationDescript
     mIdentifier(mDescription.id() + "-" + mProcessId),
     mActivityId(-1),
     mReady(false),
-    mParameters(parameters)
+    mParameters(parameters),
+    mMainWindow(0)
 {
-    setTitle(mDescription.title());
-    setResizeMode(QQuickView::SizeRootObjectToView);
+    mMainWindow = new WebApplicationWindow(this, desc.headless());
 
-    rootContext()->setContextProperty("webapp", this);
-    setSource(QUrl("qrc:///qml/main.qml"));
-
-    QQuickWebView *webView = rootObject()->findChild<QQuickWebView*>("webView");
-
-    qreal zoomFactor = Settings::LunaSettings()->layoutScale;
-
-    // correct zoom factor for some applications which are not scaled properly (aka
-    // the Open webOS core-apps ...)
-    if (Settings::LunaSettings()->compatApps.find(desc.id().toStdString()) !=
-        Settings::LunaSettings()->compatApps.end())
-        zoomFactor = Settings::LunaSettings()->layoutScaleCompat;
-
-    webView->setZoomFactor(zoomFactor);
+    connect(mMainWindow, &WebApplicationWindow::closed, [=]() {
+        qDebug() << "Main application window" << mDescription.id() << "was closed";
+        emit closed();
+    });
 
     createActivity();
-    createPlugins();
 }
 
 WebApplication::~WebApplication()
 {
     destroyActivity();
-}
-
-void WebApplication::createPlugins()
-{
-    createAndInitializePlugin(new PalmSystemPlugin(this));
-    createAndInitializePlugin(new PalmServiceBridgePlugin(this));
-}
-
-void WebApplication::createAndInitializePlugin(BasePlugin *plugin)
-{
-    mPlugins.insert(plugin->name(), plugin);
-    emit pluginWantsToBeAdded(plugin->name(), plugin);
 }
 
 void WebApplication::setActivityId(int activityId)
@@ -219,41 +194,16 @@ void WebApplication::changeActivityFocus(bool focus)
 
 void WebApplication::run()
 {
-    showMaximized();
+    if (!headless())
+        mMainWindow->show();
 }
 
 void WebApplication::relaunch(const QString &parameters)
 {
+    qDebug() << __PRETTY_FUNCTION__ << "Relaunching application" << mDescription.id() << "with parameters" << parameters;
+
     mParameters = parameters;
-    executeScript(QString("_webOS.relaunch(\"%1\");").arg(parameters));
-}
-
-bool WebApplication::event(QEvent *event)
-{
-    switch (event->type()) {
-    case QEvent::Close:
-        emit closed();
-        break;
-    case QEvent::FocusIn:
-        changeActivityFocus(true);
-        break;
-    case QEvent::FocusOut:
-        changeActivityFocus(false);
-        break;
-    default:
-        break;
-    }
-
-    return QQuickWindow::event(event);
-}
-
-void WebApplication::executeScript(const QString &script)
-{
-    emit javaScriptExecNeeded(script);
-}
-
-void WebApplication::loadFinished()
-{
+    mMainWindow->executeScript(QString("_webOS.relaunch(\"%1\");").arg(parameters));
 }
 
 void WebApplication::stagePreparing()

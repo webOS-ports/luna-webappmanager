@@ -19,6 +19,7 @@
 #include <QtGlobal>
 
 #include "webapplication.h"
+#include "webapplicationwindow.h"
 #include "palmservicebridgeplugin.h"
 
 namespace luna
@@ -82,8 +83,8 @@ void PalmServiceBridge::cancel(int successCallbackId, int errorCallbackId)
     mCallActive = false;
 }
 
-PalmServiceBridgePlugin::PalmServiceBridgePlugin(WebApplication *application, QObject *parent) :
-    BasePlugin("PalmServiceBridge", application, parent)
+PalmServiceBridgePlugin::PalmServiceBridgePlugin(WebApplicationWindow *applicationWindow, QObject *parent) :
+    BasePlugin("PalmServiceBridge", applicationWindow, parent)
 {
 }
 
@@ -102,7 +103,8 @@ void PalmServiceBridgePlugin::createInstance(int successCallbackId, int errorCal
         return;
     }
 
-    PalmServiceBridge *bridge = new PalmServiceBridge(mApplication->id(), isPrivilegedApplcation(mApplication->id()));
+    PalmServiceBridge *bridge = new PalmServiceBridge(mApplicationWindow->application()->id(),
+                                                      isPrivilegedApplcation(mApplicationWindow->application()->id()));
     connect(bridge, SIGNAL(callback(int,QString)), this, SLOT(callbackFromBridge(int,QString)));
     mBridgeInstances.insert(instanceId, bridge);
 }

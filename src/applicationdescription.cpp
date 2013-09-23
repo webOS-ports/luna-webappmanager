@@ -18,13 +18,15 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QFile>
+#include <QDebug>
 
 #include "applicationdescription.h"
 
 namespace luna
 {
 
-ApplicationDescription::ApplicationDescription()
+ApplicationDescription::ApplicationDescription() :
+    mHeadless(false)
 {
 }
 
@@ -37,7 +39,8 @@ ApplicationDescription::ApplicationDescription(const ApplicationDescription& oth
 {
 }
 
-ApplicationDescription::ApplicationDescription(const QString &data)
+ApplicationDescription::ApplicationDescription(const QString &data) :
+    mHeadless(false)
 {
     QJsonDocument document = QJsonDocument::fromJson(data.toUtf8());
 
