@@ -30,6 +30,7 @@ int main(int argc, char **argv)
         setenv("QT_QPA_PLATFORM", "wayland", 1);
         setenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1", 1);
         setenv("XDG_RUNTIME_DIR", XDG_RUNTIME_DIR_DEFAULT, 0);
+        setenv("QT_IM_MODULE", "Maliit", 0);
     }
 
     luna::WebAppManager webAppManager(argc, argv);
