@@ -106,7 +106,7 @@ Flickable {
                 experimental.hasOwnProperty('userScriptsForAllFrames')) {
                 experimental.userScripts = webView.userScripts;
                 experimental.userScriptsInjectAtStart = true;
-                experimental.userScriptsForAllFrames = true;
+                experimental.userScriptsForAllFrames = false;
             }
             else {
                 console.log("WARNING: webOS API is not going to be installed for apps !!!!");
