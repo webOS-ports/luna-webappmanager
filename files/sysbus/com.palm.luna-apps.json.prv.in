@@ -1,0 +1,14 @@
+{
+    "role": {
+        "exeName":"@WEBOS_INSTALL_LIBDIR@/qt5/libexec/QtWebProcess",
+        "type": "privileged",
+        "allowedNames": ["com.palm.luna-*"]
+    },
+    "permissions": [
+        {
+            "service":"com.palm.luna-*",
+            "inbound":["*"],
+            "outbound":["*"]
+        }
+    ]
+}
