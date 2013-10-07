@@ -67,6 +67,12 @@ void WebApplicationWindow::createAndSetup()
     mWindow = static_cast<QQuickWindow*>(window);
     mWindow->installEventFilter(this);
 
+    mWindow->setSurfaceType(QSurface::OpenGLSurface);
+    QSurfaceFormat surfaceFormat = mWindow->format();
+    surfaceFormat.setAlphaBufferSize(8);
+    surfaceFormat.setRenderableType(QSurfaceFormat::OpenGLES);
+    mWindow->setFormat(surfaceFormat);
+
     QQuickWebView *webView = window->findChild<QQuickWebView*>("webView");
 
     qreal zoomFactor = Settings::LunaSettings()->layoutScale;
