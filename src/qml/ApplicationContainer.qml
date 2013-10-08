@@ -134,5 +134,14 @@ Flickable {
                 PluginManager.addPlugin(name, object);
             }
         }
+
+        Connections {
+            target: experimental
+
+            onProcessDidCrash: {
+                console.log("ERROR: The web process has crashed. Restart it ...");
+                webView.reload();
+            }
+        }
     }
 }
