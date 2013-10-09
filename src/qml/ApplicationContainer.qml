@@ -136,7 +136,7 @@ Flickable {
         }
 
         Connections {
-            target: experimental
+            target: webView.experimental
 
             onProcessDidCrash: {
                 console.log("ERROR: The web process has crashed. Restart it ...");
