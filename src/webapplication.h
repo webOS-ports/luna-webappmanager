@@ -20,6 +20,7 @@
 
 #include <QQuickView>
 #include <QMap>
+#include <QtWebKit/private/qwebnewpagerequest_p.h>
 #include <luna-service2/lunaservice.h>
 
 #include "applicationdescription.h"
@@ -70,6 +71,8 @@ public:
 
     static bool activityManagerCallback(LSHandle *handle, LSMessage *message, void *user_data);
 
+    void createWindow(QWebNewPageRequest *request);
+
 signals:
     void readyChanged();
     void closed();
@@ -84,6 +87,7 @@ private:
     bool mReady;
     QString mParameters;
     WebApplicationWindow *mMainWindow;
+    QList<WebApplicationWindow*> mWindows;
 
     void createActivity();
     void destroyActivity();

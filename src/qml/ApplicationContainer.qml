@@ -120,7 +120,7 @@ Flickable {
         }
 
         Component.onCompleted: {
-            webView.url = webApp.url;
+            webView.url = webAppUrl;
         }
 
         Connections {

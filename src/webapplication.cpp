@@ -21,6 +21,7 @@
 #include <QJsonDocument>
 
 #include <QtWebKit/private/qquickwebview_p.h>
+#include <QtWebKit/private/qwebnewpagerequest_p.h>
 
 #include "webappmanager.h"
 #include "webappmanagerservice.h"
@@ -45,7 +46,7 @@ WebApplication::WebApplication(WebAppManager *manager, const ApplicationDescript
     mParameters(parameters),
     mMainWindow(0)
 {
-    mMainWindow = new WebApplicationWindow(this, desc.headless());
+    mMainWindow = new WebApplicationWindow(this, desc.entryPoint(), desc.headless());
 
     connect(mMainWindow, &WebApplicationWindow::closed, [=]() {
         qDebug() << "Main application window" << mDescription.id() << "was closed";
@@ -204,6 +205,18 @@ void WebApplication::relaunch(const QString &parameters)
 
     mParameters = parameters;
     mMainWindow->executeScript(QString("_webOS.relaunch(\"%1\");").arg(parameters));
+}
+
+void WebApplication::createWindow(QWebNewPageRequest *request)
+{
+    qDebug() << __PRETTY_FUNCTION__ << "creating new window for url" << request->url();
+
+    // child windows can never be headless ones!
+    WebApplicationWindow *window = new WebApplicationWindow(this, request->url(), false);
+
+    request->setWebView(window->webView());
+
+    window->show();
 }
 
 void WebApplication::stagePreparing()

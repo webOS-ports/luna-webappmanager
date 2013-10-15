@@ -22,6 +22,9 @@
 #include <QQmlEngine>
 #include <QQuickWindow>
 
+#include <QtWebKit/private/qquickwebview_p.h>
+#include <QtWebKit/private/qwebnewpagerequest_p.h>
+
 namespace luna
 {
 
@@ -34,12 +37,15 @@ class WebApplicationWindow : public QObject
     Q_PROPERTY(WebApplication *application READ application)
 
 public:
-    explicit WebApplicationWindow(WebApplication *application, bool headless = false, QObject *parent = 0);
+    explicit WebApplicationWindow(WebApplication *application, const QUrl& url, bool headless = false, QObject *parent = 0);
+    ~WebApplicationWindow();
 
     WebApplication *application() const;
 
     void show();
     void hide();
+
+    QQuickWebView *webView() const;
 
 public slots:
     void executeScript(const QString &script);
@@ -52,12 +58,17 @@ signals:
 protected:
     bool eventFilter(QObject *object, QEvent *event);
 
+private slots:
+    void onCreateNewPage(QWebNewPageRequest *request);
+
 private:
     WebApplication *mApplication;
     QMap<QString, BasePlugin*> mPlugins;
     QQmlEngine mEngine;
     QQuickWindow *mWindow;
     bool mHeadless;
+    QQuickWebView *mWebView;
+    QUrl mUrl;
 
     void createAndSetup();
     void createPlugins();

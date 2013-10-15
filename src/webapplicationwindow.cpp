@@ -19,6 +19,7 @@
 #include <QQmlContext>
 #include <QQmlComponent>
 #include <QtWebKit/private/qquickwebview_p.h>
+#include <QtWebKit/private/qwebnewpagerequest_p.h>
 
 #include <Settings.h>
 
@@ -34,20 +35,28 @@
 namespace luna
 {
 
-WebApplicationWindow::WebApplicationWindow(WebApplication *application, bool headless, QObject *parent) :
+WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QUrl& url, bool headless, QObject *parent) :
     QObject(parent),
     mApplication(application),
     mEngine(this),
     mWindow(0),
-    mHeadless(headless)
+    mHeadless(headless),
+    mUrl(url)
 {
     createAndSetup();
 }
 
+WebApplicationWindow::~WebApplicationWindow()
+{
+}
+
 void WebApplicationWindow::createAndSetup()
 {
+    // FIXME evaluate window properties and configure the window accordingly
+
     mEngine.rootContext()->setContextProperty("webApp", mApplication);
     mEngine.rootContext()->setContextProperty("webAppWindow", this);
+    mEngine.rootContext()->setContextProperty("webAppUrl", mUrl);
 
     QQmlComponent windowComponent(&mEngine,
         QUrl(QString("qrc:///qml/%1.qml").arg(mHeadless ? "HeadlessWindow" : "Window")));
@@ -75,7 +84,10 @@ void WebApplicationWindow::createAndSetup()
         mWindow->setFormat(surfaceFormat);
     }
 
-    QQuickWebView *webView = window->findChild<QQuickWebView*>("webView");
+    mWebView = window->findChild<QQuickWebView*>("webView");
+
+    connect(mWebView->experimental(), SIGNAL(createNewPage(QWebNewPageRequest*)),
+            this, SLOT(onCreateNewPage(QWebNewPageRequest*)));
 
     qreal zoomFactor = Settings::LunaSettings()->layoutScale;
 
@@ -85,9 +97,14 @@ void WebApplicationWindow::createAndSetup()
         Settings::LunaSettings()->compatApps.end())
         zoomFactor = Settings::LunaSettings()->layoutScaleCompat;
 
-    webView->setZoomFactor(zoomFactor);
+    mWebView->setZoomFactor(zoomFactor);
 
     createPlugins();
+}
+
+void WebApplicationWindow::onCreateNewPage(QWebNewPageRequest *request)
+{
+    mApplication->createWindow(request);
 }
 
 void WebApplicationWindow::createPlugins()
@@ -146,6 +163,11 @@ void WebApplicationWindow::executeScript(const QString &script)
 WebApplication* WebApplicationWindow::application() const
 {
     return mApplication;
+}
+
+QQuickWebView *WebApplicationWindow::webView() const
+{
+    return mWebView;
 }
 
 } // namespace luna
