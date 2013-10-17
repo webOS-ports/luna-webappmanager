@@ -39,6 +39,8 @@ public:
     virtual ~WebAppManager();
 
     WebApplication* launchApp(const QString &appDesc, const QString &parameters);
+    WebApplication* launchUrl(const QUrl &url, const QString &windowType,
+                              const QString &appDesc, const QString &parameters);
 
     WebAppManagerService* service() const;
 

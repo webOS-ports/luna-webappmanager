@@ -56,6 +56,9 @@ WebAppManagerService* WebAppManager::service() const
 
 bool WebAppManager::validateApplication(const ApplicationDescription& desc)
 {
+    if (desc.id().length() == 0)
+        return false;
+
     if (desc.entryPoint().isLocalFile() && !QFile::exists(desc.entryPoint().toLocalFile()))
         return false;
 
@@ -66,11 +69,39 @@ WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &
 {
     ApplicationDescription desc(appDesc);
 
+    if (!validateApplication(desc)) {
+        qWarning("Got invalid application description for app %s",
+                 desc.id().toUtf8().constData());
+        return 0;
+    }
+
     if (mApplications.contains(desc.id())) {
         WebApplication *application = mApplications.value(desc.id());
         application->relaunch(parameters);
         return application;
     }
+
+    QString processId = QString("%0").arg(mNextProcessId++);
+    QString windowType = "card";
+    QUrl entryPoint = desc.entryPoint();
+    WebApplication *app = new WebApplication(this, entryPoint, windowType,
+                                             desc, parameters, processId);
+    connect(app, SIGNAL(closed()), this, SLOT(onApplicationWindowClosed()));
+
+    qDebug() << "Starting application" << app->id();
+    app->run();
+
+    // FIXME revisit wether we allow only one instance per application (e.g. whats
+    // with multiple windows per application?)
+    mApplications.insert(app->id(), app);
+
+    return app;
+}
+
+WebApplication* WebAppManager::launchUrl(const QUrl &url, const QString &windowType,
+                                         const QString &appDesc, const QString &parameters)
+{
+    ApplicationDescription desc(appDesc);
 
     if (!validateApplication(desc)) {
         qWarning("Got invalid application description for app %s",
@@ -78,8 +109,14 @@ WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &
         return 0;
     }
 
+    if (mApplications.contains(desc.id())) {
+        WebApplication *application = mApplications.value(desc.id());
+        application->relaunch(parameters);
+        return application;
+    }
+
     QString processId = QString("%0").arg(mNextProcessId++);
-    WebApplication *app = new WebApplication(this, desc, parameters, processId);
+    WebApplication *app = new WebApplication(this, url, windowType, desc, parameters, processId);
     connect(app, SIGNAL(closed()), this, SLOT(onApplicationWindowClosed()));
 
     qDebug() << "Starting application" << app->id();

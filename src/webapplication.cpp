@@ -34,7 +34,9 @@
 namespace luna
 {
 
-WebApplication::WebApplication(WebAppManager *manager, const ApplicationDescription& desc, const QString& parameters, const QString& processId, QObject *parent) :
+WebApplication::WebApplication(WebAppManager *manager, const QUrl& url, const QString& windowType,
+                               const ApplicationDescription& desc, const QString& parameters,
+                               const QString& processId, QObject *parent) :
     QObject(parent),
     mManager(manager),
     mDescription(desc),
@@ -46,7 +48,7 @@ WebApplication::WebApplication(WebAppManager *manager, const ApplicationDescript
     mParameters(parameters),
     mMainWindow(0)
 {
-    mMainWindow = new WebApplicationWindow(this, desc.entryPoint(), desc.headless());
+    mMainWindow = new WebApplicationWindow(this, url, mDescription.headless());
 
     connect(mMainWindow, &WebApplicationWindow::closed, [=]() {
         qDebug() << "Main application window" << mDescription.id() << "was closed";

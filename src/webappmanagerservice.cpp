@@ -33,12 +33,14 @@ namespace luna
  *
  * Public methods:
  * - \ref org_webosports_webappmanager_launch_app
+ * - \ref org_webosports_webappmanager_launch_url
  * - \ref org_webosports_webappmanager_kill_app
  * - \ref org_webosports_webappmanager_is_app_running
  * - \ref org_webosports_webappmanager_list_running_apps
  */
 static LSMethod privateServiceMethods[] = {
     { "launchApp", WebAppManagerService::onLaunchAppCb },
+    { "launchUrl", WebAppManagerService::onLaunchUrlCb },
     { "killApp", WebAppManagerService::onKillAppCb },
     { "isAppRunning", WebAppManagerService::onIsAppRunningCb },
     { "listRunningApps", WebAppManagerService::onListRunningAppsCb },
@@ -227,6 +229,74 @@ bool WebAppManagerService::onLaunchApp(LSHandle *handle, LSMessage *message)
 
     return true;
 }
+
+bool WebAppManagerService::onLaunchUrlCb(LSHandle *handle, LSMessage *message, void *data)
+{
+    WebAppManagerService *service = static_cast<WebAppManagerService*>(data);
+    return service->onLaunchUrl(handle, message);
+}
+
+bool WebAppManagerService::onLaunchUrl(LSHandle *handle, LSMessage *message)
+{
+    QByteArray payload(LSMessageGetPayload(message));
+    if (payload.isEmpty()) {
+        luna_service_message_reply_error_bad_json(handle, message);
+        return true;
+    }
+
+    QJsonDocument requestDocument = QJsonDocument::fromJson(payload);
+    if (!requestDocument.isObject()) {
+        luna_service_message_reply_error_bad_json(handle, message);
+        return true;
+    }
+
+    QJsonObject rootObject = requestDocument.object();
+
+    if (!(rootObject.contains("url") && rootObject.value("url").isString())) {
+        luna_service_message_reply_error_bad_json(handle, message);
+        return true;
+    }
+
+    QUrl url(rootObject.value("url").toString());
+
+    QString windowType = "card";
+    if (rootObject.contains("windowType") && rootObject.value("windowType").isString())
+        windowType = rootObject.value("windowType").toString();
+
+    QString appDesc = "";
+    if (rootObject.contains("appDesc") && rootObject.value("appDesc").isObject())
+        appDesc = jsonObjectToString(rootObject.value("appDesc").toObject());
+
+    QString params = "";
+    if (rootObject.contains("params") && rootObject.value("params").isObject())
+        params = jsonObjectToString(rootObject.value("params").toObject());
+
+    WebApplication *app = mWebAppManager->launchUrl(url, windowType, appDesc, params);
+
+    QJsonObject response;
+
+    response.insert("returnValue", QJsonValue(app != 0));
+
+    if (!app)
+        response.insert("errorText", QJsonValue(QString("Failed to launch application")));
+    else
+        response.insert("processId", QJsonValue(app->processId()));
+
+    response.insert("returnValue", QJsonValue(app != 0));
+
+    QJsonDocument responseDocument(response);
+
+    LSError error;
+    LSErrorInit(&error);
+
+    if (!LSMessageReply(handle, message, responseDocument.toJson().constData(), &error)) {
+        LSErrorPrint(&error, stderr);
+        LSErrorFree(&error);
+    }
+
+    return true;
+}
+
 
 bool WebAppManagerService::onKillAppCb(LSHandle *handle, LSMessage *message, void *data)
 {

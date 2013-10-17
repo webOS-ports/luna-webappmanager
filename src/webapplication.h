@@ -46,7 +46,9 @@ class WebApplication : public QObject
     Q_PROPERTY(bool headless READ headless CONSTANT)
 
 public:
-    WebApplication(WebAppManager *manager, const ApplicationDescription& desc, const QString& parameters, const QString& processId, QObject *parent = 0);
+    WebApplication(WebAppManager *manager, const QUrl& url, const QString& windowType,
+                   const ApplicationDescription& desc, const QString& parameters,
+                   const QString& processId, QObject *parent = 0);
     virtual ~WebApplication();
 
     void run();

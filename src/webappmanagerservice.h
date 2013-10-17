@@ -33,6 +33,7 @@ public:
     ~WebAppManagerService();
 
     static bool onLaunchAppCb(LSHandle *handle, LSMessage *message, void *data);
+    static bool onLaunchUrlCb(LSHandle *handle, LSMessage *message, void *data);
     static bool onKillAppCb(LSHandle *handle, LSMessage *message, void *data);
     static bool onIsAppRunningCb(LSHandle *handle, LSMessage *message, void *data);
     static bool onListRunningAppsCb(LSHandle *handle, LSMessage *message, void *data);
@@ -43,6 +44,7 @@ private:
     void startService();
 
     bool onLaunchApp(LSHandle *handle, LSMessage *message);
+    bool onLaunchUrl(LSHandle *handle, LSMessage *message);
 
 private:
     WebAppManager *mWebAppManager;
