@@ -20,6 +20,7 @@
 #include <QQmlComponent>
 #include <QtWebKit/private/qquickwebview_p.h>
 #include <QtWebKit/private/qwebnewpagerequest_p.h>
+#include <QtGui/qpa/qplatformnativeinterface.h>
 
 #include <Settings.h>
 
@@ -35,19 +36,26 @@
 namespace luna
 {
 
-WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QUrl& url, bool headless, QObject *parent) :
+WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QUrl& url, const QString& windowType, bool headless, QObject *parent) :
     QObject(parent),
     mApplication(application),
     mEngine(this),
     mWindow(0),
     mHeadless(headless),
-    mUrl(url)
+    mUrl(url),
+    mWindowType(windowType)
 {
     createAndSetup();
 }
 
 WebApplicationWindow::~WebApplicationWindow()
 {
+}
+
+void WebApplicationWindow::setWindowProperty(const QString &name, const QVariant &value)
+{
+    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+    nativeInterface->setWindowProperty(mWindow->handle(), name, value);
 }
 
 void WebApplicationWindow::createAndSetup()
@@ -73,15 +81,21 @@ void WebApplicationWindow::createAndSetup()
         return;
     }
 
-    mWindow = static_cast<QQuickWindow*>(window);
-    mWindow->installEventFilter(this);
-
     if (!mHeadless) {
+        mWindow = static_cast<QQuickWindow*>(window);
+        mWindow->installEventFilter(this);
+
         mWindow->setSurfaceType(QSurface::OpenGLSurface);
         QSurfaceFormat surfaceFormat = mWindow->format();
         surfaceFormat.setAlphaBufferSize(8);
         surfaceFormat.setRenderableType(QSurfaceFormat::OpenGLES);
         mWindow->setFormat(surfaceFormat);
+
+        // make sure the platform window gets created to be able to set it's
+        // window properties
+        mWindow->create();
+
+        setWindowProperty(QString("type"), QVariant(mWindowType));
     }
 
     mWebView = window->findChild<QQuickWebView*>("webView");

@@ -37,7 +37,8 @@ class WebApplicationWindow : public QObject
     Q_PROPERTY(WebApplication *application READ application)
 
 public:
-    explicit WebApplicationWindow(WebApplication *application, const QUrl& url, bool headless = false, QObject *parent = 0);
+    explicit WebApplicationWindow(WebApplication *application, const QUrl& url, const QString& windowType,
+                                  bool headless = false, QObject *parent = 0);
     ~WebApplicationWindow();
 
     WebApplication *application() const;
@@ -69,10 +70,12 @@ private:
     bool mHeadless;
     QQuickWebView *mWebView;
     QUrl mUrl;
+    QString mWindowType;
 
     void createAndSetup();
     void createPlugins();
     void createAndInitializePlugin(BasePlugin *plugin);
+    void setWindowProperty(const QString &name, const QVariant &value);
 };
 
 } // namespace luna

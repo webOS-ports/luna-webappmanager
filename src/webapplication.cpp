@@ -48,7 +48,7 @@ WebApplication::WebApplication(WebAppManager *manager, const QUrl& url, const QS
     mParameters(parameters),
     mMainWindow(0)
 {
-    mMainWindow = new WebApplicationWindow(this, url, mDescription.headless());
+    mMainWindow = new WebApplicationWindow(this, url, windowType, mDescription.headless());
 
     connect(mMainWindow, &WebApplicationWindow::closed, [=]() {
         qDebug() << "Main application window" << mDescription.id() << "was closed";
@@ -214,7 +214,8 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
     qDebug() << __PRETTY_FUNCTION__ << "creating new window for url" << request->url();
 
     // child windows can never be headless ones!
-    WebApplicationWindow *window = new WebApplicationWindow(this, request->url(), false);
+    QString windowType = "card";
+    WebApplicationWindow *window = new WebApplicationWindow(this, request->url(), windowType, false);
 
     request->setWebView(window->webView());
 
