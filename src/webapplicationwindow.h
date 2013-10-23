@@ -46,7 +46,11 @@ public:
     void show();
     void hide();
 
+    bool headless() const;
+    bool keepAlive() const;
     QQuickWebView *webView() const;
+
+    void setKeepAlive(bool alive);
 
 public slots:
     void executeScript(const QString &script);
@@ -71,6 +75,7 @@ private:
     QQuickWebView *mWebView;
     QUrl mUrl;
     QString mWindowType;
+    bool mKeepAlive;
 
     void createAndSetup();
     void createPlugins();

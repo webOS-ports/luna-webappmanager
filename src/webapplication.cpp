@@ -49,11 +49,7 @@ WebApplication::WebApplication(WebAppManager *manager, const QUrl& url, const QS
     mMainWindow(0)
 {
     mMainWindow = new WebApplicationWindow(this, url, windowType, mDescription.headless());
-
-    connect(mMainWindow, &WebApplicationWindow::closed, [=]() {
-        qDebug() << "Main application window" << mDescription.id() << "was closed";
-        emit closed();
-    });
+    connect(mMainWindow, SIGNAL(closed()), this, SLOT(windowClosed()));
 
     createActivity();
 }
@@ -217,9 +213,54 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
     QString windowType = "card";
     WebApplicationWindow *window = new WebApplicationWindow(this, request->url(), windowType, false);
 
+    connect(window, SIGNAL(closed()), this, SLOT(windowClosed()));
+
     request->setWebView(window->webView());
 
     window->show();
+
+    mChildWindows.append(window);
+}
+
+void WebApplication::windowClosed()
+{
+    WebApplicationWindow *window = static_cast<WebApplicationWindow*>(sender());
+
+    // if the window is marked as keep alive we don't close it
+    if (window->keepAlive())
+        return;
+
+    // if it's a child window we remove it but have to take care about
+    // some special conditions
+    if (mChildWindows.contains(window)) {
+        mChildWindows.removeOne(window);
+        delete window;
+
+        // if no child window is left close the main (headless) window too
+        if (mChildWindows.count() == 0 && mMainWindow->headless()) {
+            if (mMainWindow->keepAlive())
+              return;
+
+            qDebug() << "All child windows of app" << id()
+                     << "were closed so closing the headless main window too";
+
+            delete mMainWindow;
+            emit closed();
+        }
+    }
+    else {
+        // the main window was closed so close all child windows too
+        delete mMainWindow;
+
+        qDebug() << "The main window of app " << id()
+                 << "was closed, so closing all child windows too";
+
+        foreach(WebApplicationWindow *child, mChildWindows) {
+            delete child;
+        }
+
+        emit closed();
+    }
 }
 
 void WebApplication::stagePreparing()

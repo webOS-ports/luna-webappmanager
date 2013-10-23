@@ -36,20 +36,25 @@
 namespace luna
 {
 
-WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QUrl& url, const QString& windowType, bool headless, QObject *parent) :
+WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QUrl& url, const QString& windowType,
+                                           bool headless, QObject *parent) :
     QObject(parent),
     mApplication(application),
     mEngine(this),
     mWindow(0),
     mHeadless(headless),
     mUrl(url),
-    mWindowType(windowType)
+    mWindowType(windowType),
+    mKeepAlive(false)
 {
     createAndSetup();
 }
 
 WebApplicationWindow::~WebApplicationWindow()
 {
+    // in headless case we don't have a window we can close
+    if (mWindow)
+        mWindow->close();
 }
 
 void WebApplicationWindow::setWindowProperty(const QString &name, const QVariant &value)
@@ -182,6 +187,21 @@ WebApplication* WebApplicationWindow::application() const
 QQuickWebView *WebApplicationWindow::webView() const
 {
     return mWebView;
+}
+
+void WebApplicationWindow::setKeepAlive(bool keepAlive)
+{
+    mKeepAlive = keepAlive;
+}
+
+bool WebApplicationWindow::keepAlive() const
+{
+    return mKeepAlive;
+}
+
+bool WebApplicationWindow::headless() const
+{
+    return mHeadless;
 }
 
 } // namespace luna

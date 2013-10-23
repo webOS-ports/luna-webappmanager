@@ -79,6 +79,9 @@ signals:
     void readyChanged();
     void closed();
 
+private slots:
+    void windowClosed();
+
 private:
     WebAppManager *mManager;
     ApplicationDescription mDescription;
@@ -89,7 +92,7 @@ private:
     bool mReady;
     QString mParameters;
     WebApplicationWindow *mMainWindow;
-    QList<WebApplicationWindow*> mWindows;
+    QList<WebApplicationWindow*> mChildWindows;
 
     void createActivity();
     void destroyActivity();

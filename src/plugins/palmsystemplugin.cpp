@@ -83,6 +83,11 @@ void PalmSystemPlugin::clearBannerMessages()
 {
 }
 
+void PalmSystemPlugin::keepAlive(bool keep)
+{
+    mApplicationWindow->setKeepAlive(keep);
+}
+
 void PalmSystemPlugin::registerPropertyChangeHandler(int successCallbackId, int errorCallbackId)
 {
     mPropertyChangeHandlerCallbackId = successCallbackId;

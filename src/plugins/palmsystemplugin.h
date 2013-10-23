@@ -46,6 +46,7 @@ public slots:
                           bool doNotSuppress);
     void removeBannerMessage(int id);
     void clearBannerMessages();
+    void keepAlive(bool keep);
 
     /*
     void playSoundNotification(const QString& soundClass, const QString& soundFile = "",
@@ -90,7 +91,6 @@ public slots:
                                 int heightPx, int printDpi, bool landscape, bool reverseOrder = false);
     void editorFocused(bool focused, int fieldType, int fieldActions);
     void allowResizeOnPositiveSpaceChange(bool allowResize);
-    void keepAlive(bool keep);
     void useSimulatedMouseClicks(bool uses);
     void handleTapAndHoldEvent(int pageX, int pageY);
     void setManualKeyboardEnabled(bool enabled);
