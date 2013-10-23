@@ -200,8 +200,11 @@ bool WebAppManagerService::onLaunchApp(LSHandle *handle, LSMessage *message)
     QString appDesc = jsonObjectToString(rootObject.value("appDesc").toObject());
     QString params = "";
 
-    if (rootObject.contains("params") && rootObject.value("params").isObject()) {
-        params = jsonObjectToString(rootObject.value("params").toObject());
+    if (rootObject.contains("params")) {
+        if (rootObject.value("params").isObject())
+            params = jsonObjectToString(rootObject.value("params").toObject());
+        else
+            params = rootObject.value("params").toString();
     }
 
     WebApplication *app = mWebAppManager->launchApp(appDesc, params);
