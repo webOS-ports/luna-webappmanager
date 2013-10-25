@@ -122,10 +122,10 @@ window.PalmSystem = {}
 __PalmSystem = {};
 __PalmSystem.launchParams = "{}";
 __PalmSystem.hasAlphaHole = false;
-__PalmSystem.locale = "";
-__PalmSystem.localeRegion = "";
-__PalmSystem.timeFormat = "";
-__PalmSystem.timeZone = "";
+__PalmSystem.locale = "en";
+__PalmSystem.localeRegion = "us";
+__PalmSystem.timeFormat = "HH12";
+__PalmSystem.timeZone = "Etc/UTC";
 __PalmSystem.isMinimal = false;
 __PalmSystem.identifier = "";
 __PalmSystem.version = "";
@@ -441,7 +441,10 @@ PalmSystem.keyboardHide = function() {
 }
 
 PalmSystem.getResource = function(a, b) {
-    return "";
+    var request = new XMLHttpRequest;
+    request.open("GET", a, false);
+    request.send();
+    return request.responseText;
 }
 
 function palmGetResource(a, b) {
