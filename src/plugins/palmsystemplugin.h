@@ -31,6 +31,8 @@ class PalmSystemPlugin : public BasePlugin
 public:
     explicit PalmSystemPlugin(WebApplicationWindow *applicationWindow, QObject *parent = 0);
 
+    QString handleSynchronousCall(const QString& funcName, const QJsonArray& params);
+
 public slots:
 
     void activate();
@@ -106,6 +108,8 @@ public slots:
 
 private:
     int mPropertyChangeHandlerCallbackId;
+
+    QString getResource(const QJsonArray& params);
 };
 
 } // namespace luna

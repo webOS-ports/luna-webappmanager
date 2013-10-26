@@ -137,4 +137,28 @@ void PalmSystemPlugin::initializeProperties(int successCallbackId, int errorCall
     callback(successCallbackId, document.toJson());
 }
 
+QString PalmSystemPlugin::handleSynchronousCall(const QString& funcName, const QJsonArray& params)
+{
+    QString response = "{}";
+
+    if (funcName == "getResource")
+        response = getResource(params);
+
+    return response;
+}
+
+QString PalmSystemPlugin::getResource(const QJsonArray& params)
+{
+    if (params.count() != 2 || !params.at(0).isString())
+        return QString("");
+
+    QFile file(params.at(0).toString());
+    if (!file.open(QIODevice::ReadOnly))
+        return QString("");
+
+    QByteArray data = file.readAll();
+
+    return QString(data);
+}
+
 } // namespace luna

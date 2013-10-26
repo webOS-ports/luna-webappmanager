@@ -65,6 +65,7 @@ protected:
 
 private slots:
     void onCreateNewPage(QWebNewPageRequest *request);
+    void onSyncMessageReceived(const QVariantMap& message, QString& response);
 
 private:
     WebApplication *mApplication;

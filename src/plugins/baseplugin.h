@@ -20,6 +20,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QJsonArray>
 
 namespace luna
 {
@@ -36,10 +37,12 @@ public:
 
     QString name() const;
 
+    virtual QString handleSynchronousCall(const QString& funcName, const QJsonArray& params);
+
 protected:
     void callbackWithoutRemove(int id, const QString &parameters);
     void callback(int id, const QString &parameters);
-    
+
 protected:
     WebApplicationWindow *mApplicationWindow;
 

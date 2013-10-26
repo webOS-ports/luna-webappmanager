@@ -100,6 +100,17 @@ _webOS.execWithoutCallback = function(pluginName, functionName, parameters) {
     return true;
 }
 
+/**
+ * Execute a synchronous call to a plugin function
+ * @return string response data
+ */
+_webOS.execSync = function(pluginName, functionName, parameters) {
+    if (typeof parameters === 'undefined')
+      parameters = [];
+
+    return navigator.qt.postSyncMessage(JSON.stringify({messageType: "callSyncPluginFunction", plugin: pluginName, func: functionName, params: parameters}));
+}
+
 var unusedCallback = function() { }
 
 _webOS.relaunch = function(parameters) {
@@ -441,10 +452,7 @@ PalmSystem.keyboardHide = function() {
 }
 
 PalmSystem.getResource = function(a, b) {
-    var request = new XMLHttpRequest;
-    request.open("GET", a, false);
-    request.send();
-    return request.responseText;
+    return _webOS.execSync("PalmSystem", "getResource", [a, b]);
 }
 
 function palmGetResource(a, b) {

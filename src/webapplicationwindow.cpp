@@ -21,6 +21,8 @@
 #include <QtWebKit/private/qquickwebview_p.h>
 #include <QtWebKit/private/qwebnewpagerequest_p.h>
 #include <QtGui/qpa/qplatformnativeinterface.h>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 #include <Settings.h>
 
@@ -107,6 +109,8 @@ void WebApplicationWindow::createAndSetup()
 
     connect(mWebView->experimental(), SIGNAL(createNewPage(QWebNewPageRequest*)),
             this, SLOT(onCreateNewPage(QWebNewPageRequest*)));
+    connect(mWebView->experimental(), SIGNAL(syncMessageReceived(const QVariantMap&, QString&)),
+            this, SLOT(onSyncMessageReceived(const QVariantMap&, QString&)));
 
     qreal zoomFactor = Settings::LunaSettings()->layoutScale;
 
@@ -124,6 +128,44 @@ void WebApplicationWindow::createAndSetup()
 void WebApplicationWindow::onCreateNewPage(QWebNewPageRequest *request)
 {
     mApplication->createWindow(request);
+}
+
+void WebApplicationWindow::onSyncMessageReceived(const QVariantMap& message, QString& response)
+{
+    if (!message.contains("data"))
+        return;
+
+    QString data = message.value("data").toString();
+
+    QJsonDocument document = QJsonDocument::fromJson(data.toUtf8());
+
+    if (!document.isObject())
+        return;
+
+    QJsonObject rootObject = document.object();
+
+    QString messageType;
+    if (!rootObject.contains("messageType") || !rootObject.value("messageType").isString())
+        return;
+
+    messageType = rootObject.value("messageType").toString();
+    if (messageType != "callSyncPluginFunction")
+        return;
+
+    if (!(rootObject.contains("plugin") && rootObject.value("plugin").isString()) ||
+        !(rootObject.contains("func") && rootObject.value("func").isString()) ||
+        !(rootObject.contains("params") && rootObject.value("params").isArray()))
+        return;
+
+    QString pluginName = rootObject.value("plugin").toString();
+    QString funcName = rootObject.value("func").toString();
+    QJsonArray params = rootObject.value("params").toArray();
+
+    if (!mPlugins.contains(pluginName))
+        return;
+
+    BasePlugin *plugin = mPlugins.value(pluginName);
+    response = plugin->handleSynchronousCall(funcName, params);
 }
 
 void WebApplicationWindow::createPlugins()
