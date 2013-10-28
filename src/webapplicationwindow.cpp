@@ -102,6 +102,8 @@ void WebApplicationWindow::createAndSetup()
         // window properties
         mWindow->create();
 
+        // set different information bits for our window
+        setWindowProperty(QString("appId"), QVariant(mApplication->id()));
         setWindowProperty(QString("type"), QVariant(mWindowType));
     }
 
