@@ -49,6 +49,7 @@ public slots:
     void removeBannerMessage(int id);
     void clearBannerMessages();
     void keepAlive(bool keep);
+    void markFirstUseDone();
 
     /*
     void playSoundNotification(const QString& soundClass, const QString& soundFile = "",
@@ -61,7 +62,6 @@ public slots:
     QString encrypt(const QString& key, const QString& str);
     QString decrypt(const QString& key, const QString& str);
     void shutdown();
-    void markFirstUseDone();
     void enableFullScreenMode(bool enable);
     void activate();
     void deactivate();

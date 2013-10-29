@@ -19,6 +19,7 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QQuickView>
+#include <QFile>
 
 #include "webapplication.h"
 #include "webapplicationwindow.h"
@@ -86,6 +87,13 @@ void PalmSystemPlugin::clearBannerMessages()
 void PalmSystemPlugin::keepAlive(bool keep)
 {
     mApplicationWindow->setKeepAlive(keep);
+}
+
+void PalmSystemPlugin::markFirstUseDone()
+{
+    QFile firstUseMarker("/var/luna/preferences/ran-first-use");
+    firstUseMarker.open(QIODevice::ReadWrite);
+    firstUseMarker.close();
 }
 
 void PalmSystemPlugin::registerPropertyChangeHandler(int successCallbackId, int errorCallbackId)
