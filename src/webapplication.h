@@ -93,6 +93,7 @@ private:
     QString mParameters;
     WebApplicationWindow *mMainWindow;
     QList<WebApplicationWindow*> mChildWindows;
+    bool mLaunchedAtBoot;
 
     void createActivity();
     void destroyActivity();

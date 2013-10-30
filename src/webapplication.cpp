@@ -23,6 +23,9 @@
 #include <QtWebKit/private/qquickwebview_p.h>
 #include <QtWebKit/private/qwebnewpagerequest_p.h>
 
+#include <set>
+#include <string>
+
 #include "webappmanager.h"
 #include "webappmanagerservice.h"
 #include "applicationdescription.h"
@@ -46,12 +49,16 @@ WebApplication::WebApplication(WebAppManager *manager, const QUrl& url, const QS
     mActivityId(-1),
     mReady(false),
     mParameters(parameters),
-    mMainWindow(0)
+    mMainWindow(0),
+    mLaunchedAtBoot(false)
 {
     mMainWindow = new WebApplicationWindow(this, url, windowType, mDescription.headless());
     connect(mMainWindow, SIGNAL(closed()), this, SLOT(windowClosed()));
 
     createActivity();
+
+    const std::set<std::string> appsToLaunchAtBoot = Settings::LunaSettings()->appsToLaunchAtBoot;
+    mLaunchedAtBoot = (appsToLaunchAtBoot.find(id().toStdString()) != appsToLaunchAtBoot.end());
 }
 
 WebApplication::~WebApplication()
@@ -227,8 +234,10 @@ void WebApplication::windowClosed()
     WebApplicationWindow *window = static_cast<WebApplicationWindow*>(sender());
 
     // if the window is marked as keep alive we don't close it
-    if (window->keepAlive())
+    if (window->keepAlive()) {
+        qDebug() << "Not closing window cause it was configured to be kept alive";
         return;
+    }
 
     // if it's a child window we remove it but have to take care about
     // some special conditions
@@ -237,12 +246,9 @@ void WebApplication::windowClosed()
         delete window;
 
         // if no child window is left close the main (headless) window too
-        if (mChildWindows.count() == 0 && mMainWindow->headless()) {
-            if (mMainWindow->keepAlive())
-              return;
-
+        if (mChildWindows.count() == 0 && !mLaunchedAtBoot) {
             qDebug() << "All child windows of app" << id()
-                     << "were closed so closing the headless main window too";
+                     << "were closed so closing the main window too";
 
             delete mMainWindow;
             emit closed();
