@@ -66,11 +66,13 @@ protected:
 private slots:
     void onCreateNewPage(QWebNewPageRequest *request);
     void onSyncMessageReceived(const QVariantMap& message, QString& response);
+    void onClosed();
 
 private:
     WebApplication *mApplication;
     QMap<QString, BasePlugin*> mPlugins;
     QQmlEngine mEngine;
+    QObject *mRootItem;
     QQuickWindow *mWindow;
     bool mHeadless;
     QQuickWebView *mWebView;

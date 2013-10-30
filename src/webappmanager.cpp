@@ -141,7 +141,7 @@ void WebAppManager::onApplicationWindowClosed()
     mApplications.remove(app->id());
 
     qDebug() << "Application" << app->id() << "was closed";
-    app->deleteLater();
+    delete app;
 }
 
 } // namespace luna

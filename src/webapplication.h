@@ -79,7 +79,7 @@ signals:
     void readyChanged();
     void closed();
 
-private slots:
+public slots:
     void windowClosed();
 
 private:

@@ -23,6 +23,7 @@
 #include <QtGui/qpa/qplatformnativeinterface.h>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QTimer>
 
 #include <Settings.h>
 
@@ -43,6 +44,7 @@ WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QU
     QObject(parent),
     mApplication(application),
     mEngine(this),
+    mRootItem(0),
     mWindow(0),
     mHeadless(headless),
     mUrl(url),
@@ -54,9 +56,7 @@ WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QU
 
 WebApplicationWindow::~WebApplicationWindow()
 {
-    // in headless case we don't have a window we can close
-    if (mWindow)
-        mWindow->close();
+    delete mRootItem;
 }
 
 void WebApplicationWindow::setWindowProperty(const QString &name, const QVariant &value)
@@ -81,15 +81,15 @@ void WebApplicationWindow::createAndSetup()
         return;
     }
 
-    QObject *window = windowComponent.create();
-    if (!window) {
+    mRootItem = windowComponent.create();
+    if (!mRootItem) {
         qCritical() << "Failed to create application window:";
         qCritical() << windowComponent.errors();
         return;
     }
 
     if (!mHeadless) {
-        mWindow = static_cast<QQuickWindow*>(window);
+        mWindow = static_cast<QQuickWindow*>(mRootItem);
         mWindow->installEventFilter(this);
 
         mWindow->setSurfaceType(QSurface::OpenGLSurface);
@@ -107,7 +107,7 @@ void WebApplicationWindow::createAndSetup()
         setWindowProperty(QString("type"), QVariant(mWindowType));
     }
 
-    mWebView = window->findChild<QQuickWebView*>("webView");
+    mWebView = mRootItem->findChild<QQuickWebView*>("webView");
 
     connect(mWebView->experimental(), SIGNAL(createNewPage(QWebNewPageRequest*)),
             this, SLOT(onCreateNewPage(QWebNewPageRequest*)));
@@ -181,12 +181,17 @@ void WebApplicationWindow::createAndInitializePlugin(BasePlugin *plugin)
     emit pluginWantsToBeAdded(plugin->name(), plugin);
 }
 
+void WebApplicationWindow::onClosed()
+{
+    emit closed();
+}
+
 bool WebApplicationWindow::eventFilter(QObject *object, QEvent *event)
 {
     if (object == mWindow) {
         switch (event->type()) {
         case QEvent::Close:
-            emit closed();
+            QTimer::singleShot(0, this, SLOT(onClosed()));
             break;
         case QEvent::FocusIn:
             mApplication->changeActivityFocus(true);

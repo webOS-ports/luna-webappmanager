@@ -248,7 +248,7 @@ void WebApplication::windowClosed()
             emit closed();
         }
     }
-    else {
+    else if (window == mMainWindow) {
         // the main window was closed so close all child windows too
         delete mMainWindow;
 
