@@ -91,6 +91,7 @@ Flickable {
         experimental.preferences.developerExtrasEnabled: true
         experimental.preferences.universalAccessFromFileURLsAllowed: true
         experimental.preferences.fileAccessFromFileURLsAllowed: true
+        experimental.preferences.logsPageMessagesToSystemConsole: true
 
         experimental.preferences.standardFontFamily: "Prelude"
         experimental.preferences.fixedFontFamily: "Courier new"
