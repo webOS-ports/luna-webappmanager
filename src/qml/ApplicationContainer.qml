@@ -26,58 +26,6 @@ Flickable {
 
     anchors.fill: parent
 
-    Image {
-        id: loadingBackground
-
-        anchors.fill: parent
-        visible: !webApp.ready
-
-        // we have must be above everything else
-        z: 100
-
-        source: "images/loading-bg.png"
-
-        Image {
-            id: loadingGlow
-            anchors.centerIn: parent
-            source: "images/loading-glow.png"
-            width: Settings.splashIconSize
-            height: Settings.splashIconSize
-        }
-
-        Image {
-            id: appIcon
-            anchors.centerIn: loadingGlow
-            source: webApp.icon
-            width: Settings.splashIconSize
-            height: Settings.splashIconSize
-        }
-
-        SequentialAnimation {
-            id: loadingAnimation
-            running: true
-            loops: Animation.Infinite
-
-            NumberAnimation {
-                target: loadingGlow
-                properties: "opacity"
-                from: 0.1
-                to: 1.0
-                easing.type: Easing.Linear
-                duration: 700
-            }
-
-            NumberAnimation {
-                target: loadingGlow
-                properties: "opacity"
-                from: 1.0
-                to: 0.1
-                easing.type: Easing.Linear
-                duration: 700
-            }
-        }
-    }
-
     WebView {
         id: webView
         objectName: "webView"
