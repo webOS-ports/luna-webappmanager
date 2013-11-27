@@ -32,6 +32,8 @@ Flickable {
 
         anchors.fill: parent
 
+        url: webAppUrl
+
         experimental.preferences.navigatorQtObjectEnabled: true
         experimental.preferences.localStorageEnabled: true
         experimental.preferences.offlineWebApplicationCacheEnabled: true
@@ -66,10 +68,6 @@ Flickable {
 
         experimental.onMessageReceived: {
             PluginManager.messageHandler(message);
-        }
-
-        Component.onCompleted: {
-            webView.url = webAppUrl;
         }
 
         Connections {
