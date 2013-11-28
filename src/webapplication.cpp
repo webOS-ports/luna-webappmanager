@@ -47,7 +47,6 @@ WebApplication::WebApplication(WebAppManager *manager, const QUrl& url, const QS
     mActivityManagerToken(LSMESSAGE_TOKEN_INVALID),
     mIdentifier(mDescription.id() + "-" + mProcessId),
     mActivityId(-1),
-    mReady(false),
     mParameters(parameters),
     mMainWindow(0),
     mLaunchedAtBoot(false)
@@ -198,12 +197,6 @@ void WebApplication::changeActivityFocus(bool focus)
     }
 }
 
-void WebApplication::run()
-{
-    if (!headless())
-        mMainWindow->show();
-}
-
 void WebApplication::relaunch(const QString &parameters)
 {
     qDebug() << __PRETTY_FUNCTION__ << "Relaunching application" << mDescription.id() << "with parameters" << parameters;
@@ -269,17 +262,6 @@ void WebApplication::windowClosed()
     }
 }
 
-void WebApplication::stagePreparing()
-{
-    mReady = false;
-}
-
-void WebApplication::stageReady()
-{
-    mReady = true;
-    readyChanged();
-}
-
 QString WebApplication::id() const
 {
     return mDescription.id();
@@ -308,11 +290,6 @@ QString WebApplication::identifier() const
 int WebApplication::activityId() const
 {
     return mActivityId;
-}
-
-bool WebApplication::ready() const
-{
-    return mReady;
 }
 
 QString WebApplication::parameters() const

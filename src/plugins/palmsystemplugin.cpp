@@ -36,7 +36,7 @@ PalmSystemPlugin::PalmSystemPlugin(WebApplicationWindow *applicationWindow, QObj
 
 void PalmSystemPlugin::stageReady()
 {
-    mApplicationWindow->application()->stageReady();
+    mApplicationWindow->stageReady();
 }
 
 void PalmSystemPlugin::activate()
@@ -49,7 +49,7 @@ void PalmSystemPlugin::deactivate()
 
 void PalmSystemPlugin::stagePreparing()
 {
-    mApplicationWindow->application()->stagePreparing();
+    mApplicationWindow->stagePreparing();
 }
 
 void PalmSystemPlugin::show()
@@ -137,7 +137,7 @@ void PalmSystemPlugin::initializeProperties(int successCallbackId, int errorCall
     rootObj.insert("videoOrientation", QJsonValue(QString("")));
     rootObj.insert("deviceInfo", QJsonValue(QString("{\"modelName\":\"unknown\",\"platformVersion\":\"0.0.0\"}")));
     rootObj.insert("isActivated", QJsonValue(true));
-    rootObj.insert("activityId", QJsonValue(mApplicationWindow->application()   ->activityId()));
+    rootObj.insert("activityId", QJsonValue(mApplicationWindow->application()->activityId()));
     rootObj.insert("phoneRegion", QJsonValue(QString("")));
 
     QJsonDocument document(rootObj);

@@ -49,8 +49,14 @@ WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QU
     mHeadless(headless),
     mUrl(url),
     mWindowType(windowType),
-    mKeepAlive(false)
+    mKeepAlive(false),
+    mStagePreparing(true),
+    mStageReady(false),
+    mShowWindowTimer(this)
 {
+    connect(&mShowWindowTimer, SIGNAL(timeout()), this, SLOT(onShowWindowTimeout()));
+    mShowWindowTimer.setSingleShot(true);
+
     createAndSetup();
 }
 
@@ -109,11 +115,27 @@ void WebApplicationWindow::createAndSetup()
 
     mWebView = mRootItem->findChild<QQuickWebView*>("webView");
 
+    connect(mWebView, SIGNAL(loadingChanged(QWebLoadRequest*)),
+            this, SLOT(onLoadingChanged(QWebLoadRequest*)));
+
     connect(mWebView->experimental(), SIGNAL(createNewPage(QWebNewPageRequest*)),
             this, SLOT(onCreateNewPage(QWebNewPageRequest*)));
     connect(mWebView->experimental(), SIGNAL(syncMessageReceived(const QVariantMap&, QString&)),
             this, SLOT(onSyncMessageReceived(const QVariantMap&, QString&)));
 
+    createPlugins();
+}
+
+void WebApplicationWindow::onShowWindowTimeout()
+{
+    qDebug() << __PRETTY_FUNCTION__;
+
+    // we got no stage ready call yet so go forward showing the window
+    show();
+}
+
+void WebApplicationWindow::setupPage()
+{
     qreal zoomFactor = Settings::LunaSettings()->layoutScale;
 
     // correct zoom factor for some applications which are not scaled properly (aka
@@ -123,8 +145,31 @@ void WebApplicationWindow::createAndSetup()
         zoomFactor = Settings::LunaSettings()->layoutScaleCompat;
 
     mWebView->setZoomFactor(zoomFactor);
+}
 
-    createPlugins();
+void WebApplicationWindow::onLoadingChanged(QWebLoadRequest *request)
+{
+    switch (request->status()) {
+    case QQuickWebView::LoadStartedStatus:
+        setupPage();
+        return;
+    case QQuickWebView::LoadStoppedStatus:
+    case QQuickWebView::LoadFailedStatus:
+        return;
+    case QQuickWebView::LoadSucceededStatus:
+        break;
+    }
+
+    if (mHeadless)
+        return;
+
+    // If we don't got stageReady() start a timeout to wait for it
+    if (mStagePreparing && !mStageReady && !mShowWindowTimer.isActive())
+        mShowWindowTimer.start(3000);
+    // If we got stageReady() already while we were still loading the page we can now
+    // safely show the window
+    else if (!mStagePreparing && mStageReady && !mWindow->isVisible())
+        show();
 }
 
 void WebApplicationWindow::onCreateNewPage(QWebNewPageRequest *request)
@@ -205,6 +250,30 @@ bool WebApplicationWindow::eventFilter(QObject *object, QEvent *event)
     }
 
     return false;
+}
+
+void WebApplicationWindow::stagePreparing()
+{
+    qDebug() << __PRETTY_FUNCTION__;
+
+    mStagePreparing = true;
+}
+
+void WebApplicationWindow::stageReady()
+{
+    qDebug() << __PRETTY_FUNCTION__;
+
+    mStagePreparing = false;
+    mStageReady = true;
+
+    // if the webview is still loading postpone the show call
+    if (mWebView->loading()) {
+        qDebug() << __PRETTY_FUNCTION__ << "Still loading ...";
+        return;
+    }
+
+    mShowWindowTimer.stop();
+    show();
 }
 
 void WebApplicationWindow::show()

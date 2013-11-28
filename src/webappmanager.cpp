@@ -88,9 +88,6 @@ WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &
                                              desc, parameters, processId);
     connect(app, SIGNAL(closed()), this, SLOT(onApplicationWindowClosed()));
 
-    qDebug() << "Starting application" << app->id();
-    app->run();
-
     // FIXME revisit wether we allow only one instance per application (e.g. whats
     // with multiple windows per application?)
     mApplications.insert(app->id(), app);
@@ -118,9 +115,6 @@ WebApplication* WebAppManager::launchUrl(const QUrl &url, const QString &windowT
     QString processId = QString("%0").arg(mNextProcessId++);
     WebApplication *app = new WebApplication(this, url, windowType, desc, parameters, processId);
     connect(app, SIGNAL(closed()), this, SLOT(onApplicationWindowClosed()));
-
-    qDebug() << "Starting application" << app->id();
-    app->run();
 
     // FIXME revisit wether we allow only one instance per application (e.g. whats
     // with multiple windows per application?)

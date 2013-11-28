@@ -21,9 +21,11 @@
 #include <QObject>
 #include <QQmlEngine>
 #include <QQuickWindow>
+#include <QTimer>
 
 #include <QtWebKit/private/qquickwebview_p.h>
 #include <QtWebKit/private/qwebnewpagerequest_p.h>
+#include <QtWebKit/private/qwebloadrequest_p.h>
 
 namespace luna
 {
@@ -42,6 +44,9 @@ public:
     ~WebApplicationWindow();
 
     WebApplication *application() const;
+
+    void stagePreparing();
+    void stageReady();
 
     void show();
     void hide();
@@ -67,6 +72,8 @@ private slots:
     void onCreateNewPage(QWebNewPageRequest *request);
     void onSyncMessageReceived(const QVariantMap& message, QString& response);
     void onClosed();
+    void onLoadingChanged(QWebLoadRequest *request);
+    void onShowWindowTimeout();
 
 private:
     WebApplication *mApplication;
@@ -79,11 +86,15 @@ private:
     QUrl mUrl;
     QString mWindowType;
     bool mKeepAlive;
+    bool mStagePreparing;
+    bool mStageReady;
+    QTimer mShowWindowTimer;
 
     void createAndSetup();
     void createPlugins();
     void createAndInitializePlugin(BasePlugin *plugin);
     void setWindowProperty(const QString &name, const QVariant &value);
+    void setupPage();
 };
 
 } // namespace luna

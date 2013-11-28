@@ -41,7 +41,6 @@ class WebApplication : public QObject
     Q_PROPERTY(QUrl icon READ icon CONSTANT)
     Q_PROPERTY(QString identifier READ identifier CONSTANT)
     Q_PROPERTY(int activityId READ activityId CONSTANT)
-    Q_PROPERTY(bool ready READ ready NOTIFY readyChanged)
     Q_PROPERTY(QString parameters READ parameters CONSTANT)
     Q_PROPERTY(bool headless READ headless CONSTANT)
 
@@ -51,7 +50,6 @@ public:
                    const QString& processId, QObject *parent = 0);
     virtual ~WebApplication();
 
-    void run();
     void relaunch(const QString& parameters);
 
     QString id() const;
@@ -60,14 +58,10 @@ public:
     QUrl icon() const;
     QString identifier() const;
     int activityId() const;
-    bool ready() const;
     QString parameters() const;
     bool headless() const;
 
     void setActivityId(int activityId);
-
-    void stagePreparing();
-    void stageReady();
 
     void changeActivityFocus(bool focus);
 
@@ -76,7 +70,6 @@ public:
     void createWindow(QWebNewPageRequest *request);
 
 signals:
-    void readyChanged();
     void closed();
 
 public slots:
@@ -89,7 +82,6 @@ private:
     LSMessageToken mActivityManagerToken;
     QString mIdentifier;
     int mActivityId;
-    bool mReady;
     QString mParameters;
     WebApplicationWindow *mMainWindow;
     QList<WebApplicationWindow*> mChildWindows;
