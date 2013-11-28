@@ -48,6 +48,8 @@ Flickable {
         experimental.preferences.serifFontFamily: "Times New Roman"
         experimental.preferences.cursiveFontFamily: "Prelude"
 
+        experimental.preferences.privileged: webApp.privileged
+
         property variant userScripts: [ Qt.resolvedUrl("webos-api.js") ]
         onUserScriptsChanged: {
             // Only inject our user script for the webOS API when we have a patched

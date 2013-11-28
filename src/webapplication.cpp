@@ -49,7 +49,8 @@ WebApplication::WebApplication(WebAppManager *manager, const QUrl& url, const QS
     mActivityId(-1),
     mParameters(parameters),
     mMainWindow(0),
-    mLaunchedAtBoot(false)
+    mLaunchedAtBoot(false),
+    mPrivileged(false)
 {
     mMainWindow = new WebApplicationWindow(this, url, windowType, mDescription.headless());
     connect(mMainWindow, SIGNAL(closed()), this, SLOT(windowClosed()));
@@ -58,6 +59,9 @@ WebApplication::WebApplication(WebAppManager *manager, const QUrl& url, const QS
 
     const std::set<std::string> appsToLaunchAtBoot = Settings::LunaSettings()->appsToLaunchAtBoot;
     mLaunchedAtBoot = (appsToLaunchAtBoot.find(id().toStdString()) != appsToLaunchAtBoot.end());
+
+    if (mDescription.id().startsWith("org.webosports") || mDescription.id().startsWith("com.palm"))
+        mPrivileged = true;
 }
 
 WebApplication::~WebApplication()
@@ -300,6 +304,11 @@ QString WebApplication::parameters() const
 bool WebApplication::headless() const
 {
     return mDescription.headless();
+}
+
+bool WebApplication::privileged() const
+{
+    return mPrivileged;
 }
 
 } // namespace luna

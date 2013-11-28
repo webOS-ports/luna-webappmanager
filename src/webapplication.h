@@ -43,6 +43,7 @@ class WebApplication : public QObject
     Q_PROPERTY(int activityId READ activityId CONSTANT)
     Q_PROPERTY(QString parameters READ parameters CONSTANT)
     Q_PROPERTY(bool headless READ headless CONSTANT)
+    Q_PROPERTY(bool privileged READ privileged CONSTANT)
 
 public:
     WebApplication(WebAppManager *manager, const QUrl& url, const QString& windowType,
@@ -60,6 +61,7 @@ public:
     int activityId() const;
     QString parameters() const;
     bool headless() const;
+    bool privileged() const;
 
     void setActivityId(int activityId);
 
@@ -86,6 +88,7 @@ private:
     WebApplicationWindow *mMainWindow;
     QList<WebApplicationWindow*> mChildWindows;
     bool mLaunchedAtBoot;
+    bool mPrivileged;
 
     void createActivity();
     void destroyActivity();
