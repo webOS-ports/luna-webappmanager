@@ -20,6 +20,7 @@
 #include <QQmlComponent>
 #include <QtWebKit/private/qquickwebview_p.h>
 #include <QtWebKit/private/qwebnewpagerequest_p.h>
+#include <QtGui/QGuiApplication>
 #include <QtGui/qpa/qplatformnativeinterface.h>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -27,7 +28,6 @@
 
 #include <Settings.h>
 
-#include "webappmanager.h"
 #include "webappmanagerservice.h"
 #include "applicationdescription.h"
 #include "webapplication.h"

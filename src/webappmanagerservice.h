@@ -24,12 +24,12 @@
 namespace luna
 {
 
-class WebAppManager;
+class WebAppLauncher;
 
 class WebAppManagerService
 {
 public:
-    WebAppManagerService(WebAppManager *webAppManager, GMainLoop *mainLoop);
+    WebAppManagerService(WebAppLauncher *webAppLauncher, GMainLoop *mainLoop);
     ~WebAppManagerService();
 
     static bool onLaunchAppCb(LSHandle *handle, LSMessage *message, void *data);
@@ -47,7 +47,7 @@ private:
     bool onLaunchUrl(LSHandle *handle, LSMessage *message);
 
 private:
-    WebAppManager *mWebAppManager;
+    WebAppLauncher *mWebAppLauncher;
     GMainLoop *mMainLoop;
     LSPalmService *mService;
     LSHandle *mPrivateBus;

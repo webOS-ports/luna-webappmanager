@@ -22,6 +22,7 @@
 #include <glib.h>
 #include <QGuiApplication>
 #include <QMap>
+#include <QUrl>
 
 namespace luna
 {
@@ -30,28 +31,40 @@ class ApplicationDescription;
 class WebApplication;
 class WebAppManagerService;
 
-class WebAppManager : public QGuiApplication
+class WebAppLauncher : public QGuiApplication
 {
     Q_OBJECT
 
 public:
-    WebAppManager(int &argc, char **argv);
-    virtual ~WebAppManager();
+    WebAppLauncher(int &argc, char **argv);
+    virtual ~WebAppLauncher();
 
     WebApplication* launchApp(const QString &appDesc, const QString &parameters);
     WebApplication* launchUrl(const QUrl &url, const QString &windowType,
                               const QString &appDesc, const QString &parameters);
 
+    void setUrl(const QString &iUrl) { mUrl = QUrl(iUrl); }
+    void setWindowType(const QString &iWindowType) { mWindowType = iWindowType; }
+    void setAppDesc(const QString &iAppDesc) { mAppDesc = iAppDesc; }
+    void setParameters(const QString &iParameters) { mParameters = iParameters; }
+
+    void initializeApp();
+
     WebAppManagerService* service() const;
 
 private slots:
     void onApplicationWindowClosed();
+    void onAboutToQuit();
 
 private:
     GMainLoop *mMainLoop;
     WebAppManagerService *mService;
-    QMap<QString, WebApplication*> mApplications;
-    quint64 mNextProcessId;
+    WebApplication *mLaunchedApp;
+
+    QUrl mUrl;
+    QString mWindowType;
+    QString mAppDesc;
+    QString mParameters;
 
     bool validateApplication(const ApplicationDescription& desc);
 };

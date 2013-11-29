@@ -20,41 +20,44 @@
 #include <QtWebKit/private/qquickwebview_p.h>
 
 #include "applicationdescription.h"
-#include "webappmanager.h"
+#include "webapplauncher.h"
 #include "webappmanagerservice.h"
 #include "webapplication.h"
 
 namespace luna
 {
 
-WebAppManager::WebAppManager(int &argc, char **argv)
+WebAppLauncher::WebAppLauncher(int &argc, char **argv)
     : QGuiApplication(argc, argv),
       mMainLoop(0),
       mService(0),
-      mNextProcessId(1000)
+      mLaunchedApp(0),
+      mWindowType("card")
 {
-    setApplicationName("WebAppMgr");
-    setQuitOnLastWindowClosed(false);
+    setApplicationName("WebAppLauncher");
 
     mMainLoop = g_main_loop_new(g_main_context_default(), TRUE);
 
     mService = new WebAppManagerService(this, mMainLoop);
 
     QQuickWebViewExperimental::setFlickableViewportEnabled(false);
+
+    connect(this, SIGNAL(aboutToQuit()), this, SLOT(onAboutToQuit()));
 }
 
-WebAppManager::~WebAppManager()
+WebAppLauncher::~WebAppLauncher()
 {
-    delete mService;
     g_main_loop_unref(mMainLoop);
+
+    onAboutToQuit();
 }
 
-WebAppManagerService* WebAppManager::service() const
+WebAppManagerService* WebAppLauncher::service() const
 {
     return mService;
 }
 
-bool WebAppManager::validateApplication(const ApplicationDescription& desc)
+bool WebAppLauncher::validateApplication(const ApplicationDescription& desc)
 {
     if (desc.id().length() == 0)
         return false;
@@ -65,7 +68,19 @@ bool WebAppManager::validateApplication(const ApplicationDescription& desc)
     return true;
 }
 
-WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &parameters)
+void WebAppLauncher::initializeApp()
+{
+    if( mUrl.isEmpty() )
+    {
+        mLaunchedApp = launchApp(mAppDesc, mParameters);
+    }
+    else
+    {
+        mLaunchedApp = launchUrl(mUrl, mWindowType, mAppDesc, mParameters);
+    }
+}
+
+WebApplication* WebAppLauncher::launchApp(const QString &appDesc, const QString &parameters)
 {
     ApplicationDescription desc(appDesc);
 
@@ -75,27 +90,17 @@ WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &
         return 0;
     }
 
-    if (mApplications.contains(desc.id())) {
-        WebApplication *application = mApplications.value(desc.id());
-        application->relaunch(parameters);
-        return application;
-    }
-
-    QString processId = QString("%0").arg(mNextProcessId++);
+    QString processId = QString("%0").arg(applicationPid());
     QString windowType = "card";
     QUrl entryPoint = desc.entryPoint();
     WebApplication *app = new WebApplication(this, entryPoint, windowType,
                                              desc, parameters, processId);
     connect(app, SIGNAL(closed()), this, SLOT(onApplicationWindowClosed()));
 
-    // FIXME revisit wether we allow only one instance per application (e.g. whats
-    // with multiple windows per application?)
-    mApplications.insert(app->id(), app);
-
     return app;
 }
 
-WebApplication* WebAppManager::launchUrl(const QUrl &url, const QString &windowType,
+WebApplication* WebAppLauncher::launchUrl(const QUrl &url, const QString &windowType,
                                          const QString &appDesc, const QString &parameters)
 {
     ApplicationDescription desc(appDesc);
@@ -106,33 +111,27 @@ WebApplication* WebAppManager::launchUrl(const QUrl &url, const QString &windowT
         return 0;
     }
 
-    if (mApplications.contains(desc.id())) {
-        WebApplication *application = mApplications.value(desc.id());
-        application->relaunch(parameters);
-        return application;
-    }
-
-    QString processId = QString("%0").arg(mNextProcessId++);
+    QString processId = QString("%0").arg(applicationPid());
     WebApplication *app = new WebApplication(this, url, windowType, desc, parameters, processId);
     connect(app, SIGNAL(closed()), this, SLOT(onApplicationWindowClosed()));
-
-    // FIXME revisit wether we allow only one instance per application (e.g. whats
-    // with multiple windows per application?)
-    mApplications.insert(app->id(), app);
 
     return app;
 }
 
-void WebAppManager::onApplicationWindowClosed()
+void WebAppLauncher::onAboutToQuit()
+{
+    if( mLaunchedApp )
+        delete mLaunchedApp;
+    mLaunchedApp = NULL;
+
+    if( mService )
+        delete mService;
+    mService = NULL;
+}
+
+void WebAppLauncher::onApplicationWindowClosed()
 {
     WebApplication *app = static_cast<WebApplication*>(sender());
-
-    if (!mApplications.contains(app->id())) {
-        qWarning("Got close event from not running application!?");
-        return;
-    }
-
-    mApplications.remove(app->id());
 
     qDebug() << "Application" << app->id() << "was closed";
     delete app;

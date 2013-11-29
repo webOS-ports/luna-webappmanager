@@ -17,9 +17,8 @@
 
 #include <QDebug>
 #include <QStringList>
-#include <systemd/sd-daemon.h>
 
-#include "webappmanager.h"
+#include "webapplauncher.h"
 
 #define XDG_RUNTIME_DIR_DEFAULT "/tmp/luna-session"
 
@@ -33,13 +32,93 @@ int main(int argc, char **argv)
         setenv("QT_IM_MODULE", "Maliit", 0);
     }
 
-    luna::WebAppManager webAppManager(argc, argv);
+    luna::WebAppLauncher webAppManager(argc, argv);
 
-    if (webAppManager.arguments().indexOf("--debug") >= 0)
+    QStringList lArgs = webAppManager.arguments();
+
+    if (lArgs.indexOf("--debug") >= 0)
         setenv("QTWEBKIT_INSPECTOR_SERVER", "1122", 0);
 
-    if (webAppManager.arguments().indexOf("--systemd") >= 0)
-        sd_notify(0, "READY=1");
+    bool correctParameters = true;
+    QStringListIterator argsIterator(lArgs);
+    while (correctParameters && argsIterator.hasNext()) {
+        const QString option = argsIterator.next();
+        QString value;
+        if (option == "-a" || option.left(10) == "--appinfo=") {
+            if (option == "-a") {
+                value = argsIterator.next();
+            }
+            else {
+                value = option.right(option.size()-10);
+            }
+            if (!value.isEmpty()) {
+                webAppManager.setAppDesc(value);
+            }
+            else {
+                correctParameters = false;
+            }
+        }
+        else if (option == "-u" || option.left(6) == "--url=") {
+            if (option == "-u") {
+                value = argsIterator.next();
+            }
+            else {
+                value = option.right(option.size()-6);
+            }
+            if (!value.isEmpty()) {
+                webAppManager.setUrl(value);
+            }
+            else {
+                correctParameters = false;
+            }
+        }
+        else if (option == "-p" || option.left(13) == "--parameters=") {
+            if (option == "-p") {
+                value = argsIterator.next();
+            }
+            else {
+                value = option.right(option.size()-6);
+            }
+            if (!value.isEmpty()) {
+                webAppManager.setParameters(value);
+            }
+            else {
+                correctParameters = false;
+            }
+        }
+        else if (option == "-w" || option.left(14) == "--window-type=") {
+            if (option == "-w") {
+                value = argsIterator.next();
+            }
+            else {
+                value = option.right(option.size()-6);
+            }
+            if (!value.isEmpty()) {
+                webAppManager.setWindowType(value);
+            }
+            else {
+                correctParameters = false;
+            }
+        }
+        else {
+            correctParameters = false;
+        }
+    }
+
+    if( !correctParameters )
+        qWarning() << "ERROR: incorrect parameters. Usage is:" << endl;
+
+    if (!correctParameters || lArgs.indexOf("--help") >= 0) {
+        qDebug() << "webapp-launcher [options]" << endl;
+        qDebug() << "    -a/--appinfo= : path to appinfo.json file for the app [example: /usr/palm/applications/test/appinfo.json" << endl;
+        qDebug() << "    -u/--url= : url of the main entry point. If  not provided the one from the app manifest (appinfo.json is used)" << endl;
+        qDebug() << "    -p/--parameters= : parameters in json format" << endl;
+        qDebug() << "    -w/--window-type= : type of the application window [card|launcher]. will default to card and is optional" << endl;
+
+        return 0;
+    }
+
+    webAppManager.initializeApp();
 
     return webAppManager.exec();
 }

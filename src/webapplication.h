@@ -28,7 +28,7 @@
 namespace luna
 {
 
-class WebAppManager;
+class WebAppLauncher;
 class BasePlugin;
 class WebApplicationWindow;
 
@@ -46,7 +46,7 @@ class WebApplication : public QObject
     Q_PROPERTY(bool privileged READ privileged CONSTANT)
 
 public:
-    WebApplication(WebAppManager *manager, const QUrl& url, const QString& windowType,
+    WebApplication(WebAppLauncher *launcher, const QUrl& url, const QString& windowType,
                    const ApplicationDescription& desc, const QString& parameters,
                    const QString& processId, QObject *parent = 0);
     virtual ~WebApplication();
@@ -78,7 +78,7 @@ public slots:
     void windowClosed();
 
 private:
-    WebAppManager *mManager;
+    WebAppLauncher *mLauncher;
     ApplicationDescription mDescription;
     QString mProcessId;
     LSMessageToken mActivityManagerToken;

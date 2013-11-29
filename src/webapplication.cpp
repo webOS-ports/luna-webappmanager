@@ -26,7 +26,7 @@
 #include <set>
 #include <string>
 
-#include "webappmanager.h"
+#include "webapplauncher.h"
 #include "webappmanagerservice.h"
 #include "applicationdescription.h"
 #include "webapplication.h"
@@ -37,11 +37,11 @@
 namespace luna
 {
 
-WebApplication::WebApplication(WebAppManager *manager, const QUrl& url, const QString& windowType,
+WebApplication::WebApplication(WebAppLauncher *launcher, const QUrl& url, const QString& windowType,
                                const ApplicationDescription& desc, const QString& parameters,
                                const QString& processId, QObject *parent) :
     QObject(parent),
-    mManager(manager),
+    mLauncher(launcher),
     mDescription(desc),
     mProcessId(processId),
     mActivityManagerToken(LSMESSAGE_TOKEN_INVALID),
@@ -121,7 +121,7 @@ void WebApplication::createActivity()
         return;
     }
 
-    LSHandle *privateBus = mManager->service()->privateBus();
+    LSHandle *privateBus = mLauncher->service()->privateBus();
 
     LSError error;
     LSErrorInit(&error);
@@ -161,7 +161,7 @@ void WebApplication::destroyActivity()
     LSError error;
     LSErrorInit(&error);
 
-    LSHandle *privateBus = mManager->service()->privateBus();
+    LSHandle *privateBus = mLauncher->service()->privateBus();
 
     if (!LSCallCancel(privateBus, mActivityManagerToken, &error)) {
         qWarning("Failed to cancel activity for application %s: %s",
@@ -186,7 +186,7 @@ void WebApplication::changeActivityFocus(bool focus)
 
     QJsonDocument document(rootObject);
 
-    LSHandle *privateBus = mManager->service()->privateBus();
+    LSHandle *privateBus = mLauncher->service()->privateBus();
 
     QString method = "palm://com.palm.activitymanager/";
     method += focus ? "focus" : "unfocus";

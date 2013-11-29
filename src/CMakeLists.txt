@@ -9,7 +9,7 @@ include_directories(
 set(SOURCES
     main.cpp
     utils.cpp
-    webappmanager.cpp
+    webapplauncher.cpp
     webappmanagerservice.cpp
     lunaserviceutils.cpp
     webapplication.cpp
@@ -20,7 +20,7 @@ set(SOURCES
 
 set(HEADERS
     utils.h
-    webappmanager.h
+    webapplauncher.h
     webappmanagerservice.h
     lunaserviceutils.h
     webapplication.h
