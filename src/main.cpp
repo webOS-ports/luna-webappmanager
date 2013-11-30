@@ -41,6 +41,7 @@ int main(int argc, char **argv)
 
     bool correctParameters = true;
     QStringListIterator argsIterator(lArgs);
+    argsIterator.next(); // skip program name
     while (correctParameters && argsIterator.hasNext()) {
         const QString option = argsIterator.next();
         QString value;
@@ -106,19 +107,17 @@ int main(int argc, char **argv)
     }
 
     if( !correctParameters )
-        qWarning() << "ERROR: incorrect parameters. Usage is:" << endl;
+        qWarning() << "ERROR: incorrect parameters. Usage is:";
 
     if (!correctParameters || lArgs.indexOf("--help") >= 0) {
-        qDebug() << "webapp-launcher [options]" << endl;
-        qDebug() << "    -a/--appinfo= : path to appinfo.json file for the app [example: /usr/palm/applications/test/appinfo.json" << endl;
-        qDebug() << "    -u/--url= : url of the main entry point. If  not provided the one from the app manifest (appinfo.json is used)" << endl;
-        qDebug() << "    -p/--parameters= : parameters in json format" << endl;
-        qDebug() << "    -w/--window-type= : type of the application window [card|launcher]. will default to card and is optional" << endl;
+        qDebug() << "webapp-launcher [options]";
+        qDebug() << "    -a/--appinfo= : path to appinfo.json file for the app [example: /usr/palm/applications/test/appinfo.json";
+        qDebug() << "    -u/--url= : url of the main entry point. If  not provided the one from the app manifest (appinfo.json is used)";
+        qDebug() << "    -p/--parameters= : parameters in json format";
+        qDebug() << "    -w/--window-type= : type of the application window [card|launcher]. will default to card and is optional";
 
         return 0;
     }
-
-    webAppManager.initializeApp();
 
     return webAppManager.exec();
 }

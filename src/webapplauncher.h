@@ -23,6 +23,8 @@
 #include <QGuiApplication>
 #include <QMap>
 #include <QUrl>
+#include <QFile>
+#include <QTextStream>
 
 namespace luna
 {
@@ -44,12 +46,16 @@ public:
 
     void setUrl(const QString &url) { mUrl = QUrl(url); }
     void setWindowType(const QString &windowType) { mWindowType = windowType; }
-    void setAppDesc(const QString &appDesc) { mAppDesc = appDesc; }
+    void setAppDesc(const QString &appDescFilePath) {
+        QFile appDescFile(appDescFilePath);
+        if (!appDescFile.open(QIODevice::ReadOnly | QIODevice::Text))
+            return;
+        mAppDesc = QTextStream(&appDescFile).readAll();
+    }
     void setParameters(const QString &parameters) { mParameters = parameters; }
 
-    void initializeApp();
-
 private slots:
+    void initializeApp();
     void onApplicationWindowClosed();
     void onAboutToQuit();
 

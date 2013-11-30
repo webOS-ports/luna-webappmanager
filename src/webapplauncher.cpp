@@ -18,6 +18,7 @@
 #include <QDebug>
 
 #include <QtWebKit/private/qquickwebview_p.h>
+#include <QTimer>
 
 #include "applicationdescription.h"
 #include "webapplauncher.h"
@@ -34,6 +35,8 @@ WebAppLauncher::WebAppLauncher(int &argc, char **argv)
     setApplicationName("WebAppLauncher");
 
     QQuickWebViewExperimental::setFlickableViewportEnabled(false);
+
+    QTimer::singleShot(0, this, SLOT(initializeApp()));
 
     connect(this, SIGNAL(aboutToQuit()), this, SLOT(onAboutToQuit()));
 }
@@ -58,10 +61,12 @@ void WebAppLauncher::initializeApp()
 {
     if( mUrl.isEmpty() )
     {
+        qDebug() << "Calling launchApp(" << mAppDesc << ", " << mParameters << ")";
         mLaunchedApp = launchApp(mAppDesc, mParameters);
     }
     else
     {
+        qDebug() << "Calling launchUrl(" << mUrl << ", " << mWindowType << ", " << mAppDesc << ", " << mParameters << ")";
         mLaunchedApp = launchUrl(mUrl, mWindowType, mAppDesc, mParameters);
     }
 }
