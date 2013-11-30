@@ -29,7 +29,6 @@ namespace luna
 
 class ApplicationDescription;
 class WebApplication;
-class WebAppManagerService;
 
 class WebAppLauncher : public QGuiApplication
 {
@@ -43,22 +42,18 @@ public:
     WebApplication* launchUrl(const QUrl &url, const QString &windowType,
                               const QString &appDesc, const QString &parameters);
 
-    void setUrl(const QString &iUrl) { mUrl = QUrl(iUrl); }
-    void setWindowType(const QString &iWindowType) { mWindowType = iWindowType; }
-    void setAppDesc(const QString &iAppDesc) { mAppDesc = iAppDesc; }
-    void setParameters(const QString &iParameters) { mParameters = iParameters; }
+    void setUrl(const QString &url) { mUrl = QUrl(url); }
+    void setWindowType(const QString &windowType) { mWindowType = windowType; }
+    void setAppDesc(const QString &appDesc) { mAppDesc = appDesc; }
+    void setParameters(const QString &parameters) { mParameters = parameters; }
 
     void initializeApp();
-
-    WebAppManagerService* service() const;
 
 private slots:
     void onApplicationWindowClosed();
     void onAboutToQuit();
 
 private:
-    GMainLoop *mMainLoop;
-    WebAppManagerService *mService;
     WebApplication *mLaunchedApp;
 
     QUrl mUrl;

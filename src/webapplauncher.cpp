@@ -21,7 +21,6 @@
 
 #include "applicationdescription.h"
 #include "webapplauncher.h"
-#include "webappmanagerservice.h"
 #include "webapplication.h"
 
 namespace luna
@@ -29,16 +28,10 @@ namespace luna
 
 WebAppLauncher::WebAppLauncher(int &argc, char **argv)
     : QGuiApplication(argc, argv),
-      mMainLoop(0),
-      mService(0),
       mLaunchedApp(0),
       mWindowType("card")
 {
     setApplicationName("WebAppLauncher");
-
-    mMainLoop = g_main_loop_new(g_main_context_default(), TRUE);
-
-    mService = new WebAppManagerService(this, mMainLoop);
 
     QQuickWebViewExperimental::setFlickableViewportEnabled(false);
 
@@ -47,14 +40,7 @@ WebAppLauncher::WebAppLauncher(int &argc, char **argv)
 
 WebAppLauncher::~WebAppLauncher()
 {
-    g_main_loop_unref(mMainLoop);
-
     onAboutToQuit();
-}
-
-WebAppManagerService* WebAppLauncher::service() const
-{
-    return mService;
 }
 
 bool WebAppLauncher::validateApplication(const ApplicationDescription& desc)
@@ -123,10 +109,6 @@ void WebAppLauncher::onAboutToQuit()
     if( mLaunchedApp )
         delete mLaunchedApp;
     mLaunchedApp = NULL;
-
-    if( mService )
-        delete mService;
-    mService = NULL;
 }
 
 void WebAppLauncher::onApplicationWindowClosed()

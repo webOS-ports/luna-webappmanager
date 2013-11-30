@@ -27,7 +27,6 @@
 #include <string>
 
 #include "webapplauncher.h"
-#include "webappmanagerservice.h"
 #include "applicationdescription.h"
 #include "webapplication.h"
 #include "webapplicationwindow.h"
@@ -44,7 +43,6 @@ WebApplication::WebApplication(WebAppLauncher *launcher, const QUrl& url, const 
     mLauncher(launcher),
     mDescription(desc),
     mProcessId(processId),
-    mActivityManagerToken(LSMESSAGE_TOKEN_INVALID),
     mIdentifier(mDescription.id() + "-" + mProcessId),
     mActivityId(-1),
     mParameters(parameters),
@@ -55,8 +53,6 @@ WebApplication::WebApplication(WebAppLauncher *launcher, const QUrl& url, const 
     mMainWindow = new WebApplicationWindow(this, url, windowType, mDescription.headless());
     connect(mMainWindow, SIGNAL(closed()), this, SLOT(windowClosed()));
 
-    createActivity();
-
     const std::set<std::string> appsToLaunchAtBoot = Settings::LunaSettings()->appsToLaunchAtBoot;
     mLaunchedAtBoot = (appsToLaunchAtBoot.find(id().toStdString()) != appsToLaunchAtBoot.end());
 
@@ -66,7 +62,6 @@ WebApplication::WebApplication(WebAppLauncher *launcher, const QUrl& url, const 
 
 WebApplication::~WebApplication()
 {
-    destroyActivity();
 }
 
 void WebApplication::setActivityId(int activityId)
@@ -74,131 +69,10 @@ void WebApplication::setActivityId(int activityId)
     mActivityId = activityId;
 }
 
-bool WebApplication::activityManagerCallback(LSHandle *handle, LSMessage *message, void *user_data)
-{
-    WebApplication *application = static_cast<WebApplication*>(user_data);
-
-    QString payload(LSMessageGetPayload(message));
-    QJsonDocument document = QJsonDocument::fromJson(payload.toUtf8());
-
-    if (!document.isObject()) {
-        qWarning("Got malformed json response from activity manager: %s",
-                 payload.toUtf8().constData());
-        return true;
-    }
-
-    QJsonObject rootObject = document.object();
-
-    if (!rootObject.contains("returnValue") || rootObject.value("returnValue").isBool()) {
-        qWarning("Got malformed json response from activity manager: %s",
-                 payload.toUtf8().constData());
-        return true;
-    }
-
-    bool returnValue = rootObject.value("returnValue").toBool();
-    if (!returnValue) {
-        qWarning("Failed to create activity for application %s",
-                 application->id().toUtf8().constData());
-        return true;
-    }
-
-    if (!rootObject.contains("activityId")) {
-        qWarning("Got malformed json response from activity manager: %s",
-                 payload.toUtf8().constData());
-        return true;
-    }
-
-    application->setActivityId((int) rootObject.value("activityId").toDouble());
-
-    return true;
-}
-
-void WebApplication::createActivity()
-{
-    if (mActivityManagerToken != LSMESSAGE_TOKEN_INVALID) {
-        qWarning("Already registered with activitiy manager for application %s",
-                 mDescription.id().toUtf8().constData());
-        return;
-    }
-
-    LSHandle *privateBus = mLauncher->service()->privateBus();
-
-    LSError error;
-    LSErrorInit(&error);
-
-    QJsonObject activityObject;
-    activityObject.insert("name", QJsonValue(mDescription.id()));
-    activityObject.insert("description", QJsonValue(mProcessId));
-
-    QJsonObject activityTypeObject;
-    activityTypeObject.insert("foreground", QJsonValue(true));
-
-    activityObject.insert("type", QJsonValue(activityTypeObject));
-
-    QJsonObject rootObject;
-    rootObject.insert("activity", QJsonValue(activityObject));
-    rootObject.insert("subscribe", QJsonValue(true));
-    rootObject.insert("start", QJsonValue(true));
-    rootObject.insert("replace", QJsonValue(true));
-
-    QJsonDocument document(rootObject);
-
-    if (!LSCallFromApplication(privateBus, "palm://com.palm.activitymanager/create",
-                               document.toJson().constData(), mIdentifier.toUtf8().constData(),
-                               WebApplication::activityManagerCallback, this,
-                               &mActivityManagerToken, &error)) {
-        qWarning("Failed to register application %s with activity manager: %s",
-                 mDescription.id().toUtf8().constData(), error.message);
-        LSErrorFree(&error);
-    }
-}
-
-void WebApplication::destroyActivity()
-{
-    if (mActivityManagerToken == LSMESSAGE_TOKEN_INVALID)
-        return;
-
-    LSError error;
-    LSErrorInit(&error);
-
-    LSHandle *privateBus = mLauncher->service()->privateBus();
-
-    if (!LSCallCancel(privateBus, mActivityManagerToken, &error)) {
-        qWarning("Failed to cancel activity for application %s: %s",
-                 mDescription.id().toUtf8().constData(), error.message);
-        LSErrorFree(&error);
-        return;
-    }
-
-    mActivityManagerToken = LSMESSAGE_TOKEN_INVALID;
-}
-
 void WebApplication::changeActivityFocus(bool focus)
 {
     if (mActivityId < 0)
         return;
-
-    LSError error;
-    LSErrorInit(&error);
-
-    QJsonObject rootObject;
-    rootObject.insert("activityId", QJsonValue(mActivityId));
-
-    QJsonDocument document(rootObject);
-
-    LSHandle *privateBus = mLauncher->service()->privateBus();
-
-    QString method = "palm://com.palm.activitymanager/";
-    method += focus ? "focus" : "unfocus";
-
-    if (!LSCallFromApplication(privateBus, method.toUtf8().constData(),
-                document.toJson().constData(), mIdentifier.toUtf8().constData(),
-                0, 0, 0, &error)) {
-        qWarning("Failed to %s application %s through activity manager: %s",
-                 focus ? "focus" : "unfocus", mDescription.id().toUtf8().constData(),
-                 error.message);
-        LSErrorFree(&error);
-    }
 }
 
 void WebApplication::relaunch(const QString &parameters)

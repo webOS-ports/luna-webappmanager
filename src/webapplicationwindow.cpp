@@ -28,7 +28,6 @@
 
 #include <Settings.h>
 
-#include "webappmanagerservice.h"
 #include "applicationdescription.h"
 #include "webapplication.h"
 #include "webapplicationwindow.h"
@@ -239,10 +238,10 @@ bool WebApplicationWindow::eventFilter(QObject *object, QEvent *event)
             QTimer::singleShot(0, this, SLOT(onClosed()));
             break;
         case QEvent::FocusIn:
-            mApplication->changeActivityFocus(true);
+            //mApplication->changeActivityFocus(true);
             break;
         case QEvent::FocusOut:
-            mApplication->changeActivityFocus(false);
+            //mApplication->changeActivityFocus(false);
             break;
         default:
             break;

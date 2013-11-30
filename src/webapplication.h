@@ -21,7 +21,6 @@
 #include <QQuickView>
 #include <QMap>
 #include <QtWebKit/private/qwebnewpagerequest_p.h>
-#include <luna-service2/lunaservice.h>
 
 #include "applicationdescription.h"
 
@@ -67,8 +66,6 @@ public:
 
     void changeActivityFocus(bool focus);
 
-    static bool activityManagerCallback(LSHandle *handle, LSMessage *message, void *user_data);
-
     void createWindow(QWebNewPageRequest *request);
 
 signals:
@@ -81,7 +78,6 @@ private:
     WebAppLauncher *mLauncher;
     ApplicationDescription mDescription;
     QString mProcessId;
-    LSMessageToken mActivityManagerToken;
     QString mIdentifier;
     int mActivityId;
     QString mParameters;

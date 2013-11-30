@@ -10,8 +10,6 @@ set(SOURCES
     main.cpp
     utils.cpp
     webapplauncher.cpp
-    webappmanagerservice.cpp
-    lunaserviceutils.cpp
     webapplication.cpp
     webapplicationwindow.cpp
     applicationdescription.cpp
@@ -21,8 +19,6 @@ set(SOURCES
 set(HEADERS
     utils.h
     webapplauncher.h
-    webappmanagerservice.h
-    lunaserviceutils.h
     webapplication.h
     webapplicationwindow.h
     applicationdescription.h
