@@ -31,14 +31,14 @@ qt5_add_resources(RESOURCES resources.qrc)
 set(WEBOS_FRAMEWORK qml/webos-api.js)
 install (FILES ${WEBOS_FRAMEWORK} DESTINATION ${WEBOS_INSTALL_WEBOS_FRAMEWORKSDIR}/webos)
 
-add_executable(WebAppMgr ${SOURCES} ${HEADERS} ${RESOURCES})
-qt5_use_modules(WebAppMgr Quick Gui WebKit)
-target_link_libraries(WebAppMgr
+add_executable(webapp-launcher ${SOURCES} ${HEADERS} ${RESOURCES})
+qt5_use_modules(webapp-launcher Quick Gui WebKit)
+target_link_libraries(webapp-launcher
     ${LS2_LIBRARIES}
     ${GLIB2_LIBRARIES}
     ${SYSTEMD_DAEMON_LIBRARIES}
     ${PBNJSON_C_LIBRARIES}
     ${LUNA_SYSMGR_COMMON_LIBRARIES})
 
-webos_build_daemon()
+webos_build_program(ADMIN)
 webos_build_system_bus_files()

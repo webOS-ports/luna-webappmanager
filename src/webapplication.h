@@ -85,9 +85,6 @@ private:
     QList<WebApplicationWindow*> mChildWindows;
     bool mLaunchedAtBoot;
     bool mPrivileged;
-
-    void createActivity();
-    void destroyActivity();
 };
 
 } // namespace luna
