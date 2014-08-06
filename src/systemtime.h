@@ -15,18 +15,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-import QtQuick 2.0
-import QtQuick.Window 2.0
-import LunaNext.Common 0.1
-import "."
+#ifndef SYSTEMTIME_H_
+#define SYSTEMTIME_H_
 
-Window {
-    id: root
+#include <QString>
 
-    width: webAppWindow.size.width
-    height: webAppWindow.size.height
+#include <luna-service2++/handle.hpp>
+#include <luna-service2++/call.hpp>
+#include <luna-service2++/server_status.hpp>
 
-    ApplicationContainer {
-        id: appContainer
-    }
-}
+namespace luna
+{
+
+class SystemTime
+{
+public:
+    static SystemTime* instance();
+
+    QString timezone() const;
+
+private:
+    SystemTime();
+
+    void updateFromService(LSMessage *message);
+    static bool updateCallback(LSHandle *handle, LSMessage *message, void *context);
+
+private:
+    LS::Handle mLunaPrivHandle;
+    LS::ServerStatus mServerStatus;
+    LS::Call mSubscriptionCall;
+    QString mTimezone;
+};
+
+} // namespace luna
+
+#endif

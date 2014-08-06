@@ -15,13 +15,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-import QtQuick 2.0
-import "."
 
-Item {
-    id: root
+#ifndef WEBAPPLICATIONPLUGIN_H
+#define WEBAPPLICATIONPLUGIN_H
 
-    ApplicationContainer {
-        id: appContainer
-    }
-}
+#include <QObject>
+#include <QFileInfo>
+#include <QPluginLoader>
+#include <QFileInfo>
+
+#include <applicationplugin.h>
+
+namespace luna
+{
+
+class WebApplicationPlugin : public QObject,
+                             public ApplicationPlugin
+{
+    Q_OBJECT
+public:
+    WebApplicationPlugin(const QFileInfo &path, QObject *parent = 0);
+
+    bool load();
+
+    QList<BaseExtension*> createExtensions(ApplicationEnvironment *environment);
+
+private:
+    QPluginLoader mLoader;
+    ApplicationPlugin *mInstance;
+    QFileInfo mPath;
+};
+
+} // namespace luna
+
+#endif // WEBAPPLICATIONPLUGIN_H

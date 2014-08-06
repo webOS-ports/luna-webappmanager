@@ -16,42 +16,46 @@
  */
 
 #include <QDebug>
-
+#include <QDir>
 #include <QtWebKit/private/qquickwebview_p.h>
+#include <QTimer>
 
 #include "applicationdescription.h"
 #include "webappmanager.h"
-#include "webappmanagerservice.h"
 #include "webapplication.h"
+#include "webappmanagerservice.h"
 
 namespace luna
 {
 
 WebAppManager::WebAppManager(int &argc, char **argv)
-    : QGuiApplication(argc, argv),
-      mMainLoop(0),
-      mService(0),
-      mNextProcessId(1000)
+    : QGuiApplication(argc, argv)
 {
-    setApplicationName("WebAppMgr");
+    setApplicationName("LunaWebAppMgr");
     setQuitOnLastWindowClosed(false);
 
-    mMainLoop = g_main_loop_new(g_main_context_default(), TRUE);
-
-    mService = new WebAppManagerService(this, mMainLoop);
-
     QQuickWebViewExperimental::setFlickableViewportEnabled(false);
+
+    connect(this, SIGNAL(aboutToQuit()), this, SLOT(onAboutToQuit()));
+
+    // We're using a static list here to mark specific applications allowed to run in
+    // headless mode (primary window will be not visible). The list should only contain
+    // legacy applications. All new applications should not use the headless mode anymore
+    // and will refuse to start. There should really no need to extend this list and
+    // therefore it will be kept static forever.
+    mAllowedHeadlessApps << "com.palm.app.email";
+    mAllowedHeadlessApps << "com.palm.app.calendar";
+    mAllowedHeadlessApps << "com.palm.app.clock";
+    mAllowedHeadlessApps << "com.palm.systemui";
+    mAllowedHeadlessApps << "org.webosinternals.tweaks";
+    mAllowedHeadlessApps << "org.webosports.app.calendar";
+
+    mService = new WebAppManagerService(this);
 }
 
 WebAppManager::~WebAppManager()
 {
-    delete mService;
-    g_main_loop_unref(mMainLoop);
-}
-
-WebAppManagerService* WebAppManager::service() const
-{
-    return mService;
+    onAboutToQuit();
 }
 
 bool WebAppManager::validateApplication(const ApplicationDescription& desc)
@@ -62,80 +66,139 @@ bool WebAppManager::validateApplication(const ApplicationDescription& desc)
     if (desc.entryPoint().isLocalFile() && !QFile::exists(desc.entryPoint().toLocalFile()))
         return false;
 
+    if (desc.headless() && !mAllowedHeadlessApps.contains(desc.id()))
+        return false;
+
     return true;
 }
 
-WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &parameters)
+WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &parameters, int64_t processId)
 {
     ApplicationDescription desc(appDesc);
 
     if (!validateApplication(desc)) {
         qWarning("Got invalid application description for app %s",
                  desc.id().toUtf8().constData());
-        return 0;
+        return NULL;
     }
 
     if (mApplications.contains(desc.id())) {
-        WebApplication *application = mApplications.value(desc.id());
-        application->relaunch(parameters);
-        return application;
+        WebApplication *app = mApplications.value(desc.id());
+        app->relaunch(parameters);
+        return app;
     }
 
-    QString processId = QString("%0").arg(mNextProcessId++);
+    // We set the application id as application name so that locally stored things for
+    // each application are separated and remain after the application was stopped.
+    QCoreApplication::setApplicationName(desc.id());
+
+    QQuickWebViewExperimental::setFlickableViewportEnabled(desc.flickable());
+
     QString windowType = "card";
     QUrl entryPoint = desc.entryPoint();
     WebApplication *app = new WebApplication(this, entryPoint, windowType,
                                              desc, parameters, processId);
-    connect(app, SIGNAL(closed()), this, SLOT(onApplicationWindowClosed()));
+    connect(app, SIGNAL(closed()), this, SLOT(onApplicationClosed()));
 
-    // FIXME revisit wether we allow only one instance per application (e.g. whats
-    // with multiple windows per application?)
+    this->setQuitOnLastWindowClosed(false);
+
     mApplications.insert(app->id(), app);
+
+    mService->notifyAppHasStarted(app->id(), app->processId());
 
     return app;
 }
 
 WebApplication* WebAppManager::launchUrl(const QUrl &url, const QString &windowType,
-                                         const QString &appDesc, const QString &parameters)
+                               const QString &appDesc, const QString &parameters, int64_t processId)
 {
     ApplicationDescription desc(appDesc);
 
     if (!validateApplication(desc)) {
         qWarning("Got invalid application description for app %s",
                  desc.id().toUtf8().constData());
-        return 0;
+        return NULL;
     }
 
+    // FIXME is this correct when launching an URL?
     if (mApplications.contains(desc.id())) {
         WebApplication *application = mApplications.value(desc.id());
         application->relaunch(parameters);
         return application;
     }
 
-    QString processId = QString("%0").arg(mNextProcessId++);
-    WebApplication *app = new WebApplication(this, url, windowType, desc, parameters, processId);
-    connect(app, SIGNAL(closed()), this, SLOT(onApplicationWindowClosed()));
+    QQuickWebViewExperimental::setFlickableViewportEnabled(desc.flickable());
 
-    // FIXME revisit wether we allow only one instance per application (e.g. whats
-    // with multiple windows per application?)
+    WebApplication *app = new WebApplication(this, url, windowType, desc, parameters,
+                                             processId);
+    connect(app, SIGNAL(closed()), this, SLOT(onApplicationClosed()));
+
     mApplications.insert(app->id(), app);
+
+    mService->notifyAppHasStarted(app->id(), app->processId());
 
     return app;
 }
 
-void WebAppManager::onApplicationWindowClosed()
+void WebAppManager::onAboutToQuit()
+{
+}
+
+void WebAppManager::onApplicationClosed()
 {
     WebApplication *app = static_cast<WebApplication*>(sender());
 
     if (!mApplications.contains(app->id())) {
-        qWarning("Got close event from not running application!?");
+        qWarning("BUG: Got close event from not running application!?");
         return;
     }
 
     mApplications.remove(app->id());
 
+    mService->notifyAppHasFinished(app->id(), app->processId());
+
     qDebug() << "Application" << app->id() << "was closed";
     delete app;
+}
+
+void WebAppManager::killApp(const QString &appId)
+{
+    WebApplication *appToKill = 0;
+
+    Q_FOREACH(WebApplication *app, mApplications) {
+        if (app->id() == appId) {
+            appToKill = app;
+            break;
+        }
+    }
+
+    if (appToKill)
+        appToKill->kill();
+}
+
+void WebAppManager::killApp(int64_t processId)
+{
+    WebApplication *appToKill = 0;
+
+    Q_FOREACH(WebApplication *app, mApplications) {
+        if (app->processId() == processId) {
+            appToKill = app;
+            break;
+        }
+    }
+
+    if (appToKill)
+        appToKill->kill();
+}
+
+bool WebAppManager::isAppRunning(const QString &appId)
+{
+    return mApplications.contains(appId);
+}
+
+QList<WebApplication*> WebAppManager::applications() const
+{
+    return mApplications.values();
 }
 
 } // namespace luna

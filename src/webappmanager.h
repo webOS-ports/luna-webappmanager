@@ -22,6 +22,10 @@
 #include <glib.h>
 #include <QGuiApplication>
 #include <QMap>
+#include <QUrl>
+#include <QFile>
+#include <QTextStream>
+#include <QStringList>
 
 namespace luna
 {
@@ -35,23 +39,27 @@ class WebAppManager : public QGuiApplication
     Q_OBJECT
 
 public:
-    WebAppManager(int &argc, char **argv);
+    WebAppManager(int& argc, char **argv);
     virtual ~WebAppManager();
 
-    WebApplication* launchApp(const QString &appDesc, const QString &parameters);
+    WebApplication* launchApp(const QString &appDesc, const QString &parameters, int64_t processId);
     WebApplication* launchUrl(const QUrl &url, const QString &windowType,
-                              const QString &appDesc, const QString &parameters);
+                              const QString &appDesc, const QString &parameters, int64_t processId);
 
-    WebAppManagerService* service() const;
+    bool isAppRunning(const QString& appId);
+    void killApp(const QString& appId);
+    void killApp(int64_t processId);
 
-private slots:
-    void onApplicationWindowClosed();
+    QList<WebApplication*> applications() const;
+
+private Q_SLOTS:
+    void onApplicationClosed();
+    void onAboutToQuit();
 
 private:
-    GMainLoop *mMainLoop;
     WebAppManagerService *mService;
-    QMap<QString, WebApplication*> mApplications;
-    quint64 mNextProcessId;
+    QStringList mAllowedHeadlessApps;
+    QMap<QString,WebApplication*> mApplications;
 
     bool validateApplication(const ApplicationDescription& desc);
 };

@@ -18,21 +18,96 @@
 import QtQuick 2.0
 import QtWebKit 3.0
 import QtWebKit.experimental 1.0
-import "pluginmanager.js" as PluginManager
-import LunaNext 0.1
+import "extensionmanager.js" as ExtensionManager
+import LunaNext.Common 0.1
+import Connman 0.2
+import "."
 
 Flickable {
-    id: webViewContainer
+   id: webViewContainer
 
-    anchors.fill: parent
+   anchors.fill: parent
+
+   property int numRestarts: 0
+   property int maxRestarts: 3
+
+   NetworkManager {
+       id: networkManager
+
+       property string oldState: "unknown"
+
+       onStateChanged: {
+           // When we are online again reload the web view in order to start the application
+           // which is still visible to the user
+           if (oldState !== networkManager.state && networkManager.state === "online")
+               webView.reload();
+       }
+   }
+
+    Rectangle {
+        id: offlinePanel
+
+        color: "white"
+        visible: webApp.internetConnectivityRequired && networkManager.state !== "online"
+        anchors.fill: parent
+
+        z: 10
+
+        Text {
+            anchors.centerIn: parent
+            color: "black"
+            text: "Internet connectivity is required but not available"
+            font.pixelSize: 20
+            font.family: "Prelude"
+        }
+    }
+
+    Connections {
+        target: Qt.inputMethod
+        onVisibleChanged: {
+            webView.experimental.evaluateJavaScript("if (window.Mojo && window.Mojo.keyboardShown) {" +
+                                                    "window.Mojo.keyboardShown(" + Qt.inputMethod.visible + ");}");
+
+            var positiveSpace = {
+                width: parent.width,
+                height: parent.height - (Qt.inputMethod ? Qt.inputMethod.keyboardRectangle.height : 0)
+            };
+
+            webView.experimental.evaluateJavaScript("if (window.Mojo && window.Mojo.positiveSpaceChanged) {" +
+                                                    "window.Mojo.positiveSpaceChanged(" + positiveSpace.width +
+                                                    "," + positiveSpace.height + ");}");
+
+            if (Qt.inputMethod.visible) {
+                keyboardContainer.height = Qt.inputMethod.keyboardRectangle.height;
+            }
+            else {
+                keyboardContainer.height = 0;
+            }
+        }
+    }
+
+    LoadingBackground {
+        id: loadingBackgrounds
+        anchors.fill: parent
+        z: 100
+        visible: !webApp.loadingAnimationDisabled
+        state: webAppWindow.ready ? "hidden" : "visible"
+    }
 
     WebView {
         id: webView
         objectName: "webView"
 
-        anchors.fill: parent
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: keyboardContainer.top
 
         url: webAppUrl
+
+        UserAgent {
+            id: userAgent
+        }
 
         experimental.preferences.navigatorQtObjectEnabled: true
         experimental.preferences.localStorageEnabled: true
@@ -41,35 +116,80 @@ Flickable {
         experimental.preferences.developerExtrasEnabled: true
         experimental.preferences.universalAccessFromFileURLsAllowed: true
         experimental.preferences.fileAccessFromFileURLsAllowed: true
-        experimental.preferences.logsPageMessagesToSystemConsole: true
 
         experimental.preferences.standardFontFamily: "Prelude"
         experimental.preferences.fixedFontFamily: "Courier new"
         experimental.preferences.serifFontFamily: "Times New Roman"
         experimental.preferences.cursiveFontFamily: "Prelude"
 
-        experimental.preferences.privileged: webApp.privileged
+        function getUserAgentForApp(url) {
+            /* if the app wants a specific user agent assign it instead of the default one */
+            if (webApp.userAgent.length > 0)
+                return webApp.userAgent;
 
-        property variant userScripts: [ Qt.resolvedUrl("webos-api.js") ]
-        onUserScriptsChanged: {
-            // Only inject our user script for the webOS API when we have a patched
-            // qtwebkit otherwise it's up to the user to link the app to the required
-            // javascript file in it's header
-            if (experimental.hasOwnProperty('userScriptsInjectAtStart') &&
-                experimental.hasOwnProperty('userScriptsForAllFrames')) {
-                experimental.userScripts = webView.userScripts;
-                experimental.userScriptsInjectAtStart = true;
-                experimental.userScriptsForAllFrames = false;
+            return userAgent.defaultUA;
+        }
+
+        experimental.userAgent: getUserAgentForApp(null)
+
+        onNavigationRequested: {
+            var action = WebView.AcceptRequest;
+            var url = request.url.toString();
+
+            if (webApp.urlsAllowed && webApp.urlsAllowed.length !== 0) {
+                action = WebView.IgnoreRequest;
+                for (var i = 0; i < webApp.urlsAllowed.length; ++i) {
+                    var pattern = webApp.urlsAllowed[i];
+                    if (url.match(pattern)) {
+                        action = WebView.AcceptRequest;
+                        break;
+                    }
+                }
             }
-            else {
-                console.log("WARNING: webOS API is not going to be installed for apps !!!!");
-                console.log("WARNING: If you still want to use the webOS API you have to include");
-                console.log("WARNING: the required scripts on your own.");
+
+            request.action = action;
+
+            // If we're not handling the URL forward it to be opened within the system
+            // default web browser in a safe environment
+            if (request.action === WebView.IgnoreRequest) {
+                Qt.openUrlExternally(url);
+                return;
             }
+
+            webView.experimental.userAgent = getUserAgentForApp(url);
+        }
+
+        Component.onCompleted: {
+            // Only when we have a system application we enable the webOS API and the
+            // PalmServiceBridge to avoid remote applications accessing unwanted system
+            // internals
+            if (webAppWindow.trustScope === "system") {
+                if (experimental.hasOwnProperty('userScriptsInjectAtStart') &&
+                    experimental.hasOwnProperty('userScriptsForAllFrames')) {
+                    experimental.userScripts = webAppWindow.userScripts;
+                    experimental.userScriptsInjectAtStart = true;
+                    experimental.userScriptsForAllFrames = true;
+                }
+
+                if (experimental.preferences.hasOwnProperty("palmServiceBridgeEnabled"))
+                    experimental.preferences.palmServiceBridgeEnabled = true;
+
+                if (experimental.preferences.hasOwnProperty("privileged"))
+                    experimental.preferences.privileged = webApp.privileged;
+            }
+
+            if (experimental.preferences.hasOwnProperty("logsPageMessagesToSystemConsole"))
+                experimental.preferences.logsPageMessagesToSystemConsole = true;
+
+            if (experimental.preferences.hasOwnProperty("suppressIncrementalRendering"))
+                experimental.preferences.suppressIncrementalRendering = true;
+
+            if (experimental.preferences.hasOwnProperty("identifier"))
+                experimental.preferences.identifier = webApp.identifier;
         }
 
         experimental.onMessageReceived: {
-            PluginManager.messageHandler(message);
+            ExtensionManager.messageHandler(message);
         }
 
         Connections {
@@ -79,18 +199,34 @@ Flickable {
                 webView.experimental.evaluateJavaScript(script);
             }
 
-            onPluginWantsToBeAdded: {
-                PluginManager.addPlugin(name, object);
+            onExtensionWantsToBeAdded: {
+                ExtensionManager.addExtension(name, object);
             }
         }
 
         Connections {
             target: webView.experimental
-
             onProcessDidCrash: {
-                console.log("ERROR: The web process has crashed. Restart it ...");
-                webView.reload();
+                if (numRestarts < maxRestarts) {
+                    console.log("ERROR: The web process has crashed. Restart it ...");
+                    webView.url = webAppUrl;
+                    webView.reload();
+                    numRestarts += 1;
+                }
+                else {
+                    console.log("CRITICAL: restarted application " + numRestarts
+                                + " times. Closing it now");
+                    Qt.quit();
+                }
             }
         }
+    }
+
+    Item {
+        id: keyboardContainer
+        height: 0
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
     }
 }

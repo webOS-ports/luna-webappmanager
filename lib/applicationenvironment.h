@@ -15,18 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-import QtQuick 2.0
-import QtQuick.Window 2.0
-import LunaNext.Common 0.1
-import "."
+#ifndef SCRIPTEXECUTOR_H
+#define SCRIPTEXECUTOR_H
 
-Window {
-    id: root
+#include <QObject>
 
-    width: webAppWindow.size.width
-    height: webAppWindow.size.height
+namespace luna
+{
 
-    ApplicationContainer {
-        id: appContainer
-    }
-}
+class ApplicationEnvironment : public QObject
+{
+    Q_OBJECT
+public:
+    explicit ApplicationEnvironment(QObject *parent = 0);
+
+    virtual void executeScript(const QString &script) = 0;
+    virtual void registerUserScript(const QUrl &path) = 0;
+};
+
+} // namespace luna
+
+#endif // SCRIPTEXECUTOR_H

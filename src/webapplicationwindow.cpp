@@ -19,29 +19,34 @@
 #include <QQmlContext>
 #include <QQmlComponent>
 #include <QtWebKit/private/qquickwebview_p.h>
+#ifndef WITH_UNMODIFIED_QTWEBKIT
 #include <QtWebKit/private/qwebnewpagerequest_p.h>
+#endif
+#include <QtGui/QGuiApplication>
 #include <QtGui/qpa/qplatformnativeinterface.h>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QTimer>
 
+#include <QScreen>
+
 #include <Settings.h>
 
-#include "webappmanager.h"
-#include "webappmanagerservice.h"
 #include "applicationdescription.h"
 #include "webapplication.h"
 #include "webapplicationwindow.h"
 
-#include "plugins/baseplugin.h"
-#include "plugins/palmsystemplugin.h"
+#include "extensions/palmsystemextension.h"
+#include "extensions/palmservicebridgeextension.h"
+#include "extensions/wifimanager.h"
 
 namespace luna
 {
 
-WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QUrl& url, const QString& windowType,
+WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QUrl& url,
+                                           const QString& windowType, const QSize& size,
                                            bool headless, QObject *parent) :
-    QObject(parent),
+    ApplicationEnvironment(parent),
     mApplication(application),
     mEngine(this),
     mRootItem(0),
@@ -52,17 +57,37 @@ WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QU
     mKeepAlive(false),
     mStagePreparing(true),
     mStageReady(false),
-    mShowWindowTimer(this)
+    mShowWindowTimer(this),
+    mSize(size)
 {
+    qDebug() << __PRETTY_FUNCTION__ << this;
+
     connect(&mShowWindowTimer, SIGNAL(timeout()), this, SLOT(onShowWindowTimeout()));
     mShowWindowTimer.setSingleShot(true);
+
+    assignCorrectTrustScope();
 
     createAndSetup();
 }
 
 WebApplicationWindow::~WebApplicationWindow()
 {
+    qDebug() << __PRETTY_FUNCTION__ << this;
+
+    Q_FOREACH(BaseExtension *extension, mExtensions.values())
+        delete extension;
+
+    mExtensions.clear();
+
     delete mRootItem;
+}
+
+void WebApplicationWindow::assignCorrectTrustScope()
+{
+    if (mUrl.scheme() == "file")
+        mTrustScope = TrustScopeSystem;
+    else
+        mTrustScope = TrustScopeRemote;
 }
 
 void WebApplicationWindow::setWindowProperty(const QString &name, const QVariant &value)
@@ -73,14 +98,23 @@ void WebApplicationWindow::setWindowProperty(const QString &name, const QVariant
 
 void WebApplicationWindow::createAndSetup()
 {
-    // FIXME evaluate window properties and configure the window accordingly
+    if (mTrustScope == TrustScopeSystem) {
+        mUserScripts.append(QUrl("qrc:///qml/webos-api.js"));
+        createDefaultExtensions();
+    }
 
     mEngine.rootContext()->setContextProperty("webApp", mApplication);
     mEngine.rootContext()->setContextProperty("webAppWindow", this);
     mEngine.rootContext()->setContextProperty("webAppUrl", mUrl);
 
+    connect(&mEngine, &QQmlEngine::quit, [=]() {
+        mWindow->close();
+    });
+
+    qDebug() << __PRETTY_FUNCTION__ << "Creating application container ...";
+
     QQmlComponent windowComponent(&mEngine,
-        QUrl(QString("qrc:///qml/%1.qml").arg(mHeadless ? "HeadlessWindow" : "Window")));
+        QUrl(QString("qrc:///qml/%1.qml").arg(mHeadless ? "ApplicationContainer" : "Window")));
     if (windowComponent.isError()) {
         qCritical() << "Errors while loading window component:";
         qCritical() << windowComponent.errors();
@@ -98,6 +132,8 @@ void WebApplicationWindow::createAndSetup()
         mWindow = static_cast<QQuickWindow*>(mRootItem);
         mWindow->installEventFilter(this);
 
+        mWindow->reportContentOrientationChange(QGuiApplication::primaryScreen()->primaryOrientation());
+
         mWindow->setSurfaceType(QSurface::OpenGLSurface);
         QSurfaceFormat surfaceFormat = mWindow->format();
         surfaceFormat.setAlphaBufferSize(8);
@@ -113,17 +149,27 @@ void WebApplicationWindow::createAndSetup()
         setWindowProperty(QString("type"), QVariant(mWindowType));
     }
 
+    qDebug() << __PRETTY_FUNCTION__ << "Configuring application webview ...";
+
     mWebView = mRootItem->findChild<QQuickWebView*>("webView");
 
     connect(mWebView, SIGNAL(loadingChanged(QWebLoadRequest*)),
             this, SLOT(onLoadingChanged(QWebLoadRequest*)));
 
+#ifndef WITH_UNMODIFIED_QTWEBKIT
     connect(mWebView->experimental(), SIGNAL(createNewPage(QWebNewPageRequest*)),
             this, SLOT(onCreateNewPage(QWebNewPageRequest*)));
+    connect(mWebView->experimental(), SIGNAL(closePage()), this, SLOT(onClosePage()));
     connect(mWebView->experimental(), SIGNAL(syncMessageReceived(const QVariantMap&, QString&)),
             this, SLOT(onSyncMessageReceived(const QVariantMap&, QString&)));
+#endif
 
-    createPlugins();
+    if (mTrustScope == TrustScopeSystem)
+        initializeAllExtensions();
+
+    /* If we're running a remote site mark the window as fully loaded */
+    if (mTrustScope == TrustScopeRemote)
+        stageReady();
 }
 
 void WebApplicationWindow::onShowWindowTimeout()
@@ -131,7 +177,7 @@ void WebApplicationWindow::onShowWindowTimeout()
     qDebug() << __PRETTY_FUNCTION__;
 
     // we got no stage ready call yet so go forward showing the window
-    show();
+    stageReady();
 }
 
 void WebApplicationWindow::setupPage()
@@ -145,6 +191,25 @@ void WebApplicationWindow::setupPage()
         zoomFactor = Settings::LunaSettings()->layoutScaleCompat;
 
     mWebView->setZoomFactor(zoomFactor);
+
+    show();
+
+    // We need to finish the stage preparation in case of a remote entry point
+    // otherwise it will never stop loading
+    if (mApplication->hasRemoteEntryPoint())
+        stageReady();
+}
+
+void WebApplicationWindow::notifyAppAboutFocusState(bool focus)
+{
+    qDebug() << "DEBUG: We become" << (focus ? "focused" : "unfocused");
+
+    QString action = focus ? "stageActivated" : "stageDeactivated";
+
+    if (mTrustScope == TrustScopeSystem)
+        executeScript(QString("if (window.Mojo && Mojo.%1) Mojo.%1()").arg(action));
+
+    mApplication->changeActivityFocus(focus);
 }
 
 void WebApplicationWindow::onLoadingChanged(QWebLoadRequest *request)
@@ -160,21 +225,31 @@ void WebApplicationWindow::onLoadingChanged(QWebLoadRequest *request)
         break;
     }
 
-    if (mHeadless)
+    Q_FOREACH(BaseExtension *extension, mExtensions.values())
+        extension->initialize();
+
+    // If we're a headless app we don't show the window and in case of an
+    // application with an remote entry point it's already visible at
+    // this point
+    if (mHeadless || mApplication->hasRemoteEntryPoint())
         return;
 
     // If we don't got stageReady() start a timeout to wait for it
-    if (mStagePreparing && !mStageReady && !mShowWindowTimer.isActive())
+    else if (mStagePreparing && !mStageReady && !mShowWindowTimer.isActive())
         mShowWindowTimer.start(3000);
-    // If we got stageReady() already while we were still loading the page we can now
-    // safely show the window
-    else if (!mStagePreparing && mStageReady && !mWindow->isVisible())
-        show();
 }
+
+#ifndef WITH_UNMODIFIED_QTWEBKIT
 
 void WebApplicationWindow::onCreateNewPage(QWebNewPageRequest *request)
 {
     mApplication->createWindow(request);
+}
+
+void WebApplicationWindow::onClosePage()
+{
+    qDebug() << __PRETTY_FUNCTION__;
+    mWindow->close();
 }
 
 void WebApplicationWindow::onSyncMessageReceived(const QVariantMap& message, QString& response)
@@ -196,34 +271,50 @@ void WebApplicationWindow::onSyncMessageReceived(const QVariantMap& message, QSt
         return;
 
     messageType = rootObject.value("messageType").toString();
-    if (messageType != "callSyncPluginFunction")
+    if (messageType != "callSyncExtensionFunction")
         return;
 
-    if (!(rootObject.contains("plugin") && rootObject.value("plugin").isString()) ||
+    if (!(rootObject.contains("extension") && rootObject.value("extension").isString()) ||
         !(rootObject.contains("func") && rootObject.value("func").isString()) ||
         !(rootObject.contains("params") && rootObject.value("params").isArray()))
         return;
 
-    QString pluginName = rootObject.value("plugin").toString();
+    QString extensionName = rootObject.value("extension").toString();
     QString funcName = rootObject.value("func").toString();
     QJsonArray params = rootObject.value("params").toArray();
 
-    if (!mPlugins.contains(pluginName))
+    if (!mExtensions.contains(extensionName))
         return;
 
-    BasePlugin *plugin = mPlugins.value(pluginName);
-    response = plugin->handleSynchronousCall(funcName, params);
+    BaseExtension *extension = mExtensions.value(extensionName);
+    response = extension->handleSynchronousCall(funcName, params);
 }
 
-void WebApplicationWindow::createPlugins()
+#endif
+
+void WebApplicationWindow::createDefaultExtensions()
 {
-    createAndInitializePlugin(new PalmSystemPlugin(this));
+    addExtension(new PalmSystemExtension(this));
+    // addExtension(new PalmServiceBridgeExtension(this));
+
+    // Additional Web APIs only for privileged applications
+    if (mApplication->privileged()) {
+        addExtension(new WiFiManager(this));
+    }
 }
 
-void WebApplicationWindow::createAndInitializePlugin(BasePlugin *plugin)
+void WebApplicationWindow::addExtension(BaseExtension *extension)
 {
-    mPlugins.insert(plugin->name(), plugin);
-    emit pluginWantsToBeAdded(plugin->name(), plugin);
+    qDebug() << "Adding extension" << extension->name();
+    mExtensions.insert(extension->name(), extension);
+}
+
+void WebApplicationWindow::initializeAllExtensions()
+{
+    foreach(BaseExtension *extension, mExtensions.values()) {
+        qDebug() << "Initializing extension" << extension->name();
+        emit extensionWantsToBeAdded(extension->name(), extension);
+    }
 }
 
 void WebApplicationWindow::onClosed()
@@ -239,10 +330,10 @@ bool WebApplicationWindow::eventFilter(QObject *object, QEvent *event)
             QTimer::singleShot(0, this, SLOT(onClosed()));
             break;
         case QEvent::FocusIn:
-            mApplication->changeActivityFocus(true);
+            notifyAppAboutFocusState(true);
             break;
         case QEvent::FocusOut:
-            mApplication->changeActivityFocus(false);
+            notifyAppAboutFocusState(false);
             break;
         default:
             break;
@@ -252,28 +343,32 @@ bool WebApplicationWindow::eventFilter(QObject *object, QEvent *event)
     return false;
 }
 
+QString WebApplicationWindow::getIdentifierForFrame(const QString& id, const QString& url)
+{
+    QString identifier = mApplication->identifier();
+
+    if (url.startsWith("file:///usr/lib/luna/system/luna-systemui/"))
+        identifier = QString("com.palm.systemui %1").arg(mApplication->processId());
+
+    qDebug() << __PRETTY_FUNCTION__ << "Decided identifier for frame" << id << "is" << identifier;
+
+    return identifier;
+}
+
 void WebApplicationWindow::stagePreparing()
 {
-    qDebug() << __PRETTY_FUNCTION__;
-
     mStagePreparing = true;
+    emit readyChanged();
 }
 
 void WebApplicationWindow::stageReady()
 {
-    qDebug() << __PRETTY_FUNCTION__;
-
     mStagePreparing = false;
     mStageReady = true;
 
-    // if the webview is still loading postpone the show call
-    if (mWebView->loading()) {
-        qDebug() << __PRETTY_FUNCTION__ << "Still loading ...";
-        return;
-    }
+    emit readyChanged();
 
     mShowWindowTimer.stop();
-    show();
 }
 
 void WebApplicationWindow::show()
@@ -292,10 +387,37 @@ void WebApplicationWindow::hide()
     mWindow->hide();
 }
 
+void WebApplicationWindow::focus()
+{
+    if (!mWindow)
+        return;
+
+    /* When we're closed we have to make sure we're visible before
+     * raising ourself */
+    if (!mWindow->isVisible())
+        mWindow->show();
+
+    mWindow->raise();
+}
+
+void WebApplicationWindow::unfocus()
+{
+    if (!mWindow)
+        return;
+
+    mWindow->lower();
+}
+
 void WebApplicationWindow::executeScript(const QString &script)
 {
     emit javaScriptExecNeeded(script);
 }
+
+void WebApplicationWindow::registerUserScript(const QUrl &path)
+{
+    mUserScripts.append(path);
+}
+
 
 WebApplication* WebApplicationWindow::application() const
 {
@@ -320,6 +442,37 @@ bool WebApplicationWindow::keepAlive() const
 bool WebApplicationWindow::headless() const
 {
     return mHeadless;
+}
+
+QList<QUrl> WebApplicationWindow::userScripts() const
+{
+    return mUserScripts;
+}
+
+bool WebApplicationWindow::ready() const
+{
+    return mStageReady && !mStagePreparing;
+}
+
+QSize WebApplicationWindow::size() const
+{
+    return mSize;
+}
+
+bool WebApplicationWindow::active() const
+{
+    if (mWindow)
+        return mWindow->isActive();
+
+    return true;
+}
+
+QString WebApplicationWindow::trustScope() const
+{
+    if (mTrustScope == TrustScopeSystem)
+        return QString("system");
+
+    return QString("remote");
 }
 
 } // namespace luna

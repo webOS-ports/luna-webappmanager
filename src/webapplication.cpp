@@ -21,184 +21,148 @@
 #include <QJsonDocument>
 
 #include <QtWebKit/private/qquickwebview_p.h>
+#ifndef WITH_UNMODIFIED_QTWEBKI
 #include <QtWebKit/private/qwebnewpagerequest_p.h>
+#endif
 
 #include <set>
 #include <string>
 
 #include "webappmanager.h"
-#include "webappmanagerservice.h"
 #include "applicationdescription.h"
 #include "webapplication.h"
 #include "webapplicationwindow.h"
 
 #include <Settings.h>
 
+#include <webos_application.h>
+
+#include <sys/types.h>
+#include <unistd.h>
+
 namespace luna
 {
 
-WebApplication::WebApplication(WebAppManager *manager, const QUrl& url, const QString& windowType,
+class ResourcePathValidator
+{
+public:
+    static ResourcePathValidator& instance()
+    {
+        static ResourcePathValidator instance;
+        return instance;
+    }
+
+    bool validate(const QString &path, bool privileged)
+    {
+        if (findPathInList(mAllowedTargetPaths, path))
+            return true;
+        if (privileged && findPathInList(mPrivilegedAppPaths, path))
+            return true;
+        if (!privileged && findPathInList(mUnprivilegedAppPaths, path))
+            return true;
+
+        return false;
+    }
+
+private:
+    ResourcePathValidator()
+    {
+        // NOTE: below set of paths are taken from the configuration set in the webkit used in
+        // webOS 3.0.5. See http://downloads.help.palm.com/opensource/3.0.5/webcore-patch.gz
+
+        // paths allowed for every app
+        mAllowedTargetPaths << "/usr/palm/frameworks";
+        mAllowedTargetPaths << "/media/internal";
+        mAllowedTargetPaths << "/usr/lib/luna/luna-media";
+        mAllowedTargetPaths << "/var/luna/files";
+        mAllowedTargetPaths << "/var/luna/data/extractfs";
+        mAllowedTargetPaths << "/var/luna/data/im-avatars";
+        mAllowedTargetPaths <<  "/usr/palm/applications/com.palm.app.contacts/sharedWidgets/";
+        mAllowedTargetPaths << "/usr/palm/sysmgr/";
+        mAllowedTargetPaths << "/usr/palm/public";
+        mAllowedTargetPaths << "/var/file-cache/";
+        mAllowedTargetPaths << "/usr/lib/luna/system/luna-systemui/images/";
+        mAllowedTargetPaths << "/usr/lib/luna/system/luna-systemui/app/FilePicker";
+
+        // paths only allowed for privileged apps
+        mPrivilegedAppPaths << "/usr/lib/luna/system/";   // system ui apps
+        mPrivilegedAppPaths << "/usr/palm/applications/";  // Palm apps
+        mPrivilegedAppPaths << "/var/usr/palm/applications/com.palm.";  // privileged apps like facebook
+        mPrivilegedAppPaths << "/media/cryptofs/apps/usr/palm/applications/com.palm.";  // privileged 3rd party apps
+        mPrivilegedAppPaths << "/usr/palm/sysmgr/";
+        mPrivilegedAppPaths << "/var/usr/palm/applications/com/palm/";
+        mPrivilegedAppPaths << "/media/cryptofs/apps/usr/palm/applications/com/palm/";
+
+        // additional paths allowed for unprivileged apps
+        mUnprivilegedAppPaths << "/var/usr/palm/applications/";
+        mUnprivilegedAppPaths << "/media/cryptofs/apps/usr/palm/applications/";
+    }
+
+    bool findPathInList(const QStringList &list, const QString &path)
+    {
+        Q_FOREACH(QString item, list) {
+            if (path.startsWith(item))
+                return true;
+        }
+        return false;
+    }
+
+    QStringList mAllowedTargetPaths;
+    QStringList mPrivilegedAppPaths;
+    QStringList mUnprivilegedAppPaths;
+};
+
+WebApplication::WebApplication(WebAppManager *launcher, const QUrl& url, const QString& windowType,
                                const ApplicationDescription& desc, const QString& parameters,
-                               const QString& processId, QObject *parent) :
+                               const int64_t processId, QObject *parent) :
     QObject(parent),
-    mManager(manager),
+    mLauncher(launcher),
     mDescription(desc),
     mProcessId(processId),
-    mActivityManagerToken(LSMESSAGE_TOKEN_INVALID),
-    mIdentifier(mDescription.id() + "-" + mProcessId),
-    mActivityId(-1),
+    mIdentifier(QString("%1 %2").arg(mDescription.id()).arg(mProcessId)),
     mParameters(parameters),
     mMainWindow(0),
     mLaunchedAtBoot(false),
-    mPrivileged(false)
+    mPrivileged(false),
+    mActivity(mIdentifier, desc.id(), processId)
 {
-    mMainWindow = new WebApplicationWindow(this, url, windowType, mDescription.headless());
-    connect(mMainWindow, SIGNAL(closed()), this, SLOT(windowClosed()));
+    qDebug() << __PRETTY_FUNCTION__ << this;
 
-    createActivity();
+    // Only system applications with a specific id prefix are privileged to access
+    // the private luna bus
+    if (mDescription.id().startsWith("org.webosports") || mDescription.id().startsWith("com.palm") ||
+        mDescription.id().startsWith("org.webosinternals"))
+        mPrivileged = true;
+
+    mMainWindow = new WebApplicationWindow(this, url, windowType,
+            QSize(Settings::LunaSettings()->displayWidth, Settings::LunaSettings()->displayHeight),
+            mDescription.headless());
+
+    connect(mMainWindow, SIGNAL(closed()), this, SLOT(windowClosed()));
 
     const std::set<std::string> appsToLaunchAtBoot = Settings::LunaSettings()->appsToLaunchAtBoot;
     mLaunchedAtBoot = (appsToLaunchAtBoot.find(id().toStdString()) != appsToLaunchAtBoot.end());
-
-    if (mDescription.id().startsWith("org.webosports") || mDescription.id().startsWith("com.palm"))
-        mPrivileged = true;
 }
 
 WebApplication::~WebApplication()
 {
-    destroyActivity();
-}
+    qDebug() << __PRETTY_FUNCTION__ << this;
 
-void WebApplication::setActivityId(int activityId)
-{
-    mActivityId = activityId;
-}
-
-bool WebApplication::activityManagerCallback(LSHandle *handle, LSMessage *message, void *user_data)
-{
-    WebApplication *application = static_cast<WebApplication*>(user_data);
-
-    QString payload(LSMessageGetPayload(message));
-    QJsonDocument document = QJsonDocument::fromJson(payload.toUtf8());
-
-    if (!document.isObject()) {
-        qWarning("Got malformed json response from activity manager: %s",
-                 payload.toUtf8().constData());
-        return true;
+    Q_FOREACH(WebApplicationWindow *window, mChildWindows) {
+        mChildWindows.removeAll(window);
+        delete window;
     }
 
-    QJsonObject rootObject = document.object();
-
-    if (!rootObject.contains("returnValue") || rootObject.value("returnValue").isBool()) {
-        qWarning("Got malformed json response from activity manager: %s",
-                 payload.toUtf8().constData());
-        return true;
-    }
-
-    bool returnValue = rootObject.value("returnValue").toBool();
-    if (!returnValue) {
-        qWarning("Failed to create activity for application %s",
-                 application->id().toUtf8().constData());
-        return true;
-    }
-
-    if (!rootObject.contains("activityId")) {
-        qWarning("Got malformed json response from activity manager: %s",
-                 payload.toUtf8().constData());
-        return true;
-    }
-
-    application->setActivityId((int) rootObject.value("activityId").toDouble());
-
-    return true;
-}
-
-void WebApplication::createActivity()
-{
-    if (mActivityManagerToken != LSMESSAGE_TOKEN_INVALID) {
-        qWarning("Already registered with activitiy manager for application %s",
-                 mDescription.id().toUtf8().constData());
-        return;
-    }
-
-    LSHandle *privateBus = mManager->service()->privateBus();
-
-    LSError error;
-    LSErrorInit(&error);
-
-    QJsonObject activityObject;
-    activityObject.insert("name", QJsonValue(mDescription.id()));
-    activityObject.insert("description", QJsonValue(mProcessId));
-
-    QJsonObject activityTypeObject;
-    activityTypeObject.insert("foreground", QJsonValue(true));
-
-    activityObject.insert("type", QJsonValue(activityTypeObject));
-
-    QJsonObject rootObject;
-    rootObject.insert("activity", QJsonValue(activityObject));
-    rootObject.insert("subscribe", QJsonValue(true));
-    rootObject.insert("start", QJsonValue(true));
-    rootObject.insert("replace", QJsonValue(true));
-
-    QJsonDocument document(rootObject);
-
-    if (!LSCallFromApplication(privateBus, "palm://com.palm.activitymanager/create",
-                               document.toJson().constData(), mIdentifier.toUtf8().constData(),
-                               WebApplication::activityManagerCallback, this,
-                               &mActivityManagerToken, &error)) {
-        qWarning("Failed to register application %s with activity manager: %s",
-                 mDescription.id().toUtf8().constData(), error.message);
-        LSErrorFree(&error);
-    }
-}
-
-void WebApplication::destroyActivity()
-{
-    if (mActivityManagerToken == LSMESSAGE_TOKEN_INVALID)
-        return;
-
-    LSError error;
-    LSErrorInit(&error);
-
-    LSHandle *privateBus = mManager->service()->privateBus();
-
-    if (!LSCallCancel(privateBus, mActivityManagerToken, &error)) {
-        qWarning("Failed to cancel activity for application %s: %s",
-                 mDescription.id().toUtf8().constData(), error.message);
-        LSErrorFree(&error);
-        return;
-    }
-
-    mActivityManagerToken = LSMESSAGE_TOKEN_INVALID;
+    if (mMainWindow)
+        delete mMainWindow;
 }
 
 void WebApplication::changeActivityFocus(bool focus)
 {
-    if (mActivityId < 0)
-        return;
-
-    LSError error;
-    LSErrorInit(&error);
-
-    QJsonObject rootObject;
-    rootObject.insert("activityId", QJsonValue(mActivityId));
-
-    QJsonDocument document(rootObject);
-
-    LSHandle *privateBus = mManager->service()->privateBus();
-
-    QString method = "palm://com.palm.activitymanager/";
-    method += focus ? "focus" : "unfocus";
-
-    if (!LSCallFromApplication(privateBus, method.toUtf8().constData(),
-                document.toJson().constData(), mIdentifier.toUtf8().constData(),
-                0, 0, 0, &error)) {
-        qWarning("Failed to %s application %s through activity manager: %s",
-                 focus ? "focus" : "unfocus", mDescription.id().toUtf8().constData(),
-                 error.message);
-        LSErrorFree(&error);
-    }
+    if (focus)
+        mActivity.focus();
+    else
+        mActivity.unfocus();
 }
 
 void WebApplication::relaunch(const QString &parameters)
@@ -206,16 +170,42 @@ void WebApplication::relaunch(const QString &parameters)
     qDebug() << __PRETTY_FUNCTION__ << "Relaunching application" << mDescription.id() << "with parameters" << parameters;
 
     mParameters = parameters;
-    mMainWindow->executeScript(QString("_webOS.relaunch(\"%1\");").arg(parameters));
+    emit parametersChanged();
+
+    mMainWindow->executeScript(QString("Mojo.relaunch();"));
 }
+
+#ifndef WITH_UNMODIFIED_QTWEBKIT
 
 void WebApplication::createWindow(QWebNewPageRequest *request)
 {
-    qDebug() << __PRETTY_FUNCTION__ << "creating new window for url" << request->url();
+    int width = Settings::LunaSettings()->displayWidth;
+    int height = Settings::LunaSettings()->displayHeight;
+
+    qDebug() << __PRETTY_FUNCTION__ << "Creating new window for url" << request->url();
+
+    QVariantMap windowFeatures = request->windowFeatures();
+    foreach(QString key, windowFeatures.keys()) {
+        qDebug() << "[" << key << "] = " << windowFeatures.value(key);
+    }
 
     // child windows can never be headless ones!
     QString windowType = "card";
-    WebApplicationWindow *window = new WebApplicationWindow(this, request->url(), windowType, false);
+
+    // check if we got supplied with a different window type
+    if (windowFeatures.contains("attributes")) {
+        QString attributes = windowFeatures["attributes"].toString();
+        QJsonDocument document = QJsonDocument::fromJson(attributes.toUtf8());
+        QString windowTypeAttrib = document.object().value("window").toString();
+        if (windowTypeAttrib.length() > 0)
+            windowType = windowTypeAttrib;
+    }
+
+    if (windowFeatures.contains("height"))
+        height = windowFeatures["attributes"].toInt();
+
+    WebApplicationWindow *window = new WebApplicationWindow(this, request->url(),
+                                                            windowType, QSize(width, height), false);
 
     connect(window, SIGNAL(closed()), this, SLOT(windowClosed()));
 
@@ -225,6 +215,8 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
 
     mChildWindows.append(window);
 }
+
+#endif
 
 void WebApplication::windowClosed()
 {
@@ -243,17 +235,19 @@ void WebApplication::windowClosed()
         delete window;
 
         // if no child window is left close the main (headless) window too
-        if (mChildWindows.count() == 0 && !mLaunchedAtBoot) {
+        if (mChildWindows.count() == 0 && !mLaunchedAtBoot && headless()) {
             qDebug() << "All child windows of app" << id()
                      << "were closed so closing the main window too";
 
             delete mMainWindow;
+            mMainWindow = 0;
             emit closed();
         }
     }
     else if (window == mMainWindow) {
         // the main window was closed so close all child windows too
         delete mMainWindow;
+        mMainWindow = 0;
 
         qDebug() << "The main window of app " << id()
                  << "was closed, so closing all child windows too";
@@ -266,12 +260,22 @@ void WebApplication::windowClosed()
     }
 }
 
+void WebApplication::kill()
+{
+    emit closed();
+}
+
+bool WebApplication::validateResourcePath(const QString &path)
+{
+    return ResourcePathValidator::instance().validate(path, mPrivileged);
+}
+
 QString WebApplication::id() const
 {
     return mDescription.id();
 }
 
-QString WebApplication::processId() const
+int64_t WebApplication::processId() const
 {
     return mProcessId;
 }
@@ -291,11 +295,6 @@ QString WebApplication::identifier() const
     return mIdentifier;
 }
 
-int WebApplication::activityId() const
-{
-    return mActivityId;
-}
-
 QString WebApplication::parameters() const
 {
     return mParameters;
@@ -309,6 +308,36 @@ bool WebApplication::headless() const
 bool WebApplication::privileged() const
 {
     return mPrivileged;
+}
+
+bool WebApplication::internetConnectivityRequired() const
+{
+    return mDescription.internetConnectivityRequired();
+}
+
+QStringList WebApplication::urlsAllowed() const
+{
+    return mDescription.urlsAllowed();
+}
+
+bool WebApplication::hasRemoteEntryPoint() const
+{
+    return mDescription.hasRemoteEntryPoint();
+}
+
+QString WebApplication::userAgent() const
+{
+    return mDescription.userAgent();
+}
+
+int WebApplication::activityId() const
+{
+    return mActivity.id();
+}
+
+bool WebApplication::loadingAnimationDisabled() const
+{
+    return mDescription.loadingAnimationDisabled();
 }
 
 } // namespace luna

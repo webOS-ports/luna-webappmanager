@@ -15,18 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-import QtQuick 2.0
-import QtQuick.Window 2.0
-import LunaNext.Common 0.1
-import "."
+#ifndef APPLICATIONPLUGIN_H
+#define APPLICATIONPLUGIN_H
 
-Window {
-    id: root
+#include <QObject>
+#include <QList>
 
-    width: webAppWindow.size.width
-    height: webAppWindow.size.height
+namespace luna
+{
 
-    ApplicationContainer {
-        id: appContainer
-    }
-}
+class BaseExtension;
+class ApplicationEnvironment;
+
+class ApplicationPlugin
+{
+public:
+    virtual QList<BaseExtension*> createExtensions(ApplicationEnvironment *executor) = 0;
+};
+
+} // namespace luna
+
+Q_DECLARE_INTERFACE(luna::ApplicationPlugin, "org.webosports.Application.PluginInterface")
+
+#endif // APPLICATIONPLUGIN_H

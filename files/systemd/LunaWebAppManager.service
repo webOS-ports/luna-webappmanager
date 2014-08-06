@@ -5,7 +5,7 @@ Requires=luna-next.service
 
 [Service]
 Type=notify
-ExecStart=/usr/sbin/WebAppMgr --systemd
+ExecStart=/usr/sbin/LunaWebAppMgr --systemd
 Restart=always
 
 [Install]

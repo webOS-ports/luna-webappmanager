@@ -19,38 +19,34 @@
 #define WEBAPPMANAGERSERVICE_H_
 
 #include <glib.h>
-#include <luna-service2/lunaservice.h>
+#include <luna-service2/lunaservice.hpp>
 
 namespace luna
 {
 
 class WebAppManager;
 
-class WebAppManagerService
+class WebAppManagerService : private LS::Handle
 {
 public:
-    WebAppManagerService(WebAppManager *webAppManager, GMainLoop *mainLoop);
+    WebAppManagerService(WebAppManager *webAppManager);
     ~WebAppManagerService();
 
-    static bool onLaunchAppCb(LSHandle *handle, LSMessage *message, void *data);
-    static bool onLaunchUrlCb(LSHandle *handle, LSMessage *message, void *data);
-    static bool onKillAppCb(LSHandle *handle, LSMessage *message, void *data);
-    static bool onIsAppRunningCb(LSHandle *handle, LSMessage *message, void *data);
-    static bool onListRunningAppsCb(LSHandle *handle, LSMessage *message, void *data);
-
-    LSHandle* privateBus() const;
+    void notifyAppHasStarted(const QString& appId, int64_t processId);
+    void notifyAppHasFinished(const QString& appId, int64_t processId);
 
 private:
-    void startService();
-
-    bool onLaunchApp(LSHandle *handle, LSMessage *message);
-    bool onLaunchUrl(LSHandle *handle, LSMessage *message);
+    bool launchApp(LSMessage &message);
+    bool launchUrl(LSMessage &message);
+    bool killApp(LSMessage &message);
+    bool isAppRunning(LSMessage &message);
+    bool listRunningApps(LSMessage &message);
+    bool registerForAppEvents(LSMessage &message);
+    bool relaunchApp(LSMessage &message);
 
 private:
     WebAppManager *mWebAppManager;
-    GMainLoop *mMainLoop;
-    LSPalmService *mService;
-    LSHandle *mPrivateBus;
+    LS::SubscriptionPoint mAppEventSubscriptions;
 };
 
 } // namespace luna

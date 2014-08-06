@@ -1,4 +1,4 @@
-project(WebAppMgr)
+project(LunaWebAppManager)
 
 cmake_minimum_required(VERSION 2.8.8)
 
@@ -9,7 +9,7 @@ webos_component(0 1 0)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -fvisibility-inlines-hidden -Wall -std=c++0x")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x -g")
 
 find_package(Qt5Gui REQUIRED)
 if(NOT Qt5Gui_FOUND)
@@ -38,5 +38,17 @@ pkg_check_modules(LS2 luna-service2 REQUIRED)
 pkg_check_modules(SYSTEMD_DAEMON libsystemd-daemon REQUIRED)
 pkg_check_modules(PBNJSON_C pbnjson_c REQUIRED)
 pkg_check_modules(LUNA_SYSMGR_COMMON LunaSysMgrCommon REQUIRED)
+pkg_check_modules(WEBOS_APPLICATION webos-application REQUIRED)
+pkg_check_modules(LUNA_PREFS luna-prefs REQUIRED)
+pkg_check_modules(CONNMAN_QT5 connman-qt5 REQUIRED)
 
+set(WITH_UNMODIFIED_QTWEBKIT FALSE CACHE BOOL "Set to TRUE to compiled with an unmodified qtwebkit version")
+if(WITH_UNMODIFIED_QTWEBKIT)
+    add_definitions(-DWITH_UNMODIFIED_QTWEBKIT)
+endif()
+
+add_subdirectory(lib)
+include_directories(lib)
 add_subdirectory(src)
+
+webos_build_configured_file(files/pkgconfig/webapp-plugin.pc PKGCONFIGDIR "")

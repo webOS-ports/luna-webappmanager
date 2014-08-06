@@ -1,6 +1,6 @@
 {
     "role": {
-        "exeName":"@WEBOS_INSTALL_SBINDIR@/WebAppMgr",
+        "exeName":"@WEBOS_INSTALL_SBINDIR@/LunaWebAppManager",
         "type": "privileged",
         "allowedNames": ["org.webosports.webappmanager"]
     },

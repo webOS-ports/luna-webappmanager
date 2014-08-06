@@ -17,6 +17,7 @@
 
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 
 #include "utils.h"
 #include "webapplication.h"
@@ -38,84 +39,28 @@ namespace luna
  * - \ref org_webosports_webappmanager_is_app_running
  * - \ref org_webosports_webappmanager_list_running_apps
  */
-static LSMethod privateServiceMethods[] = {
-    { "launchApp", WebAppManagerService::onLaunchAppCb },
-    { "launchUrl", WebAppManagerService::onLaunchUrlCb },
-    { "killApp", WebAppManagerService::onKillAppCb },
-    { "isAppRunning", WebAppManagerService::onIsAppRunningCb },
-    { "listRunningApps", WebAppManagerService::onListRunningAppsCb },
-    { },
-};
 
-WebAppManagerService::WebAppManagerService(WebAppManager *webAppManager, GMainLoop *mainLoop)
-    : mWebAppManager(webAppManager),
-      mMainLoop(mainLoop),
-      mService(0),
-      mPrivateBus(0)
+WebAppManagerService::WebAppManagerService(WebAppManager *webAppManager)
+    : LS::Handle(LS::registerService(WEBAPPMANAGER_SERVICE_ID, false)),
+      mWebAppManager(webAppManager)
 {
-    startService();
+    attachToLoop(g_main_loop_new(g_main_context_default(), FALSE));
+
+    LS_CATEGORY_BEGIN(WebAppManagerService, "/")
+        LS_CATEGORY_METHOD(launchApp)
+        LS_CATEGORY_METHOD(launchUrl)
+        LS_CATEGORY_METHOD(killApp)
+        LS_CATEGORY_METHOD(isAppRunning)
+        LS_CATEGORY_METHOD(listRunningApps)
+        LS_CATEGORY_METHOD(registerForAppEvents)
+        LS_CATEGORY_METHOD(relaunchApp)
+    LS_CATEGORY_END
+
+    mAppEventSubscriptions.setServiceHandle(this);
 }
 
 WebAppManagerService::~WebAppManagerService()
 {
-}
-
-LSHandle* WebAppManagerService::privateBus() const
-{
-    return mPrivateBus;
-}
-
-void WebAppManagerService::startService()
-{
-    LSError lserror;
-    LSErrorInit(&lserror);
-
-    if (!LSRegisterPalmService(WEBAPPMANAGER_SERVICE_ID, &mService, &lserror)) {
-        g_warning("Failed to register %s as service", WEBAPPMANAGER_SERVICE_ID);
-        goto failed;
-    }
-
-    mPrivateBus = LSPalmServiceGetPrivateConnection(mService);
-    if (!mPrivateBus) {
-        g_warning("Unable to get private bus handle");
-        goto failed;
-    }
-
-    if (!LSRegisterCategory(mPrivateBus, "/", privateServiceMethods, NULL, NULL, &lserror)) {
-        g_warning("Failed to register category / on private bus");
-        goto failed;
-    }
-
-    if (!LSCategorySetData(mPrivateBus, "/", this, &lserror)) {
-        g_warning("Failed to set category data for private bus");
-        goto failed;
-    }
-
-    if (!LSGmainAttach(mPrivateBus, mMainLoop, &lserror)) {
-        g_warning("Could not attach private service to our main loop");
-        goto failed;
-    }
-
-    g_message("Successfully initialized %s service", WEBAPPMANAGER_SERVICE_ID);
-
-    return;
-
-failed:
-    if (LSErrorIsSet(&lserror)) {
-        LSErrorPrint(&lserror, stderr);
-        LSErrorFree(&lserror);
-    }
-
-    if (mPrivateBus && !LSUnregister(mPrivateBus, &lserror)) {
-        LSErrorPrint(&lserror, stderr);
-        LSErrorFree(&lserror);
-    }
-}
-
-bool WebAppManagerService::onLaunchAppCb(LSHandle *handle, LSMessage *message, void *data)
-{
-    WebAppManagerService *service = static_cast<WebAppManagerService*>(data);
-    return service->onLaunchApp(handle, message);
 }
 
 /*!
@@ -177,23 +122,30 @@ Example response for a failed call:
 }
 \endcode
 */
-bool WebAppManagerService::onLaunchApp(LSHandle *handle, LSMessage *message)
+bool WebAppManagerService::launchApp(LSMessage &message)
 {
-    QByteArray payload(LSMessageGetPayload(message));
+    LS::Message request(&message);
+
+    QByteArray payload(request.getPayload());
     if (payload.isEmpty()) {
-        luna_service_message_reply_error_bad_json(handle, message);
+        request.respond("{\"returnValue\":false,\"errorText\":\"Bad JSON\"}");
         return true;
     }
 
     QJsonDocument requestDocument = QJsonDocument::fromJson(payload);
     if (!requestDocument.isObject()) {
-        luna_service_message_reply_error_bad_json(handle, message);
+        request.respond("{\"returnValue\":false,\"errorText\":\"Bad JSON\"}");
         return true;
     }
 
     QJsonObject rootObject = requestDocument.object();
     if (!(rootObject.contains("appDesc") && rootObject.value("appDesc").isObject())) {
-        luna_service_message_reply_error_bad_json(handle, message);
+        request.respond("{\"returnValue\":false,\"errorText\":\"No application description provided\"}");
+        return true;
+    }
+
+    if (!rootObject.contains("processId")) {
+        request.respond("{\"returnValue\":false,\"errorText\":\"No process id provided\"}");
         return true;
     }
 
@@ -207,7 +159,9 @@ bool WebAppManagerService::onLaunchApp(LSHandle *handle, LSMessage *message)
             params = rootObject.value("params").toString();
     }
 
-    WebApplication *app = mWebAppManager->launchApp(appDesc, params);
+    int processId = rootObject.value("processId").toInt();
+
+    WebApplication *app = mWebAppManager->launchApp(appDesc, params, processId);
 
     QJsonObject response;
 
@@ -222,41 +176,36 @@ bool WebAppManagerService::onLaunchApp(LSHandle *handle, LSMessage *message)
 
     QJsonDocument responseDocument(response);
 
-    LSError error;
-    LSErrorInit(&error);
-
-    if (!LSMessageReply(handle, message, responseDocument.toJson().constData(), &error)) {
-        LSErrorPrint(&error, stderr);
-        LSErrorFree(&error);
-    }
+    request.respond(responseDocument.toJson().constData());
 
     return true;
 }
 
-bool WebAppManagerService::onLaunchUrlCb(LSHandle *handle, LSMessage *message, void *data)
+bool WebAppManagerService::launchUrl(LSMessage &message)
 {
-    WebAppManagerService *service = static_cast<WebAppManagerService*>(data);
-    return service->onLaunchUrl(handle, message);
-}
+    LS::Message request(&message);
 
-bool WebAppManagerService::onLaunchUrl(LSHandle *handle, LSMessage *message)
-{
-    QByteArray payload(LSMessageGetPayload(message));
+    QByteArray payload(request.getPayload());
     if (payload.isEmpty()) {
-        luna_service_message_reply_error_bad_json(handle, message);
+        request.respond("{\"returnValue\":false,\"errorText\":\"Bad JSON\"}");
         return true;
     }
 
     QJsonDocument requestDocument = QJsonDocument::fromJson(payload);
     if (!requestDocument.isObject()) {
-        luna_service_message_reply_error_bad_json(handle, message);
+        request.respond("{\"returnValue\":false,\"errorText\":\"Bad JSON\"}");
         return true;
     }
 
     QJsonObject rootObject = requestDocument.object();
 
     if (!(rootObject.contains("url") && rootObject.value("url").isString())) {
-        luna_service_message_reply_error_bad_json(handle, message);
+        request.respond("{\"returnValue\":false,\"errorText\":\"No URL to launch provided\"}");
+        return true;
+    }
+
+    if (!rootObject.contains("processId")) {
+        request.respond("{\"returnValue\":false,\"errorText\":\"No process id provided\"}");
         return true;
     }
 
@@ -274,7 +223,9 @@ bool WebAppManagerService::onLaunchUrl(LSHandle *handle, LSMessage *message)
     if (rootObject.contains("params") && rootObject.value("params").isObject())
         params = jsonObjectToString(rootObject.value("params").toObject());
 
-    WebApplication *app = mWebAppManager->launchUrl(url, windowType, appDesc, params);
+    int processId = rootObject.value("processId").toInt();
+
+    WebApplication *app = mWebAppManager->launchUrl(url, windowType, appDesc, params, processId);
 
     QJsonObject response;
 
@@ -289,33 +240,121 @@ bool WebAppManagerService::onLaunchUrl(LSHandle *handle, LSMessage *message)
 
     QJsonDocument responseDocument(response);
 
-    LSError error;
-    LSErrorInit(&error);
+    request.respond(responseDocument.toJson().constData());
 
-    if (!LSMessageReply(handle, message, responseDocument.toJson().constData(), &error)) {
-        LSErrorPrint(&error, stderr);
-        LSErrorFree(&error);
+    return true;
+}
+
+bool WebAppManagerService::killApp(LSMessage &message)
+{
+    LS::Message request(&message);
+
+    QJsonDocument document = QJsonDocument::fromJson(request.getPayload());
+
+    QJsonObject root = document.object();
+
+    if (root.contains("processId")) {
+        int64_t processId = root.value("processId").toInt();
+        mWebAppManager->killApp(processId);
+    }
+    else if (root.contains("appId")) {
+        QString appId = root.value("appId").toString();
+        mWebAppManager->killApp(appId);
+    }
+    else {
+        request.respond("\"returnValue\":false,\"errorText\":\"Missing appId or processId parameter\"}");
+        return true;
     }
 
+    request.respond("{\"returnValue\":true}");
+
     return true;
 }
 
-
-bool WebAppManagerService::onKillAppCb(LSHandle *handle, LSMessage *message, void *data)
+bool WebAppManagerService::listRunningApps(LSMessage &message)
 {
-    luna_service_message_reply_error_not_implemented(handle, message);
+    LS::Message request(&message);
+
+    QJsonObject rootObj;
+
+    QJsonArray runningApps;
+    Q_FOREACH(WebApplication *app, mWebAppManager->applications()) {
+        QJsonObject appObj;
+        appObj.insert("appId", app->id());
+        appObj.insert("processId", app->processId());
+        runningApps.append(QJsonValue(appObj));
+    }
+
+    rootObj.insert("apps", runningApps);
+
+    QJsonDocument document(rootObj);
+
+    request.respond(document.toJson().constData());
+
     return true;
 }
 
-bool WebAppManagerService::onListRunningAppsCb(LSHandle *handle, LSMessage *message, void *data)
+bool WebAppManagerService::isAppRunning(LSMessage &message)
 {
-    luna_service_message_reply_error_not_implemented(handle, message);
+    LS::Message request(&message);
+
+    QJsonDocument document = QJsonDocument::fromJson(QByteArray(request.getPayload()));
+
+    QJsonObject root = document.object();
+
+    if (!root.contains("appId")) {
+        request.respond("{\"returnValue\":false,\"errorText\":\"Missing appId parameter\"}");
+        return true;
+    }
+
+    QString appId = root.value("appId").toString();
+
+    bool running = mWebAppManager->isAppRunning(appId);
+    QString response = QString("{\"returnValue\":true,\"running\":%1}").arg(running ? "true" : "false");
+
+    request.respond(response.toUtf8().constData());
+
     return true;
 }
 
-bool WebAppManagerService::onIsAppRunningCb(LSHandle *handle, LSMessage *message, void *data)
+bool WebAppManagerService::registerForAppEvents(LSMessage &message)
 {
-    luna_service_message_reply_error_not_implemented(handle, message);
+    LS::Message request(&message);
+
+    if (!request.isSubscription()) {
+        request.respond("{\"returnValue\":false,\"errorText\":\"You can only subscribe to this method\"}");
+        return true;
+    }
+
+    mAppEventSubscriptions.subscribe(request);
+
+    request.respond("{\"returnValue\":true}");
+
+    return true;
+}
+
+void WebAppManagerService::notifyAppHasStarted(const QString &appId, int64_t processId)
+{
+    QString payload = QString("{\"event\":\"start\",\"appId\":\"%1\",\"processId\":%2}")
+                        .arg(appId)
+                        .arg(processId);
+
+    mAppEventSubscriptions.post(payload.toUtf8().constData());
+}
+
+void WebAppManagerService::notifyAppHasFinished(const QString &appId, int64_t processId)
+{
+    QString payload = QString("{\"event\":\"close\",\"appId\":\"%1\",\"processId\":%2}")
+                        .arg(appId)
+                        .arg(processId);
+
+    mAppEventSubscriptions.post(payload.toUtf8().constData());
+}
+
+bool WebAppManagerService::relaunchApp(LSMessage &message)
+{
+    LS::Message request(&message);
+
     return true;
 }
 

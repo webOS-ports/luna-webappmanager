@@ -17,30 +17,28 @@
  * under the License.
  */
 
-var pluginObjects = {}
+var extensionObjects = {}
 
 
-function addPlugin(pluginName, pluginObject) {
-    pluginObjects[pluginName] = pluginObject
+function addExtension(extensionName, pluginObject) {
+    extensionObjects[extensionName] = pluginObject
 }
 
 function messageHandler(message) {
     var received = JSON.parse(message.data);
-    if (typeof received === 'undefined')
+    if (typeof received === 'undefined' || typeof received.messageType === 'undefined')
         return false;
-    if (typeof received.messageType === 'undefined')
-        return false;
-    if (received.messageType === "callPluginFunction") {
-        if (typeof received.plugin === 'undefined' || typeof received.func == 'undefined')
+    if (received.messageType === "callExtensionFunction") {
+        if (typeof received.extension === 'undefined' || typeof received.func === 'undefined')
             return false;
-        execMethod(received.plugin, received.func, received.params);
+        execMethod(received.extension, received.func, received.params);
     }
     return true;
 }
 
-function execMethod(pluginName, functionName, params) {
-    if (typeof pluginObjects[pluginName][functionName] != "function")
+function execMethod(extensionName, functionName, params) {
+    if (typeof extensionObjects[extensionName][functionName] != "function")
         return false;
-    pluginObjects[pluginName][functionName].apply(this, params);
+    extensionObjects[extensionName][functionName].apply(this, params);
     return true;
 }

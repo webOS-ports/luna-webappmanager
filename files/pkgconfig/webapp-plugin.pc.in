@@ -1,0 +1,8 @@
+libdir=@WEBOS_INSTALL_LIBDIR@
+includedir=@WEBOS_INSTALL_INCLUDEDIR@
+
+Name: webapp-plugin
+Description: Library to build native plugins for webOS ports web applications
+Version: @WEBOS_COMPONENT_VERSION@
+Libs: -L${libdir} -lwebapp-plugin
+Cflags: -I${includedir} -I${includedir}/webapp-plugin

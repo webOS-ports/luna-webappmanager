@@ -20,41 +20,45 @@
 
 #include <QQuickView>
 #include <QMap>
+#ifndef WITH_UNMODIFIED_QTWEBKIT
 #include <QtWebKit/private/qwebnewpagerequest_p.h>
-#include <luna-service2/lunaservice.h>
+#endif
 
 #include "applicationdescription.h"
+#include "activity.h"
 
 namespace luna
 {
 
 class WebAppManager;
-class BasePlugin;
+class BaseExtension;
 class WebApplicationWindow;
 
 class WebApplication : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString id READ id CONSTANT)
-    Q_PROPERTY(QString processId READ processId CONSTANT)
+    Q_PROPERTY(int64_t processId READ processId CONSTANT)
     Q_PROPERTY(QUrl url READ url CONSTANT)
     Q_PROPERTY(QUrl icon READ icon CONSTANT)
     Q_PROPERTY(QString identifier READ identifier CONSTANT)
     Q_PROPERTY(int activityId READ activityId CONSTANT)
-    Q_PROPERTY(QString parameters READ parameters CONSTANT)
+    Q_PROPERTY(QString parameters READ parameters NOTIFY parametersChanged)
     Q_PROPERTY(bool headless READ headless CONSTANT)
     Q_PROPERTY(bool privileged READ privileged CONSTANT)
+    Q_PROPERTY(bool internetConnectivityRequired READ internetConnectivityRequired CONSTANT)
+    Q_PROPERTY(QStringList urlsAllowed READ urlsAllowed CONSTANT)
+    Q_PROPERTY(QString userAgent READ userAgent CONSTANT)
+    Q_PROPERTY(bool loadingAnimationDisabled READ loadingAnimationDisabled CONSTANT)
 
 public:
-    WebApplication(WebAppManager *manager, const QUrl& url, const QString& windowType,
+    WebApplication(WebAppManager *launcher, const QUrl& url, const QString& windowType,
                    const ApplicationDescription& desc, const QString& parameters,
-                   const QString& processId, QObject *parent = 0);
+                   const int64_t processId, QObject *parent = 0);
     virtual ~WebApplication();
 
-    void relaunch(const QString& parameters);
-
     QString id() const;
-    QString processId() const;
+    int64_t processId() const;
     QUrl url() const;
     QUrl icon() const;
     QString identifier() const;
@@ -62,36 +66,43 @@ public:
     QString parameters() const;
     bool headless() const;
     bool privileged() const;
-
-    void setActivityId(int activityId);
+    bool internetConnectivityRequired() const;
+    QStringList urlsAllowed() const;
+    bool hasRemoteEntryPoint() const;
+    QString userAgent() const;
+    bool loadingAnimationDisabled() const;
 
     void changeActivityFocus(bool focus);
 
-    static bool activityManagerCallback(LSHandle *handle, LSMessage *message, void *user_data);
+    bool validateResourcePath(const QString& path);
 
+    void relaunch(const QString &parameters);
+
+#ifndef WITH_UNMODIFIED_QTWEBKIT
     void createWindow(QWebNewPageRequest *request);
+#endif
 
-signals:
+    void kill();
+
+Q_SIGNALS:
     void closed();
 
-public slots:
+    void parametersChanged();
+
+public Q_SLOTS:
     void windowClosed();
 
 private:
-    WebAppManager *mManager;
+    WebAppManager *mLauncher;
     ApplicationDescription mDescription;
-    QString mProcessId;
-    LSMessageToken mActivityManagerToken;
+    int64_t mProcessId;
     QString mIdentifier;
-    int mActivityId;
     QString mParameters;
     WebApplicationWindow *mMainWindow;
     QList<WebApplicationWindow*> mChildWindows;
     bool mLaunchedAtBoot;
     bool mPrivileged;
-
-    void createActivity();
-    void destroyActivity();
+    Activity mActivity;
 };
 
 } // namespace luna

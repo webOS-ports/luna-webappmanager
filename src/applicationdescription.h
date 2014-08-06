@@ -21,6 +21,7 @@
 #include <QObject>
 #include <QString>
 #include <QUrl>
+#include <QStringList>
 
 namespace luna
 {
@@ -33,6 +34,9 @@ class ApplicationDescription : public QObject
     Q_PROPERTY(QUrl icon READ icon CONSTANT)
     Q_PROPERTY(QUrl entryPoint READ entryPoint CONSTANT)
     Q_PROPERTY(bool headless READ headless CONSTANT)
+    Q_PROPERTY(bool flickable READ flickable CONSTANT)
+    Q_PROPERTY(bool internetConnectivityRequired READ internetConnectivityRequired CONSTANT)
+    Q_PROPERTY(bool loadingAnimationDisabled READ loadingAnimationDisabled CONSTANT)
 
 public:
     ApplicationDescription();
@@ -45,6 +49,16 @@ public:
     QUrl icon() const;
     QUrl entryPoint() const;
     bool headless() const;
+    bool flickable() const;
+    bool internetConnectivityRequired() const;
+    QStringList urlsAllowed() const;
+    QString userAgent() const;
+    bool loadingAnimationDisabled() const;
+
+    QString pluginName() const;
+    QString basePath() const;
+
+    bool hasRemoteEntryPoint() const;
 
 private:
     QString mId;
@@ -52,6 +66,16 @@ private:
     QUrl mIcon;
     QUrl mEntryPoint;
     bool mHeadless;
+    QString mApplicationBasePath;
+    QString mPluginName;
+    bool mFlickable;
+    bool mInternetConnectivityRequired;
+    QStringList mUrlsAllowed;
+    QString mUserAgent;
+    bool mLoadingAnimationDisabled;
+
+    void initializeFromData(const QString &data);
+    QUrl locateEntryPoint(const QString &entryPoint);
 };
 
 } // namespace luna

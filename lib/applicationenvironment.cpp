@@ -15,18 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-import QtQuick 2.0
-import QtQuick.Window 2.0
-import LunaNext.Common 0.1
-import "."
+#include "applicationenvironment.h"
 
-Window {
-    id: root
+namespace luna
+{
 
-    width: webAppWindow.size.width
-    height: webAppWindow.size.height
-
-    ApplicationContainer {
-        id: appContainer
-    }
+ApplicationEnvironment::ApplicationEnvironment(QObject *parent) :
+    QObject(parent)
+{
 }
+
+} // namespace luna
