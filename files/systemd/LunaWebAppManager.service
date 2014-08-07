@@ -5,7 +5,7 @@ Requires=luna-next.service
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/LunaWebAppMgr
+ExecStart=/usr/sbin/LunaWebAppManager
 Restart=always
 
 [Install]
