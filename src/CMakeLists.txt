@@ -58,7 +58,7 @@ target_link_libraries(LunaWebAppManager
 #    ${LS2CXX_LIBRARIES}
     -lluna-service2++
     ${GLIB2_LIBRARIES}
-    ${SYSTEMD_DAEMON_LIBRARIES}
+    ${SYSTEMD_LIBRARIES}
     ${PBNJSON_C_LIBRARIES}
     ${LUNA_SYSMGR_COMMON_LIBRARIES}
     ${WEBOS_APPLICATION_LIBRARIES}

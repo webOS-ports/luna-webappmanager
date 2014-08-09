@@ -21,6 +21,7 @@
 #include <QtGlobal>
 
 #include <glib.h>
+#include <systemd/sd-daemon.h>
 
 #include <LocalePreferences.h>
 
@@ -126,6 +127,9 @@ int main(int argc, char **argv)
 
     LocalePreferences::instance();
     luna::SystemTime::instance();
+
+    if (option_systemd)
+        sd_notify(0, "READY=1");
 
     webAppManager.exec();
 
