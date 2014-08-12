@@ -38,7 +38,6 @@ pkg_check_modules(LS2 luna-service2 REQUIRED)
 pkg_check_modules(SYSTEMD libsystemd REQUIRED)
 pkg_check_modules(PBNJSON_C pbnjson_c REQUIRED)
 pkg_check_modules(LUNA_SYSMGR_COMMON LunaSysMgrCommon REQUIRED)
-pkg_check_modules(WEBOS_APPLICATION webos-application REQUIRED)
 pkg_check_modules(LUNA_PREFS luna-prefs REQUIRED)
 pkg_check_modules(CONNMAN_QT5 connman-qt5 REQUIRED)
 

@@ -35,8 +35,6 @@
 
 #include <Settings.h>
 
-#include <webos_application.h>
-
 #include <sys/types.h>
 #include <unistd.h>
 
