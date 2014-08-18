@@ -53,7 +53,7 @@ WebAppManagerService::WebAppManagerService(WebAppManager *webAppManager)
         LS_CATEGORY_METHOD(isAppRunning)
         LS_CATEGORY_METHOD(listRunningApps)
         LS_CATEGORY_METHOD(registerForAppEvents)
-        LS_CATEGORY_METHOD(relaunchApp)
+        LS_CATEGORY_METHOD(relaunch)
     LS_CATEGORY_END
 
     mAppEventSubscriptions.setServiceHandle(this);
@@ -351,9 +351,30 @@ void WebAppManagerService::notifyAppHasFinished(const QString &appId, int64_t pr
     mAppEventSubscriptions.post(payload.toUtf8().constData());
 }
 
-bool WebAppManagerService::relaunchApp(LSMessage &message)
+bool WebAppManagerService::relaunch(LSMessage &message)
 {
     LS::Message request(&message);
+
+    QJsonDocument document = QJsonDocument::fromJson(QByteArray(request.getPayload()));
+
+    QJsonObject root = document.object();
+
+    if (!root.contains("appId")) {
+        request.respond("{\"returnValue\":false,\"errorText\":\"Missing appId parameter\"}");
+        return true;
+    }
+
+    QString appId = root.value("appId").toString();
+
+    QString params = "{}";
+    if (!root.contains("params") && root.value("params").isString())
+        params = root.value("params").toString();
+
+    bool success = mWebAppManager->relaunch(appId, params);
+    if (!success)
+        request.respond("{\"returnValue\":false,\"errorText\":\"Failed to relaunch application\"}");
+    else
+        request.respond("{\"returnValue\":true}");
 
     return true;
 }

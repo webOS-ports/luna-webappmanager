@@ -201,4 +201,23 @@ QList<WebApplication*> WebAppManager::applications() const
     return mApplications.values();
 }
 
+bool WebAppManager::relaunch(const QString &appId, const QString &params)
+{
+    WebApplication *targetApp = 0;
+
+    Q_FOREACH(WebApplication *app, mApplications) {
+        if (app->id() == appId) {
+            targetApp = app;
+            break;
+        }
+    }
+
+    if (!targetApp)
+        return false;
+
+    targetApp->relaunch(params);
+
+    return true;
+}
+
 } // namespace luna

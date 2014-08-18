@@ -49,6 +49,7 @@ public:
     bool isAppRunning(const QString& appId);
     void killApp(const QString& appId);
     void killApp(int64_t processId);
+    bool relaunch(const QString& appId, const QString& params);
 
     QList<WebApplication*> applications() const;
 

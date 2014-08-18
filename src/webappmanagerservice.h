@@ -42,7 +42,7 @@ private:
     bool isAppRunning(LSMessage &message);
     bool listRunningApps(LSMessage &message);
     bool registerForAppEvents(LSMessage &message);
-    bool relaunchApp(LSMessage &message);
+    bool relaunch(LSMessage &message);
 
 private:
     WebAppManager *mWebAppManager;
