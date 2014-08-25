@@ -336,10 +336,8 @@ void WebApplicationWindow::createDefaultExtensions()
     addExtension(new PalmSystemExtension(this));
     // addExtension(new PalmServiceBridgeExtension(this));
 
-    // Additional Web APIs only for privileged applications
-    if (mApplication->privileged()) {
+    if (mApplication->id() == "org.webosports.app.settings")
         addExtension(new WiFiManager(this));
-    }
 }
 
 void WebApplicationWindow::addExtension(BaseExtension *extension)
