@@ -57,13 +57,13 @@ WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QU
     mKeepAlive(false),
     mStagePreparing(true),
     mStageReady(false),
-    mShowWindowTimer(this),
+    mStageReadyTimer(this),
     mSize(size)
 {
     qDebug() << __PRETTY_FUNCTION__ << this;
 
-    connect(&mShowWindowTimer, SIGNAL(timeout()), this, SLOT(onShowWindowTimeout()));
-    mShowWindowTimer.setSingleShot(true);
+    connect(&mStageReadyTimer, SIGNAL(timeout()), this, SLOT(onStageReadyTimeout()));
+    mStageReadyTimer.setSingleShot(true);
 
     assignCorrectTrustScope();
 
@@ -105,7 +105,6 @@ void WebApplicationWindow::createAndSetup()
 
     mEngine.rootContext()->setContextProperty("webApp", mApplication);
     mEngine.rootContext()->setContextProperty("webAppWindow", this);
-    mEngine.rootContext()->setContextProperty("webAppUrl", mUrl);
 
     connect(&mEngine, &QQmlEngine::quit, [=]() {
         mWindow->close();
@@ -145,8 +144,10 @@ void WebApplicationWindow::createAndSetup()
         mWindow->create();
 
         // set different information bits for our window
-        setWindowProperty(QString("appId"), QVariant(mApplication->id()));
         setWindowProperty(QString("type"), QVariant(mWindowType));
+        setWindowProperty(QString("appId"), QVariant(mApplication->id()));
+
+        connect(mWindow, SIGNAL(visibleChanged(bool)), this, SLOT(onVisibleChanged(bool)));
     }
 
     qDebug() << __PRETTY_FUNCTION__ << "Configuring application webview ...";
@@ -165,19 +166,46 @@ void WebApplicationWindow::createAndSetup()
 #endif
 
     if (mTrustScope == TrustScopeSystem)
-        initializeAllExtensions();
+        loadAllExtensions();
+
+    /* don't show the launcher window directly as it will stay hidden until the
+     * user brings it into the foreground */
+    if (mWindowType != "launcher")
+      show();
+    else
+        qDebug() << __PRETTY_FUNCTION__ << this << "Not going to show launcher window for now";
+
+    /* if we have a headless window we need to assign the url now to make sure
+     * it's webview gets loaded with the right content. For a real window we're
+     * waiting until the window is really visible to not block the WebProcess */
+    if (mHeadless) {
+       qDebug() << __PRETTY_FUNCTION__ << this << "Setting url for headless app" << mApplication->id();
+       mWebView->setUrl(mUrl);
+    }
 
     /* If we're running a remote site mark the window as fully loaded */
     if (mTrustScope == TrustScopeRemote)
         stageReady();
 }
 
-void WebApplicationWindow::onShowWindowTimeout()
+void WebApplicationWindow::onStageReadyTimeout()
 {
     qDebug() << __PRETTY_FUNCTION__;
 
     // we got no stage ready call yet so go forward showing the window
     stageReady();
+}
+
+void WebApplicationWindow::onVisibleChanged(bool visible)
+{
+    qDebug() << __PRETTY_FUNCTION__ << visible;
+
+    /* All normal windows can be safely shown here but not the launcher application. Making
+     * it visible has to be defered until the shell decides to put it on the screen. */
+    if (mApplication->id() != "com.palm.launcher") {
+        qDebug() << __PRETTY_FUNCTION__ << this << "Setting url for carded app" << mApplication->id();
+        mWebView->setUrl(mUrl);
+    }
 }
 
 void WebApplicationWindow::setupPage()
@@ -192,8 +220,6 @@ void WebApplicationWindow::setupPage()
 
     mWebView->setZoomFactor(zoomFactor);
 
-    show();
-
     // We need to finish the stage preparation in case of a remote entry point
     // otherwise it will never stop loading
     if (mApplication->hasRemoteEntryPoint())
@@ -203,6 +229,19 @@ void WebApplicationWindow::setupPage()
 void WebApplicationWindow::notifyAppAboutFocusState(bool focus)
 {
     qDebug() << "DEBUG: We become" << (focus ? "focused" : "unfocused");
+
+    /* When the launcher comes into the foreground the first time it isn't loaded
+     * with any url so we have to do it at this point */
+    if (mApplication->id() == "com.palm.launcher" && mWebView->url().isEmpty()) {
+        qDebug() << __PRETTY_FUNCTION__ << this << "Setting url for com.palm.launcher";
+        mWebView->setUrl(mUrl);
+        show();
+
+        mApplication->changeActivityFocus(focus);
+
+        /* sending stageActivated/stageDeactivated does not make sense at this point */
+        return;
+    }
 
     QString action = focus ? "stageActivated" : "stageDeactivated";
 
@@ -235,8 +274,8 @@ void WebApplicationWindow::onLoadingChanged(QWebLoadRequest *request)
         return;
 
     // If we don't got stageReady() start a timeout to wait for it
-    else if (mStagePreparing && !mStageReady && !mShowWindowTimer.isActive())
-        mShowWindowTimer.start(3000);
+    else if (mStagePreparing && !mStageReady && !mStageReadyTimer.isActive())
+        mStageReadyTimer.start(3000);
 }
 
 #ifndef WITH_UNMODIFIED_QTWEBKIT
@@ -309,7 +348,7 @@ void WebApplicationWindow::addExtension(BaseExtension *extension)
     mExtensions.insert(extension->name(), extension);
 }
 
-void WebApplicationWindow::initializeAllExtensions()
+void WebApplicationWindow::loadAllExtensions()
 {
     foreach(BaseExtension *extension, mExtensions.values()) {
         qDebug() << "Initializing extension" << extension->name();
@@ -368,7 +407,7 @@ void WebApplicationWindow::stageReady()
 
     emit readyChanged();
 
-    mShowWindowTimer.stop();
+    mStageReadyTimer.stop();
 }
 
 void WebApplicationWindow::show()
@@ -473,6 +512,11 @@ QString WebApplicationWindow::trustScope() const
         return QString("system");
 
     return QString("remote");
+}
+
+QUrl WebApplicationWindow::url() const
+{
+    return mUrl;
 }
 
 } // namespace luna

@@ -103,8 +103,6 @@ Flickable {
         anchors.top: parent.top
         anchors.bottom: keyboardContainer.top
 
-        url: webAppUrl
-
         UserAgent {
             id: userAgent
         }
@@ -209,7 +207,7 @@ Flickable {
             onProcessDidCrash: {
                 if (numRestarts < maxRestarts) {
                     console.log("ERROR: The web process has crashed. Restart it ...");
-                    webView.url = webAppUrl;
+                    webView.url = webAppWindow.url;
                     webView.reload();
                     numRestarts += 1;
                 }

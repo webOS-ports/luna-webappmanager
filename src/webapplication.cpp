@@ -209,8 +209,6 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
 
     request->setWebView(window->webView());
 
-    window->show();
-
     mChildWindows.append(window);
 }
 

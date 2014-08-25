@@ -95,6 +95,9 @@ WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &
     QQuickWebViewExperimental::setFlickableViewportEnabled(desc.flickable());
 
     QString windowType = "card";
+    if (desc.id() == "com.palm.launcher")
+        windowType = "launcher";
+
     QUrl entryPoint = desc.entryPoint();
     WebApplication *app = new WebApplication(this, entryPoint, windowType,
                                              desc, parameters, processId);

@@ -51,6 +51,7 @@ class WebApplicationWindow : public ApplicationEnvironment
     Q_PROPERTY(bool ready READ ready NOTIFY readyChanged)
     Q_PROPERTY(QSize size READ size NOTIFY sizeChanged)
     Q_PROPERTY(QString trustScope READ trustScope CONSTANT)
+    Q_PROPERTY(QUrl url READ url NOTIFY urlChanged)
 
 public:
     explicit WebApplicationWindow(WebApplication *application, const QUrl& url, const QString& windowType,
@@ -74,6 +75,7 @@ public:
     QSize size() const;
     bool active() const;
     QString trustScope() const;
+    QUrl url() const;
 
     QList<QUrl> userScripts() const;
 
@@ -90,6 +92,7 @@ Q_SIGNALS:
     void closed();
     void readyChanged();
     void sizeChanged();
+    void urlChanged();
 
 protected:
     bool eventFilter(QObject *object, QEvent *event);
@@ -102,7 +105,8 @@ private Q_SLOTS:
 #endif
     void onClosed();
     void onLoadingChanged(QWebLoadRequest *request);
-    void onShowWindowTimeout();
+    void onStageReadyTimeout();
+    void onVisibleChanged(bool visible);
 
 private:
     WebApplication *mApplication;
@@ -117,14 +121,14 @@ private:
     bool mKeepAlive;
     bool mStagePreparing;
     bool mStageReady;
-    QTimer mShowWindowTimer;
+    QTimer mStageReadyTimer;
     QList<QUrl> mUserScripts;
     QSize mSize;
     TrustScope mTrustScope;
 
     void assignCorrectTrustScope();
     void createAndSetup();
-    void initializeAllExtensions();
+    void loadAllExtensions();
     void addExtension(BaseExtension *extension);
     void createDefaultExtensions();
     void setWindowProperty(const QString &name, const QVariant &value);
