@@ -384,7 +384,7 @@ QString WebApplicationWindow::getIdentifierForFrame(const QString& id, const QSt
 {
     QString identifier = mApplication->identifier();
 
-    if (url.startsWith("file:///usr/lib/luna/system/luna-systemui/"))
+    if (url.startsWith("file:///usr/palm/applications/com.palm.systemui"))
         identifier = QString("com.palm.systemui %1").arg(mApplication->processId());
 
     qDebug() << __PRETTY_FUNCTION__ << "Decided identifier for frame" << id << "is" << identifier;
