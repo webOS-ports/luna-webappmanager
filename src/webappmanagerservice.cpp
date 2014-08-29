@@ -367,7 +367,7 @@ bool WebAppManagerService::relaunch(LSMessage &message)
     QString appId = root.value("appId").toString();
 
     QString params = "{}";
-    if (!root.contains("params") && root.value("params").isString())
+    if (root.contains("params") && root.value("params").isString())
         params = root.value("params").toString();
 
     bool success = mWebAppManager->relaunch(appId, params);
