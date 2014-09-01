@@ -281,7 +281,7 @@ bool WebAppManagerService::listRunningApps(LSMessage &message)
     Q_FOREACH(WebApplication *app, mWebAppManager->applications()) {
         QJsonObject appObj;
         appObj.insert("appId", app->id());
-        appObj.insert("processId", app->processId());
+        appObj.insert("processId", (qint64) app->processId());
         runningApps.append(QJsonValue(appObj));
     }
 
