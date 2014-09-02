@@ -202,7 +202,7 @@ void WebApplicationWindow::onVisibleChanged(bool visible)
 
     /* All normal windows can be safely shown here but not the launcher application. Making
      * it visible has to be defered until the shell decides to put it on the screen. */
-    if (mApplication->id() != "com.palm.launcher") {
+    if (mApplication->id() != "com.palm.launcher" && mWebView->url().isEmpty()) {
         qDebug() << __PRETTY_FUNCTION__ << this << "Setting url for carded app" << mApplication->id();
         mWebView->setUrl(mUrl);
     }
