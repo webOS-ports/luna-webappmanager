@@ -120,10 +120,7 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
-#if 0
-    if (option_debug)
-        setenv("QTWEBKIT_INSPECTOR_SERVER", "1122", 0);
-#endif
+    setenv("QTWEBKIT_INSPECTOR_SERVER", "1122", 0);
 
     LocalePreferences::instance();
     luna::SystemTime::instance();
