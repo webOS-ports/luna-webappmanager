@@ -170,7 +170,7 @@ bool WebAppManagerService::launchApp(LSMessage &message)
     if (!app)
         response.insert("errorText", QJsonValue(QString("Failed to launch application")));
     else
-        response.insert("processId", QJsonValue(app->processId()));
+        response.insert("processId", QJsonValue((qint64) app->processId()));
 
     response.insert("returnValue", QJsonValue(app != 0));
 
@@ -234,7 +234,7 @@ bool WebAppManagerService::launchUrl(LSMessage &message)
     if (!app)
         response.insert("errorText", QJsonValue(QString("Failed to launch application")));
     else
-        response.insert("processId", QJsonValue(app->processId()));
+        response.insert("processId", QJsonValue((qint64) app->processId()));
 
     response.insert("returnValue", QJsonValue(app != 0));
 

@@ -78,7 +78,7 @@ void Activity::setup()
     QJsonObject activity;
     activity.insert("name", mAppId);
     char *description = g_strdup_printf("%i", mProcessId);
-    activity.insert("description", mProcessId);
+    activity.insert("description", (qint64) mProcessId);
 
     QJsonObject activityType;
     activityType.insert("foreground", true);
