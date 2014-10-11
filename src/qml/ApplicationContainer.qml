@@ -174,6 +174,9 @@ Flickable {
 
                 if (experimental.preferences.hasOwnProperty("privileged"))
                     experimental.preferences.privileged = webApp.privileged;
+
+                if (experimental.preferences.hasOwnProperty("identifier"))
+                    experimental.preferences.identifier = webApp.identifier;
             }
 
             if (experimental.preferences.hasOwnProperty("logsPageMessagesToSystemConsole"))
@@ -181,9 +184,6 @@ Flickable {
 
             if (experimental.preferences.hasOwnProperty("suppressIncrementalRendering"))
                 experimental.preferences.suppressIncrementalRendering = true;
-
-            if (experimental.preferences.hasOwnProperty("identifier"))
-                experimental.preferences.identifier = webApp.identifier;
         }
 
         experimental.onMessageReceived: {
