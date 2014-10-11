@@ -44,8 +44,6 @@ WebAppManager::WebAppManager(int &argc, char **argv)
     // and will refuse to start. There should really no need to extend this list and
     // therefore it will be kept static forever.
     mAllowedHeadlessApps << "com.palm.app.email";
-    mAllowedHeadlessApps << "com.palm.app.calendar";
-    mAllowedHeadlessApps << "com.palm.app.clock";
     mAllowedHeadlessApps << "com.palm.systemui";
     mAllowedHeadlessApps << "org.webosinternals.tweaks";
     mAllowedHeadlessApps << "org.webosports.app.calendar";
