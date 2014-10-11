@@ -33,7 +33,7 @@ import "ua-overrides.js" as Overrides
 Item {
     // %1: form factor (Mobile, Tablet, Desktop)
     // %2: WebKit version
-    readonly property string _template: "Mozilla/5.0 (webOS; %1) WebKit/%2"
+    readonly property string _template: "Mozilla/5.0 (LuneOS; %1) WebKit/%2"
 
     // See Source/WebCore/Configurations/Version.xcconfig in QtWebKit’s source tree
     // TODO: determine this value at runtime
