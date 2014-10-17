@@ -120,6 +120,24 @@ Flickable {
         experimental.preferences.serifFontFamily: "Times New Roman"
         experimental.preferences.cursiveFontFamily: "Prelude"
 
+        experimental.databaseQuotaDialog: Item {
+            Component.onCompleted: {
+                console.log("Database quota extension request:");
+                console.log(" databaseName: " + model.databaseName);
+                console.log(" displayName: " + model.displayName);
+                console.log(" currentQuota: " + model.currentQuota);
+                console.log(" currentOriginUsage: " + model.currentOriginUsage);
+                console.log(" expectedUsage: " + model.expectedUsage);
+                console.log(" securityOrigin:");
+                console.log("   scheme: " + model.securityOrigin.scheme);
+                console.log("   host: " + model.securityOrigin.host);
+                console.log("   port: " + model.securityOrigin.port);
+
+                // we allow 5 MB for now
+                model.accepeted(5 * 1024 * 1024);
+            }
+        }
+
         function getUserAgentForApp(url) {
             /* if the app wants a specific user agent assign it instead of the default one */
             if (webApp.userAgent.length > 0)
