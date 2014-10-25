@@ -43,6 +43,7 @@ private:
     bool listRunningApps(LSMessage &message);
     bool registerForAppEvents(LSMessage &message);
     bool relaunch(LSMessage &message);
+    bool clearMemoryCaches(LSMessage &message);
 
 private:
     WebAppManager *mWebAppManager;

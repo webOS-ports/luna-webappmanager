@@ -221,4 +221,31 @@ bool WebAppManager::relaunch(const QString &appId, const QString &params)
     return true;
 }
 
+void WebAppManager::clearMemoryCaches()
+{
+    Q_FOREACH(WebApplication *app, mApplications) {
+        app->clearMemoryCaches();
+    }
+}
+
+void WebAppManager::clearMemoryCaches(qint64 processId)
+{
+    Q_FOREACH(WebApplication *app, mApplications) {
+        if (app->processId() == processId) {
+            app->clearMemoryCaches();
+            break;
+        }
+    }
+}
+
+void WebAppManager::clearMemoryCaches(const QString& appId)
+{
+    Q_FOREACH(WebApplication *app, mApplications) {
+        if (app->id() == appId) {
+            app->clearMemoryCaches();
+            break;
+        }
+    }
+}
+
 } // namespace luna

@@ -84,6 +84,8 @@ public:
 
     void kill();
 
+    void clearMemoryCaches();
+
 Q_SIGNALS:
     void closed();
 

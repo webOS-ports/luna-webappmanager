@@ -86,6 +86,8 @@ public:
 
     QString getIdentifierForFrame(const QString& id, const QString& url);
 
+    void clearMemoryCaches();
+
 Q_SIGNALS:
     void javaScriptExecNeeded(const QString &script);
     void extensionWantsToBeAdded(const QString &name, QObject *object);

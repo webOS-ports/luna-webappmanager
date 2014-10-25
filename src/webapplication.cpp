@@ -261,6 +261,14 @@ void WebApplication::kill()
     emit closed();
 }
 
+void WebApplication::clearMemoryCaches()
+{
+    mMainWindow->clearMemoryCaches();
+
+    foreach (WebApplicationWindow *window, mChildWindows)
+        window->clearMemoryCaches();
+}
+
 bool WebApplication::validateResourcePath(const QString &path)
 {
     return ResourcePathValidator::instance().validate(path, mPrivileged);

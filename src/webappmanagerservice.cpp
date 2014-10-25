@@ -54,6 +54,7 @@ WebAppManagerService::WebAppManagerService(WebAppManager *webAppManager)
         LS_CATEGORY_METHOD(listRunningApps)
         LS_CATEGORY_METHOD(registerForAppEvents)
         LS_CATEGORY_METHOD(relaunch)
+        LS_CATEGORY_METHOD(clearMemoryCaches)
     LS_CATEGORY_END
 
     mAppEventSubscriptions.setServiceHandle(this);
@@ -375,6 +376,34 @@ bool WebAppManagerService::relaunch(LSMessage &message)
         request.respond("{\"returnValue\":false,\"errorText\":\"Failed to relaunch application\"}");
     else
         request.respond("{\"returnValue\":true}");
+
+    return true;
+}
+
+bool WebAppManagerService::clearMemoryCaches(LSMessage &message)
+{
+    LS::Message request(&message);
+
+    QJsonDocument document = QJsonDocument::fromJson(QByteArray(request.getPayload()));
+
+    QJsonObject root = document.object();
+
+    if (!root.contains("appId") || !root.contains("processId")) {
+        // If no appId or processId provided we clean the caches for all apps
+        mWebAppManager->clearMemoryCaches();
+    }
+    else {
+        if (root.contains("processId")) {
+            qint64 processId = root.value("processId").toInt();
+            mWebAppManager->clearMemoryCaches(processId);
+        }
+        else if (root.contains("appId")) {
+            QString appId = root.value("appId").toString();
+            mWebAppManager->clearMemoryCaches(appId);
+        }
+    }
+
+    request.respond("{\"returnValue\":true}");
 
     return true;
 }

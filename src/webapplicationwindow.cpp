@@ -455,6 +455,13 @@ void WebApplicationWindow::registerUserScript(const QUrl &path)
     mUserScripts.append(path);
 }
 
+void WebApplicationWindow::clearMemoryCaches()
+{
+    if (!mWebView)
+        return;
+
+    mWebView->clearMemoryCaches();
+}
 
 WebApplication* WebApplicationWindow::application() const
 {

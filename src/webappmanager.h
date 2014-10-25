@@ -53,6 +53,10 @@ public:
 
     QList<WebApplication*> applications() const;
 
+    void clearMemoryCaches();
+    void clearMemoryCaches(qint64 processId);
+    void clearMemoryCaches(const QString& appId);
+
 private Q_SLOTS:
     void onApplicationClosed();
     void onAboutToQuit();
