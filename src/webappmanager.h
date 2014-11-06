@@ -63,7 +63,6 @@ private Q_SLOTS:
 
 private:
     WebAppManagerService *mService;
-    QStringList mAllowedHeadlessApps;
     QMap<QString,WebApplication*> mApplications;
 
     bool validateApplication(const ApplicationDescription& desc);
