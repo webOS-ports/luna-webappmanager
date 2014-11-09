@@ -19,7 +19,7 @@
 #define WEBAPPLICATIONWINDOW_H
 
 #include <QObject>
-#include <QQmlEngine>
+#include <QQmlApplicationEngine>
 #include <QQuickWindow>
 #include <QTimer>
 
@@ -113,7 +113,7 @@ private Q_SLOTS:
 private:
     WebApplication *mApplication;
     QMap<QString, BaseExtension*> mExtensions;
-    QQmlEngine mEngine;
+    QQmlApplicationEngine mEngine;
     QObject *mRootItem;
     QQuickWindow *mWindow;
     bool mHeadless;

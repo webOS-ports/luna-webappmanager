@@ -78,8 +78,6 @@ WebApplicationWindow::~WebApplicationWindow()
         delete extension;
 
     mExtensions.clear();
-
-    delete mRootItem;
 }
 
 void WebApplicationWindow::assignCorrectTrustScope()
@@ -112,20 +110,13 @@ void WebApplicationWindow::createAndSetup()
 
     qDebug() << __PRETTY_FUNCTION__ << "Creating application container ...";
 
-    QQmlComponent windowComponent(&mEngine,
-        QUrl(QString("qrc:///qml/%1.qml").arg(mHeadless ? "ApplicationContainer" : "Window")));
-    if (windowComponent.isError()) {
-        qCritical() << "Errors while loading window component:";
-        qCritical() << windowComponent.errors();
+    mEngine.load(QUrl(QString("qrc:///qml/%1.qml").arg(mHeadless ? "ApplicationContainer" : "Window")));
+    if (mEngine.rootObjects().count() < 1) {
+        qCritical() << "Failed to create application window:";
         return;
     }
 
-    mRootItem = windowComponent.create();
-    if (!mRootItem) {
-        qCritical() << "Failed to create application window:";
-        qCritical() << windowComponent.errors();
-        return;
-    }
+    mRootItem = mEngine.rootObjects().at(0);
 
     if (!mHeadless) {
         mWindow = static_cast<QQuickWindow*>(mRootItem);
