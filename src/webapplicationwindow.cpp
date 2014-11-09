@@ -159,19 +159,15 @@ void WebApplicationWindow::createAndSetup()
     if (mTrustScope == TrustScopeSystem)
         loadAllExtensions();
 
-    /* don't show the launcher window directly as it will stay hidden until the
-     * user brings it into the foreground */
-    if (mWindowType != "launcher")
-      show();
-    else
-        qDebug() << __PRETTY_FUNCTION__ << this << "Not going to show launcher window for now";
-
     /* if we have a headless window we need to assign the url now to make sure
      * it's webview gets loaded with the right content. For a real window we're
      * waiting until the window is really visible to not block the WebProcess */
     if (mHeadless) {
        qDebug() << __PRETTY_FUNCTION__ << this << "Setting url for headless app" << mApplication->id();
        mWebView->setUrl(mUrl);
+    }
+    else {
+        show();
     }
 
     /* If we're running a remote site mark the window as fully loaded */
@@ -191,9 +187,10 @@ void WebApplicationWindow::onVisibleChanged(bool visible)
 {
     qDebug() << __PRETTY_FUNCTION__ << visible;
 
-    /* All normal windows can be safely shown here but not the launcher application. Making
-     * it visible has to be defered until the shell decides to put it on the screen. */
-    if (mApplication->id() != "com.palm.launcher" && mWebView->url().isEmpty()) {
+    if (!visible)
+        return;
+
+    if (mWebView->url().isEmpty()) {
         qDebug() << __PRETTY_FUNCTION__ << this << "Setting url for carded app" << mApplication->id();
         mWebView->setUrl(mUrl);
     }
@@ -220,19 +217,6 @@ void WebApplicationWindow::setupPage()
 void WebApplicationWindow::notifyAppAboutFocusState(bool focus)
 {
     qDebug() << "DEBUG: We become" << (focus ? "focused" : "unfocused");
-
-    /* When the launcher comes into the foreground the first time it isn't loaded
-     * with any url so we have to do it at this point */
-    if (mApplication->id() == "com.palm.launcher" && mWebView->url().isEmpty()) {
-        qDebug() << __PRETTY_FUNCTION__ << this << "Setting url for com.palm.launcher";
-        mWebView->setUrl(mUrl);
-        show();
-
-        mApplication->changeActivityFocus(focus);
-
-        /* sending stageActivated/stageDeactivated does not make sense at this point */
-        return;
-    }
 
     QString action = focus ? "stageActivated" : "stageDeactivated";
 
