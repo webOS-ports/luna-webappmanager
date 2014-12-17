@@ -112,8 +112,6 @@ Flickable {
         experimental.preferences.offlineWebApplicationCacheEnabled: true
         experimental.preferences.webGLEnabled: true
         experimental.preferences.developerExtrasEnabled: true
-        experimental.preferences.universalAccessFromFileURLsAllowed: true
-        experimental.preferences.fileAccessFromFileURLsAllowed: true
 
         experimental.preferences.standardFontFamily: "Prelude"
         experimental.preferences.fixedFontFamily: "Courier new"
@@ -195,6 +193,12 @@ Flickable {
 
                 if (experimental.preferences.hasOwnProperty("identifier"))
                     experimental.preferences.identifier = webApp.identifier;
+
+                if (experimental.preferences.hasOwnProperty("appRuntime")) {
+                    experimental.preferences.appRuntime = true;
+                    experimental.preferences.universalAccessFromFileURLsAllowed = false;
+                    experimental.preferences.fileAccessFromFileURLsAllowed = false;
+                }
             }
 
             if (experimental.preferences.hasOwnProperty("logsPageMessagesToSystemConsole"))
