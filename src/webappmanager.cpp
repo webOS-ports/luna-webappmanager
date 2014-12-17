@@ -73,9 +73,6 @@ WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &
         return app;
     }
 
-    // We set the application id as application name so that locally stored things for
-    // each application are separated and remain after the application was stopped.
-    QCoreApplication::setApplicationName(desc.id());
 
     QQuickWebViewExperimental::setFlickableViewportEnabled(desc.flickable());
 
