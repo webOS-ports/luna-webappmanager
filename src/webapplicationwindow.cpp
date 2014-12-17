@@ -45,7 +45,9 @@ namespace luna
 
 WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QUrl& url,
                                            const QString& windowType, const QSize& size,
-                                           bool headless, QObject *parent) :
+                                           bool headless,
+                                           int parentWindowId,
+                                           QObject *parent) :
     ApplicationEnvironment(parent),
     mApplication(application),
     mEngine(this),
@@ -58,7 +60,9 @@ WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QU
     mStagePreparing(true),
     mStageReady(false),
     mStageReadyTimer(this),
-    mSize(size)
+    mSize(size),
+    mWindowId(0),
+    mParentWindowId(parentWindowId)
 {
     qDebug() << __PRETTY_FUNCTION__ << this;
 
@@ -94,6 +98,28 @@ void WebApplicationWindow::setWindowProperty(const QString &name, const QVariant
     nativeInterface->setWindowProperty(mWindow->handle(), name, value);
 }
 
+QVariant WebApplicationWindow::getWindowProperty(const QString &name)
+{
+    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+    return nativeInterface->windowProperty(mWindow->handle(), name);
+}
+
+void WebApplicationWindow::updateWindowProperty(const QString &name)
+{
+    if (name == "windowId")
+        mWindowId = getWindowProperty("windowId").toInt();
+    else if (name == "parentWindowId")
+        mParentWindowId = getWindowProperty("parentWindowId").toInt();
+}
+
+void WebApplicationWindow::onWindowPropertyChanged(QPlatformWindow *window, const QString &name)
+{
+    if (window != mWindow->handle())
+        return;
+
+    updateWindowProperty(name);
+}
+
 void WebApplicationWindow::createAndSetup()
 {
     if (mTrustScope == TrustScopeSystem) {
@@ -118,6 +144,9 @@ void WebApplicationWindow::createAndSetup()
 
     mRootItem = mEngine.rootObjects().at(0);
 
+    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+    connect(nativeInterface, SIGNAL(windowPropertyChanged), this, SLOT(onWindowPropertyChanged));
+
     if (!mHeadless) {
         mWindow = static_cast<QQuickWindow*>(mRootItem);
         mWindow->installEventFilter(this);
@@ -137,6 +166,9 @@ void WebApplicationWindow::createAndSetup()
         // set different information bits for our window
         setWindowProperty(QString("type"), QVariant(mWindowType));
         setWindowProperty(QString("appId"), QVariant(mApplication->id()));
+        setWindowProperty(QString("parentWindowId"), QVariant(mParentWindowId));
+
+        updateWindowProperty("windowId");
 
         connect(mWindow, SIGNAL(visibleChanged(bool)), this, SLOT(onVisibleChanged(bool)));
     }
@@ -497,6 +529,16 @@ QString WebApplicationWindow::trustScope() const
 QUrl WebApplicationWindow::url() const
 {
     return mUrl;
+}
+
+int WebApplicationWindow::windowId() const
+{
+    return mWindowId;
+}
+
+int WebApplicationWindow::parentWindowId() const
+{
+    return mParentWindowId;
 }
 
 } // namespace luna

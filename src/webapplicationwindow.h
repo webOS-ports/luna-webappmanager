@@ -55,7 +55,7 @@ class WebApplicationWindow : public ApplicationEnvironment
 
 public:
     explicit WebApplicationWindow(WebApplication *application, const QUrl& url, const QString& windowType,
-                                  const QSize& size, bool headless = false, QObject *parent = 0);
+                                  const QSize& size, bool headless = false, int parentWindowId = 0, QObject *parent = 0);
     ~WebApplicationWindow();
 
     WebApplication *application() const;
@@ -76,6 +76,8 @@ public:
     bool active() const;
     QString trustScope() const;
     QUrl url() const;
+    int windowId() const;
+    int parentWindowId() const;
 
     QList<QUrl> userScripts() const;
 
@@ -109,6 +111,7 @@ private Q_SLOTS:
     void onLoadingChanged(QWebLoadRequest *request);
     void onStageReadyTimeout();
     void onVisibleChanged(bool visible);
+    void onWindowPropertyChanged(QPlatformWindow *window, const QString &name);
 
 private:
     WebApplication *mApplication;
@@ -127,6 +130,8 @@ private:
     QList<QUrl> mUserScripts;
     QSize mSize;
     TrustScope mTrustScope;
+    int mWindowId;
+    int mParentWindowId;
 
     void assignCorrectTrustScope();
     void createAndSetup();
@@ -134,6 +139,8 @@ private:
     void addExtension(BaseExtension *extension);
     void createDefaultExtensions();
     void setWindowProperty(const QString &name, const QVariant &value);
+    QVariant getWindowProperty(const QString &name);
+    void updateWindowProperty(const QString &name);
     void setupPage();
     void notifyAppAboutFocusState(bool focus);
 };

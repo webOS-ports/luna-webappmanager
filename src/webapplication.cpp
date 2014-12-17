@@ -203,7 +203,8 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
         height = windowFeatures["attributes"].toInt();
 
     WebApplicationWindow *window = new WebApplicationWindow(this, request->url(),
-                                                            windowType, QSize(width, height), false);
+                                                            windowType, QSize(width, height), false,
+                                                            mMainWindow->windowId());
 
     connect(window, SIGNAL(closed()), this, SLOT(windowClosed()));
 
