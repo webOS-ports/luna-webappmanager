@@ -104,7 +104,7 @@ void PalmSystemExtension::removeBannerMessage(int id)
 
     QJsonDocument document(params);
 
-    LS::Call call = mLunaPubHandle.callOneReply("luna://org.webosports.notifications/closeNotification",
+    LS::Call call = mLunaPubHandle.callOneReply("luna://org.webosports.notifications/close",
                                                 document.toJson().constData(),
                                                 appId.toUtf8().constData());
 }
@@ -115,7 +115,7 @@ void PalmSystemExtension::clearBannerMessages()
 
     QString appId = mApplicationWindow->application()->id();
 
-    LS::Call call = mLunaPubHandle.callOneReply("luna://org.webosports.notifications/closeAllNotifications",
+    LS::Call call = mLunaPubHandle.callOneReply("luna://org.webosports.notifications/closeAll",
                                                 "{}", appId.toUtf8().constData());
 }
 
@@ -247,21 +247,14 @@ QString PalmSystemExtension::addBannerMessage(const QJsonArray &params)
     QString appId = mApplicationWindow->application()->id();
 
     QJsonObject notificationParams;
-    notificationParams.insert("summary", params.at(0).toString());
-    notificationParams.insert("appName", appId);
-    notificationParams.insert("appIcon", params.at(2).toString());
+    notificationParams.insert("title", params.at(0).toString());
+    notificationParams.insert("launchParams", params.at(1).toString());
+    notificationParams.insert("iconUrl", params.at(2).toString());
     notificationParams.insert("expireTimeout", params.at(5).toInt());
-
-    QJsonObject hints;
-    hints.insert("params", params.at(1).toString());
-    hints.insert("sound-class", params.at(3).toString());
-    hints.insert("sound-file", params.at(4).toString());
-
-    notificationParams.insert("hints", hints);
 
     QJsonDocument document(notificationParams);
 
-    LS::Call call = mLunaPubHandle.callOneReply("luna://org.webosports.notifications/createNotification",
+    LS::Call call = mLunaPubHandle.callOneReply("luna://org.webosports.notifications/create",
                                                 document.toJson().constData(),
                                                 appId.toUtf8().constData());
     LS::Message message(call.get(1000));

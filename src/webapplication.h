@@ -95,6 +95,9 @@ public Q_SLOTS:
     void windowClosed();
 
 private:
+    void processParameters();
+
+private:
     WebAppManager *mLauncher;
     ApplicationDescription mDescription;
     int64_t mProcessId;

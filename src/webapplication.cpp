@@ -138,8 +138,7 @@ WebApplication::WebApplication(WebAppManager *launcher, const QUrl& url, const Q
 
     connect(mMainWindow, SIGNAL(closed()), this, SLOT(windowClosed()));
 
-    const std::set<std::string> appsToLaunchAtBoot = Settings::LunaSettings()->appsToLaunchAtBoot;
-    mLaunchedAtBoot = (appsToLaunchAtBoot.find(id().toStdString()) != appsToLaunchAtBoot.end());
+    processParameters();
 }
 
 WebApplication::~WebApplication()
@@ -153,6 +152,17 @@ WebApplication::~WebApplication()
 
     if (mMainWindow)
         delete mMainWindow;
+}
+
+void WebApplication::processParameters()
+{
+    QJsonDocument document = QJsonDocument::fromJson(mParameters.toUtf8());
+    if (!document.isObject())
+        return;
+
+    QJsonObject rootObject = document.object();
+    if (rootObject.contains("launchedAtBoot") && rootObject["launchedAtBoot"].isBool())
+        mLaunchedAtBoot = rootObject["launchedAtBoot"].toBool();
 }
 
 void WebApplication::changeActivityFocus(bool focus)
@@ -203,7 +213,8 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
         height = windowFeatures["attributes"].toInt();
 
     WebApplicationWindow *window = new WebApplicationWindow(this, request->url(),
-                                                            windowType, QSize(width, height), false);
+                                                            windowType, QSize(width, height), false,
+                                                            mMainWindow->windowId());
 
     connect(window, SIGNAL(closed()), this, SLOT(windowClosed()));
 
