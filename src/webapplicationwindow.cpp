@@ -62,7 +62,8 @@ WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QU
     mStageReadyTimer(this),
     mSize(size),
     mWindowId(0),
-    mParentWindowId(parentWindowId)
+    mParentWindowId(parentWindowId),
+    mLoadingAnimationDisabled(false)
 {
     qDebug() << __PRETTY_FUNCTION__ << this;
 
@@ -126,6 +127,9 @@ void WebApplicationWindow::createAndSetup()
         mUserScripts.append(QUrl("qrc:///qml/webos-api.js"));
         createDefaultExtensions();
     }
+
+    if (mWindowType == "dashboard")
+        mLoadingAnimationDisabled = true;
 
     mEngine.rootContext()->setContextProperty("webApp", mApplication);
     mEngine.rootContext()->setContextProperty("webAppWindow", this);
@@ -539,6 +543,11 @@ int WebApplicationWindow::windowId() const
 int WebApplicationWindow::parentWindowId() const
 {
     return mParentWindowId;
+}
+
+bool WebApplicationWindow::loadingAnimationDisabled() const
+{
+    return mLoadingAnimationDisabled;
 }
 
 } // namespace luna

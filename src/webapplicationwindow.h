@@ -52,6 +52,7 @@ class WebApplicationWindow : public ApplicationEnvironment
     Q_PROPERTY(QSize size READ size NOTIFY sizeChanged)
     Q_PROPERTY(QString trustScope READ trustScope CONSTANT)
     Q_PROPERTY(QUrl url READ url NOTIFY urlChanged)
+    Q_PROPERTY(bool loadingAnimationDisabled READ loadingAnimationDisabled CONSTANT)
 
 public:
     explicit WebApplicationWindow(WebApplication *application, const QUrl& url, const QString& windowType,
@@ -78,6 +79,7 @@ public:
     QUrl url() const;
     int windowId() const;
     int parentWindowId() const;
+    bool loadingAnimationDisabled() const;
 
     QList<QUrl> userScripts() const;
 
@@ -132,6 +134,7 @@ private:
     TrustScope mTrustScope;
     int mWindowId;
     int mParentWindowId;
+    bool mLoadingAnimationDisabled;
 
     void assignCorrectTrustScope();
     void createAndSetup();
