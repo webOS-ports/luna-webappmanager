@@ -90,7 +90,7 @@ Flickable {
         id: loadingBackgrounds
         anchors.fill: parent
         z: 100
-        visible: !webApp.loadingAnimationDisabled
+        visible: !webApp.loadingAnimationDisabled && !webAppWindow.loadingAnimationDisabled
         state: webAppWindow.ready ? "hidden" : "visible"
     }
 
