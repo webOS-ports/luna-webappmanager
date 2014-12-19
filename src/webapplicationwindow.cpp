@@ -115,6 +115,9 @@ void WebApplicationWindow::updateWindowProperty(const QString &name)
 
 void WebApplicationWindow::onWindowPropertyChanged(QPlatformWindow *window, const QString &name)
 {
+    if (!mWindow)
+        return;
+
     if (window != mWindow->handle())
         return;
 
@@ -148,9 +151,6 @@ void WebApplicationWindow::createAndSetup()
 
     mRootItem = mEngine.rootObjects().at(0);
 
-    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-    connect(nativeInterface, SIGNAL(windowPropertyChanged), this, SLOT(onWindowPropertyChanged));
-
     if (!mHeadless) {
         mWindow = static_cast<QQuickWindow*>(mRootItem);
         mWindow->installEventFilter(this);
@@ -172,10 +172,11 @@ void WebApplicationWindow::createAndSetup()
         setWindowProperty(QString("appId"), QVariant(mApplication->id()));
         setWindowProperty(QString("parentWindowId"), QVariant(mParentWindowId));
 
-        updateWindowProperty("windowId");
-
         connect(mWindow, SIGNAL(visibleChanged(bool)), this, SLOT(onVisibleChanged(bool)));
     }
+
+    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+    connect(nativeInterface, SIGNAL(windowPropertyChanged), this, SLOT(onWindowPropertyChanged));
 
     qDebug() << __PRETTY_FUNCTION__ << "Configuring application webview ...";
 
