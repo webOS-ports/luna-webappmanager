@@ -53,6 +53,7 @@ class WebApplicationWindow : public ApplicationEnvironment
     Q_PROPERTY(QString trustScope READ trustScope CONSTANT)
     Q_PROPERTY(QUrl url READ url NOTIFY urlChanged)
     Q_PROPERTY(bool loadingAnimationDisabled READ loadingAnimationDisabled CONSTANT)
+    Q_PROPERTY(QString windowType READ windowType CONSTANT)
 
 public:
     explicit WebApplicationWindow(WebApplication *application, const QUrl& url, const QString& windowType,
@@ -80,6 +81,7 @@ public:
     int windowId() const;
     int parentWindowId() const;
     bool loadingAnimationDisabled() const;
+    QString windowType() const;
 
     QList<QUrl> userScripts() const;
 
