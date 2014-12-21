@@ -551,4 +551,9 @@ bool WebApplicationWindow::loadingAnimationDisabled() const
     return mLoadingAnimationDisabled;
 }
 
+QString WebApplicationWindow::windowType() const
+{
+    return mWindowType;
+}
+
 } // namespace luna

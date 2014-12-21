@@ -118,6 +118,8 @@ Flickable {
         experimental.preferences.serifFontFamily: "Times New Roman"
         experimental.preferences.cursiveFontFamily: "Prelude"
 
+        experimental.transparentBackground: (webAppWindow.windowType === "dashboard")
+
         experimental.databaseQuotaDialog: Item {
             Component.onCompleted: {
                 console.log("Database quota extension request:");
