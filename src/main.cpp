@@ -120,7 +120,8 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
-    setenv("QTWEBKIT_INSPECTOR_SERVER", "1122", 0);
+    if (QFile::exists("/var/luna/dev-mode-enabled"))
+        setenv("QTWEBKIT_INSPECTOR_SERVER", "1122", 0);
 
     LocalePreferences::instance();
     luna::SystemTime::instance();
