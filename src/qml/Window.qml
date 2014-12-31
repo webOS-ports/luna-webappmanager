@@ -16,7 +16,7 @@
  */
 
 import QtQuick 2.0
-import QtQuick.Window 2.0
+import QtQuick.Window 2.2
 import LunaNext.Common 0.1
 import "."
 
@@ -25,6 +25,7 @@ Window {
 
     width: webAppWindow.size.width
     height: webAppWindow.size.height
+    opacity: (webAppWindow.windowType === "dashboard") ? 0.0 : 1.0
 
     ApplicationContainer {
         id: appContainer
