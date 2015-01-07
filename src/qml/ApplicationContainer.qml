@@ -69,8 +69,8 @@ Flickable {
                                                     "window.Mojo.keyboardShown(" + Qt.inputMethod.visible + ");}");
 
             var positiveSpace = {
-                width: parent.width,
-                height: parent.height - (Qt.inputMethod ? Qt.inputMethod.keyboardRectangle.height : 0)
+                width: webViewContainer.width,
+                height: webViewContainer.height - (Qt.inputMethod ? Qt.inputMethod.keyboardRectangle.height : 0)
             };
 
             webView.experimental.evaluateJavaScript("if (window.Mojo && window.Mojo.positiveSpaceChanged) {" +
