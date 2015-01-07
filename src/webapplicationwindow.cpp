@@ -155,6 +155,8 @@ void WebApplicationWindow::createAndSetup()
         mWindow = static_cast<QQuickWindow*>(mRootItem);
         mWindow->installEventFilter(this);
 
+        mWindow->setColor(Qt::transparent);
+
         mWindow->reportContentOrientationChange(QGuiApplication::primaryScreen()->primaryOrientation());
 
         mWindow->setSurfaceType(QSurface::OpenGLSurface);

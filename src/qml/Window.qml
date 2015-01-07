@@ -25,7 +25,6 @@ Window {
 
     width: webAppWindow.size.width
     height: webAppWindow.size.height
-    opacity: (webAppWindow.windowType === "dashboard") ? 0.0 : 1.0
 
     ApplicationContainer {
         id: appContainer
