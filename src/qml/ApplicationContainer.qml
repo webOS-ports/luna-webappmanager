@@ -86,14 +86,6 @@ Flickable {
         }
     }
 
-    LoadingBackground {
-        id: loadingBackgrounds
-        anchors.fill: parent
-        z: 100
-        visible: !webApp.loadingAnimationDisabled && !webAppWindow.loadingAnimationDisabled
-        state: webAppWindow.ready ? "hidden" : "visible"
-    }
-
     WebView {
         id: webView
         objectName: "webView"

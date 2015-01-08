@@ -4,12 +4,8 @@
         <file>qml/extensionmanager.js</file>
         <file>qml/webos-api.js</file>
         <file>qml/ApplicationContainer.qml</file>
-        <file>qml/LoadingBackground.qml</file>
         <file>extensions/PalmServiceBridge.js</file>
         <file>extensions/PalmSystem.js</file>
-        <file>qml/images/loading-bg.png</file>
-        <file>qml/images/loading-glow.png</file>
-        <file>qml/images/default-app-icon.png</file>
         <file>qml/ua-overrides.js</file>
         <file>qml/UserAgent.qml</file>
         <file>extensions/WiFiManager.js</file>
