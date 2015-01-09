@@ -210,6 +210,7 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
     if (windowFeatures.contains("height"))
         height = windowFeatures["attributes"].toInt();
 
+    qDebug() << Q_FUNC_INFO << "Setting parent window id" << mMainWindow->windowId() << "for new window";
     WebApplicationWindow *window = new WebApplicationWindow(this, request->url(),
                                                             windowType, QSize(width, height), false,
                                                             mMainWindow->windowId());
