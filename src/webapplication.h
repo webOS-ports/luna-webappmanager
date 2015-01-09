@@ -82,17 +82,15 @@ public:
     void createWindow(QWebNewPageRequest *request);
 #endif
 
+    void closeWindow(WebApplicationWindow *window);
+
     void kill();
 
     void clearMemoryCaches();
 
 Q_SIGNALS:
     void closed();
-
     void parametersChanged();
-
-public Q_SLOTS:
-    void windowClosed();
 
 private:
     void processParameters();

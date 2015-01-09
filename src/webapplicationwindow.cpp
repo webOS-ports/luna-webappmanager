@@ -138,7 +138,7 @@ void WebApplicationWindow::createAndSetup()
     mEngine.rootContext()->setContextProperty("webAppWindow", this);
 
     connect(&mEngine, &QQmlEngine::quit, [=]() {
-        mWindow->close();
+        mApplication->closeWindow(this);
     });
 
     qDebug() << __PRETTY_FUNCTION__ << "Creating application container ...";
@@ -302,7 +302,7 @@ void WebApplicationWindow::onCreateNewPage(QWebNewPageRequest *request)
 void WebApplicationWindow::onClosePage()
 {
     qDebug() << __PRETTY_FUNCTION__;
-    mWindow->close();
+    mApplication->closeWindow(this);
 }
 
 void WebApplicationWindow::onSyncMessageReceived(const QVariantMap& message, QString& response)
@@ -368,17 +368,12 @@ void WebApplicationWindow::loadAllExtensions()
     }
 }
 
-void WebApplicationWindow::onClosed()
-{
-    emit closed();
-}
-
 bool WebApplicationWindow::eventFilter(QObject *object, QEvent *event)
 {
     if (object == mWindow) {
         switch (event->type()) {
         case QEvent::Close:
-            QTimer::singleShot(0, this, SLOT(onClosed()));
+            mApplication->closeWindow(this);
             break;
         case QEvent::FocusIn:
             notifyAppAboutFocusState(true);

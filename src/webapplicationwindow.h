@@ -111,7 +111,6 @@ private Q_SLOTS:
     void onClosePage();
     void onSyncMessageReceived(const QVariantMap& message, QString& response);
 #endif
-    void onClosed();
     void onLoadingChanged(QWebLoadRequest *request);
     void onStageReadyTimeout();
     void onVisibleChanged(bool visible);

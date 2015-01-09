@@ -136,8 +136,6 @@ WebApplication::WebApplication(WebAppManager *launcher, const QUrl& url, const Q
             QSize(Settings::LunaSettings()->displayWidth, Settings::LunaSettings()->displayHeight),
             mDescription.headless());
 
-    connect(mMainWindow, SIGNAL(closed()), this, SLOT(windowClosed()));
-
     processParameters();
 }
 
@@ -216,8 +214,6 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
                                                             windowType, QSize(width, height), false,
                                                             mMainWindow->windowId());
 
-    connect(window, SIGNAL(closed()), this, SLOT(windowClosed()));
-
     request->setWebView(window->webView());
 
     mChildWindows.append(window);
@@ -225,10 +221,8 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
 
 #endif
 
-void WebApplication::windowClosed()
+void WebApplication::closeWindow(WebApplicationWindow *window)
 {
-    WebApplicationWindow *window = static_cast<WebApplicationWindow*>(sender());
-
     // if the window is marked as keep alive we don't close it
     if (window->keepAlive()) {
         qDebug() << "Not closing window cause it was configured to be kept alive";
@@ -259,9 +253,8 @@ void WebApplication::windowClosed()
         qDebug() << "The main window of app " << id()
                  << "was closed, so closing all child windows too";
 
-        foreach(WebApplicationWindow *child, mChildWindows) {
+        foreach(WebApplicationWindow *child, mChildWindows)
             child->deleteLater();
-        }
 
         emit closed();
     }
