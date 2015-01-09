@@ -50,7 +50,7 @@ WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QU
                                            QObject *parent) :
     ApplicationEnvironment(parent),
     mApplication(application),
-    mEngine(this),
+    mEngine(0),
     mRootItem(0),
     mWindow(0),
     mHeadless(headless),
@@ -84,6 +84,12 @@ WebApplicationWindow::~WebApplicationWindow()
         delete extension;
 
     mExtensions.clear();
+
+    if (mHeadless)
+        delete mEngine;
+
+    if (mWindow)
+        delete mWindow;
 }
 
 void WebApplicationWindow::assignCorrectTrustScope()
@@ -127,6 +133,15 @@ void WebApplicationWindow::onWindowPropertyChanged(QPlatformWindow *window, cons
     updateWindowProperty(name);
 }
 
+void WebApplicationWindow::configureQmlEngine()
+{
+    if (!mEngine)
+        return;
+
+    mEngine->rootContext()->setContextProperty("webApp", mApplication);
+    mEngine->rootContext()->setContextProperty("webAppWindow", this);
+}
+
 void WebApplicationWindow::createAndSetup()
 {
     if (mTrustScope == TrustScopeSystem) {
@@ -137,26 +152,25 @@ void WebApplicationWindow::createAndSetup()
     if (mWindowType == "dashboard")
         mLoadingAnimationDisabled = true;
 
-    mEngine.rootContext()->setContextProperty("webApp", mApplication);
-    mEngine.rootContext()->setContextProperty("webAppWindow", this);
+    if (mHeadless) {
+        qDebug() << __PRETTY_FUNCTION__ << "Creating application container for headless ...";
 
-    connect(&mEngine, &QQmlEngine::quit, [=]() {
-        mApplication->closeWindow(this);
-    });
+        mEngine = new QQmlEngine;
+        QQmlComponent component(mEngine, QUrl(QString("qrc:///qml/ApplicationContainer.qml")));
+        mRootItem = component.create();
 
-    qDebug() << __PRETTY_FUNCTION__ << "Creating application container ...";
-
-    mEngine.load(QUrl(QString("qrc:///qml/%1.qml").arg(mHeadless ? "ApplicationContainer" : "Window")));
-    if (mEngine.rootObjects().count() < 1) {
-        qCritical() << "Failed to create application window:";
-        return;
+        configureQmlEngine();
     }
-
-    mRootItem = mEngine.rootObjects().at(0);
-
-    if (!mHeadless) {
-        mWindow = static_cast<QQuickWindow*>(mRootItem);
+    else {
+        mWindow = new QQuickView;
         mWindow->installEventFilter(this);
+
+        mEngine = mWindow->engine();
+        configureQmlEngine();
+
+        connect(mWindow, &QObject::destroyed,  [=](QObject *obj) {
+            qDebug() << "Window destroyed";
+        });
 
         mWindow->setColor(Qt::transparent);
 
@@ -180,11 +194,16 @@ void WebApplicationWindow::createAndSetup()
         setWindowProperty(QString("loadingAnimationDisabled"), QVariant(mApplication->loadingAnimationDisabled()));
 
         connect(mWindow, SIGNAL(visibleChanged(bool)), this, SLOT(onVisibleChanged(bool)));
+
+        QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+        connect(nativeInterface, SIGNAL(windowPropertyChanged(QPlatformWindow*, const QString&)),
+                this, SLOT(onWindowPropertyChanged(QPlatformWindow*, const QString&)));
+
+        mWindow->setSource(QUrl(QString("qrc:///qml/ApplicationContainer.qml")));
+
+        mRootItem = mWindow->rootObject();
     }
 
-    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-    connect(nativeInterface, SIGNAL(windowPropertyChanged(QPlatformWindow*, const QString&)),
-            this, SLOT(onWindowPropertyChanged(QPlatformWindow*, const QString&)));
 
     qDebug() << __PRETTY_FUNCTION__ << "Configuring application webview ...";
 
@@ -370,6 +389,7 @@ bool WebApplicationWindow::eventFilter(QObject *object, QEvent *event)
     if (object == mWindow) {
         switch (event->type()) {
         case QEvent::Close:
+            mWindow->setVisible(false);
             mApplication->closeWindow(this);
             break;
         case QEvent::FocusIn:

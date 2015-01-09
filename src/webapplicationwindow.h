@@ -122,9 +122,9 @@ private Q_SLOTS:
 private:
     WebApplication *mApplication;
     QMap<QString, BaseExtension*> mExtensions;
-    QQmlApplicationEngine mEngine;
+    QQmlEngine *mEngine;
     QObject *mRootItem;
-    QQuickWindow *mWindow;
+    QQuickView *mWindow;
     bool mHeadless;
     QQuickWebView *mWebView;
     QUrl mUrl;
@@ -143,6 +143,7 @@ private:
 
     void assignCorrectTrustScope();
     void createAndSetup();
+    void configureQmlEngine();
     void loadAllExtensions();
     void addExtension(BaseExtension *extension);
     void createDefaultExtensions();
