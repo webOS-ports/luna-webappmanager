@@ -136,8 +136,6 @@ WebApplication::WebApplication(WebAppManager *launcher, const QUrl& url, const Q
             QSize(Settings::LunaSettings()->displayWidth, Settings::LunaSettings()->displayHeight),
             mDescription.headless());
 
-    connect(mMainWindow, SIGNAL(closed()), this, SLOT(windowClosed()));
-
     processParameters();
 }
 
@@ -212,11 +210,10 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
     if (windowFeatures.contains("height"))
         height = windowFeatures["attributes"].toInt();
 
+    qDebug() << Q_FUNC_INFO << "Setting parent window id" << mMainWindow->windowId() << "for new window";
     WebApplicationWindow *window = new WebApplicationWindow(this, request->url(),
                                                             windowType, QSize(width, height), false,
                                                             mMainWindow->windowId());
-
-    connect(window, SIGNAL(closed()), this, SLOT(windowClosed()));
 
     request->setWebView(window->webView());
 
@@ -225,10 +222,8 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
 
 #endif
 
-void WebApplication::windowClosed()
+void WebApplication::closeWindow(WebApplicationWindow *window)
 {
-    WebApplicationWindow *window = static_cast<WebApplicationWindow*>(sender());
-
     // if the window is marked as keep alive we don't close it
     if (window->keepAlive()) {
         qDebug() << "Not closing window cause it was configured to be kept alive";
@@ -239,29 +234,28 @@ void WebApplication::windowClosed()
     // some special conditions
     if (mChildWindows.contains(window)) {
         mChildWindows.removeOne(window);
-        delete window;
+        window->deleteLater();
 
         // if no child window is left close the main (headless) window too
         if (mChildWindows.count() == 0 && !mLaunchedAtBoot && headless()) {
             qDebug() << "All child windows of app" << id()
                      << "were closed so closing the main window too";
 
-            delete mMainWindow;
+            mMainWindow->deleteLater();
             mMainWindow = 0;
             emit closed();
         }
     }
     else if (window == mMainWindow) {
         // the main window was closed so close all child windows too
-        delete mMainWindow;
+        mMainWindow->deleteLater();
         mMainWindow = 0;
 
         qDebug() << "The main window of app " << id()
                  << "was closed, so closing all child windows too";
 
-        foreach(WebApplicationWindow *child, mChildWindows) {
-            delete child;
-        }
+        foreach(WebApplicationWindow *child, mChildWindows)
+            child->deleteLater();
 
         emit closed();
     }

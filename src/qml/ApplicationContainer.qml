@@ -69,8 +69,8 @@ Flickable {
                                                     "window.Mojo.keyboardShown(" + Qt.inputMethod.visible + ");}");
 
             var positiveSpace = {
-                width: parent.width,
-                height: parent.height - (Qt.inputMethod ? Qt.inputMethod.keyboardRectangle.height : 0)
+                width: webViewContainer.width,
+                height: webViewContainer.height - (Qt.inputMethod ? Qt.inputMethod.keyboardRectangle.height : 0)
             };
 
             webView.experimental.evaluateJavaScript("if (window.Mojo && window.Mojo.positiveSpaceChanged) {" +
@@ -84,14 +84,6 @@ Flickable {
                 keyboardContainer.height = 0;
             }
         }
-    }
-
-    LoadingBackground {
-        id: loadingBackgrounds
-        anchors.fill: parent
-        z: 100
-        visible: !webApp.loadingAnimationDisabled && !webAppWindow.loadingAnimationDisabled
-        state: webAppWindow.ready ? "hidden" : "visible"
     }
 
     WebView {

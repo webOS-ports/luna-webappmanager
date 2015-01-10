@@ -50,7 +50,7 @@ WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QU
                                            QObject *parent) :
     ApplicationEnvironment(parent),
     mApplication(application),
-    mEngine(this),
+    mEngine(0),
     mRootItem(0),
     mWindow(0),
     mHeadless(headless),
@@ -63,7 +63,8 @@ WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QU
     mSize(size),
     mWindowId(0),
     mParentWindowId(parentWindowId),
-    mLoadingAnimationDisabled(false)
+    mLoadingAnimationDisabled(false),
+    mLaunchedHidden(application->id() == "com.palm.launcher")
 {
     qDebug() << __PRETTY_FUNCTION__ << this;
 
@@ -83,6 +84,12 @@ WebApplicationWindow::~WebApplicationWindow()
         delete extension;
 
     mExtensions.clear();
+
+    if (mHeadless)
+        delete mEngine;
+
+    if (mWindow)
+        delete mWindow;
 }
 
 void WebApplicationWindow::assignCorrectTrustScope()
@@ -107,6 +114,8 @@ QVariant WebApplicationWindow::getWindowProperty(const QString &name)
 
 void WebApplicationWindow::updateWindowProperty(const QString &name)
 {
+    qDebug() << Q_FUNC_INFO << "Window property" << name << "was updated";
+
     if (name == "windowId")
         mWindowId = getWindowProperty("windowId").toInt();
     else if (name == "parentWindowId")
@@ -124,6 +133,15 @@ void WebApplicationWindow::onWindowPropertyChanged(QPlatformWindow *window, cons
     updateWindowProperty(name);
 }
 
+void WebApplicationWindow::configureQmlEngine()
+{
+    if (!mEngine)
+        return;
+
+    mEngine->rootContext()->setContextProperty("webApp", mApplication);
+    mEngine->rootContext()->setContextProperty("webAppWindow", this);
+}
+
 void WebApplicationWindow::createAndSetup()
 {
     if (mTrustScope == TrustScopeSystem) {
@@ -134,26 +152,27 @@ void WebApplicationWindow::createAndSetup()
     if (mWindowType == "dashboard")
         mLoadingAnimationDisabled = true;
 
-    mEngine.rootContext()->setContextProperty("webApp", mApplication);
-    mEngine.rootContext()->setContextProperty("webAppWindow", this);
+    if (mHeadless) {
+        qDebug() << __PRETTY_FUNCTION__ << "Creating application container for headless ...";
 
-    connect(&mEngine, &QQmlEngine::quit, [=]() {
-        mWindow->close();
-    });
+        mEngine = new QQmlEngine;
+        QQmlComponent component(mEngine, QUrl(QString("qrc:///qml/ApplicationContainer.qml")));
+        mRootItem = component.create();
 
-    qDebug() << __PRETTY_FUNCTION__ << "Creating application container ...";
-
-    mEngine.load(QUrl(QString("qrc:///qml/%1.qml").arg(mHeadless ? "ApplicationContainer" : "Window")));
-    if (mEngine.rootObjects().count() < 1) {
-        qCritical() << "Failed to create application window:";
-        return;
+        configureQmlEngine();
     }
-
-    mRootItem = mEngine.rootObjects().at(0);
-
-    if (!mHeadless) {
-        mWindow = static_cast<QQuickWindow*>(mRootItem);
+    else {
+        mWindow = new QQuickView;
         mWindow->installEventFilter(this);
+
+        mEngine = mWindow->engine();
+        configureQmlEngine();
+
+        connect(mWindow, &QObject::destroyed,  [=](QObject *obj) {
+            qDebug() << "Window destroyed";
+        });
+
+        mWindow->setColor(Qt::transparent);
 
         mWindow->reportContentOrientationChange(QGuiApplication::primaryScreen()->primaryOrientation());
 
@@ -169,14 +188,22 @@ void WebApplicationWindow::createAndSetup()
 
         // set different information bits for our window
         setWindowProperty(QString("type"), QVariant(mWindowType));
+        setWindowProperty(QString("appIcon"), QVariant(mApplication->icon()));
         setWindowProperty(QString("appId"), QVariant(mApplication->id()));
         setWindowProperty(QString("parentWindowId"), QVariant(mParentWindowId));
+        setWindowProperty(QString("loadingAnimationDisabled"), QVariant(mApplication->loadingAnimationDisabled()));
 
         connect(mWindow, SIGNAL(visibleChanged(bool)), this, SLOT(onVisibleChanged(bool)));
+
+        QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
+        connect(nativeInterface, SIGNAL(windowPropertyChanged(QPlatformWindow*, const QString&)),
+                this, SLOT(onWindowPropertyChanged(QPlatformWindow*, const QString&)));
+
+        mWindow->setSource(QUrl(QString("qrc:///qml/ApplicationContainer.qml")));
+
+        mRootItem = mWindow->rootObject();
     }
 
-    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-    connect(nativeInterface, SIGNAL(windowPropertyChanged), this, SLOT(onWindowPropertyChanged));
 
     qDebug() << __PRETTY_FUNCTION__ << "Configuring application webview ...";
 
@@ -196,16 +223,7 @@ void WebApplicationWindow::createAndSetup()
     if (mTrustScope == TrustScopeSystem)
         loadAllExtensions();
 
-    /* if we have a headless window we need to assign the url now to make sure
-     * it's webview gets loaded with the right content. For a real window we're
-     * waiting until the window is really visible to not block the WebProcess */
-    if (mHeadless) {
-       qDebug() << __PRETTY_FUNCTION__ << this << "Setting url for headless app" << mApplication->id();
-       mWebView->setUrl(mUrl);
-    }
-    else {
-        show();
-    }
+   mWebView->setUrl(mUrl);
 
     /* If we're running a remote site mark the window as fully loaded */
     if (mTrustScope == TrustScopeRemote)
@@ -216,7 +234,6 @@ void WebApplicationWindow::onStageReadyTimeout()
 {
     qDebug() << __PRETTY_FUNCTION__;
 
-    // we got no stage ready call yet so go forward showing the window
     stageReady();
 }
 
@@ -224,13 +241,7 @@ void WebApplicationWindow::onVisibleChanged(bool visible)
 {
     qDebug() << __PRETTY_FUNCTION__ << visible;
 
-    if (!visible)
-        return;
-
-    if (mWebView->url().isEmpty()) {
-        qDebug() << __PRETTY_FUNCTION__ << this << "Setting url for carded app" << mApplication->id();
-        mWebView->setUrl(mUrl);
-    }
+    emit visibleChanged();
 }
 
 void WebApplicationWindow::setupPage()
@@ -285,9 +296,16 @@ void WebApplicationWindow::onLoadingChanged(QWebLoadRequest *request)
     if (mHeadless || mApplication->hasRemoteEntryPoint())
         return;
 
-    // If we don't got stageReady() start a timeout to wait for it
-    else if (mStagePreparing && !mStageReady && !mStageReadyTimer.isActive())
-        mStageReadyTimer.start(3000);
+    // if the framework  called us with an explicit stagePreparing call we
+    // will wait for the call to stageReady to come in
+    if (mStagePreparing && !mStageReady) {
+        if (!mWindow->isVisible() && mStageReadyTimer.isActive())
+            mStageReadyTimer.start(3000);
+        return;
+    }
+
+    if (!mWindow->isVisible())
+        mWindow->show();
 }
 
 #ifndef WITH_UNMODIFIED_QTWEBKIT
@@ -300,7 +318,7 @@ void WebApplicationWindow::onCreateNewPage(QWebNewPageRequest *request)
 void WebApplicationWindow::onClosePage()
 {
     qDebug() << __PRETTY_FUNCTION__;
-    mWindow->close();
+    mApplication->closeWindow(this);
 }
 
 void WebApplicationWindow::onSyncMessageReceived(const QVariantMap& message, QString& response)
@@ -366,17 +384,13 @@ void WebApplicationWindow::loadAllExtensions()
     }
 }
 
-void WebApplicationWindow::onClosed()
-{
-    emit closed();
-}
-
 bool WebApplicationWindow::eventFilter(QObject *object, QEvent *event)
 {
     if (object == mWindow) {
         switch (event->type()) {
         case QEvent::Close:
-            QTimer::singleShot(0, this, SLOT(onClosed()));
+            mWindow->setVisible(false);
+            mApplication->closeWindow(this);
             break;
         case QEvent::FocusIn:
             notifyAppAboutFocusState(true);
@@ -414,6 +428,9 @@ void WebApplicationWindow::stageReady()
 {
     mStagePreparing = false;
     mStageReady = true;
+
+    if (mWindow && !mLaunchedHidden && !mWindow->isVisible())
+        mWindow->show();
 
     emit readyChanged();
 
@@ -554,6 +571,11 @@ bool WebApplicationWindow::loadingAnimationDisabled() const
 QString WebApplicationWindow::windowType() const
 {
     return mWindowType;
+}
+
+bool WebApplicationWindow::visible() const
+{
+    return mWindow ? mWindow->isVisible() : false;
 }
 
 } // namespace luna
