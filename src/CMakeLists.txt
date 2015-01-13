@@ -21,8 +21,6 @@ set(SOURCES
     applicationdescription.cpp
     activity.cpp
     systemtime.cpp
-    extensions/lunaservicemgr.cpp
-    extensions/palmservicebridgeextension.cpp
     extensions/palmsystemextension.cpp
     extensions/deviceinfo.cpp
     extensions/wifimanager.cpp
@@ -38,8 +36,6 @@ set(HEADERS
     applicationdescription.h
     activity.h
     systemtime.h
-    extensions/lunaservicemgr.h
-    extensions/palmservicebridgeextension.h
     extensions/palmsystemextension.h
     extensions/deviceinfo.h
     extensions/wifimanager.h

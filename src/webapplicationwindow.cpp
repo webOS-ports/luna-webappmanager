@@ -37,7 +37,6 @@
 #include "webapplicationwindow.h"
 
 #include "extensions/palmsystemextension.h"
-#include "extensions/palmservicebridgeextension.h"
 #include "extensions/wifimanager.h"
 #include "extensions/inappbrowserextension.h"
 
@@ -368,7 +367,6 @@ void WebApplicationWindow::createDefaultExtensions()
 {
     addExtension(new PalmSystemExtension(this));
     addExtension(new InAppBrowserExtension(this));
-    // addExtension(new PalmServiceBridgeExtension(this));
 
     if (mApplication->id() == "org.webosports.app.settings")
         addExtension(new WiFiManager(this));
