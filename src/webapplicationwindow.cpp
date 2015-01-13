@@ -156,10 +156,10 @@ void WebApplicationWindow::createAndSetup()
         qDebug() << __PRETTY_FUNCTION__ << "Creating application container for headless ...";
 
         mEngine = new QQmlEngine;
+        configureQmlEngine();
+
         QQmlComponent component(mEngine, QUrl(QString("qrc:///qml/ApplicationContainer.qml")));
         mRootItem = component.create();
-
-        configureQmlEngine();
     }
     else {
         mWindow = new QQuickView;
