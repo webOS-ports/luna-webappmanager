@@ -50,6 +50,7 @@ class WebApplication : public QObject
     Q_PROPERTY(QStringList urlsAllowed READ urlsAllowed CONSTANT)
     Q_PROPERTY(QString userAgent READ userAgent CONSTANT)
     Q_PROPERTY(bool loadingAnimationDisabled READ loadingAnimationDisabled CONSTANT)
+    Q_PROPERTY(bool allowCrossDomainAccess READ allowCrossDomainAccess CONSTANT)
 
 public:
     WebApplication(WebAppManager *launcher, const QUrl& url, const QString& windowType,
@@ -71,6 +72,7 @@ public:
     bool hasRemoteEntryPoint() const;
     QString userAgent() const;
     bool loadingAnimationDisabled() const;
+    bool allowCrossDomainAccess() const;
 
     void changeActivityFocus(bool focus);
 

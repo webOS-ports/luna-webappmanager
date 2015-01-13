@@ -349,4 +349,12 @@ bool WebApplication::loadingAnimationDisabled() const
     return mDescription.loadingAnimationDisabled();
 }
 
+bool WebApplication::allowCrossDomainAccess() const
+{
+    if (!mPrivileged)
+        return false;
+
+    return mDescription.allowCrossDomainAccess();
+}
+
 } // namespace luna
