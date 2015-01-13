@@ -39,6 +39,7 @@
 #include "extensions/palmsystemextension.h"
 #include "extensions/palmservicebridgeextension.h"
 #include "extensions/wifimanager.h"
+#include "extensions/inappbrowserextension.h"
 
 namespace luna
 {
@@ -159,9 +160,11 @@ void WebApplicationWindow::createAndSetup()
         configureQmlEngine();
 
         QQmlComponent component(mEngine, QUrl(QString("qrc:///qml/ApplicationContainer.qml")));
-        mRootItem = component.create();
+        mRootItem = qobject_cast<QQuickItem*>(component.create());
     }
     else {
+        QQuickWebViewExperimental::setFlickableViewportEnabled(mApplication->desc().flickable());
+
         mWindow = new QQuickView;
         mWindow->installEventFilter(this);
 
@@ -364,6 +367,7 @@ void WebApplicationWindow::onSyncMessageReceived(const QVariantMap& message, QSt
 void WebApplicationWindow::createDefaultExtensions()
 {
     addExtension(new PalmSystemExtension(this));
+    addExtension(new InAppBrowserExtension(this));
     // addExtension(new PalmServiceBridgeExtension(this));
 
     if (mApplication->id() == "org.webosports.app.settings")
@@ -576,6 +580,16 @@ QString WebApplicationWindow::windowType() const
 bool WebApplicationWindow::visible() const
 {
     return mWindow ? mWindow->isVisible() : false;
+}
+
+QQmlEngine* WebApplicationWindow::qmlEngine() const
+{
+    return mEngine;
+}
+
+QQuickItem* WebApplicationWindow::rootItem() const
+{
+    return mRootItem;
 }
 
 } // namespace luna

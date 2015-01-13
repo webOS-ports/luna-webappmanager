@@ -31,6 +31,9 @@
 
 #include <applicationenvironment.h>
 
+class QQuickView;
+class QQuickItem;
+
 namespace luna
 {
 
@@ -85,6 +88,9 @@ public:
     QString windowType() const;
     bool visible() const;
 
+    QQmlEngine* qmlEngine() const;
+    QQuickItem* rootItem() const;
+
     QList<QUrl> userScripts() const;
 
     void setKeepAlive(bool alive);
@@ -123,7 +129,7 @@ private:
     WebApplication *mApplication;
     QMap<QString, BaseExtension*> mExtensions;
     QQmlEngine *mEngine;
-    QObject *mRootItem;
+    QQuickItem *mRootItem;
     QQuickView *mWindow;
     bool mHeadless;
     QQuickWebView *mWebView;

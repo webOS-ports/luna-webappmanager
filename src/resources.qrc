@@ -8,5 +8,9 @@
         <file>qml/ua-overrides.js</file>
         <file>qml/UserAgent.qml</file>
         <file>extensions/WiFiManager.js</file>
+        <file>qml/InAppBrowser.qml</file>
+        <file>extensions/InAppBrowser.js</file>
+        <file>qml/images/palm-notification-button-press.png</file>
+        <file>qml/images/palm-notification-button.png</file>
     </qresource>
 </RCC>

@@ -25,7 +25,8 @@ set(SOURCES
     extensions/palmservicebridgeextension.cpp
     extensions/palmsystemextension.cpp
     extensions/deviceinfo.cpp
-    extensions/wifimanager.cpp)
+    extensions/wifimanager.cpp
+    extensions/inappbrowserextension.cpp)
 
 set(HEADERS
     utils.h
@@ -41,7 +42,8 @@ set(HEADERS
     extensions/palmservicebridgeextension.h
     extensions/palmsystemextension.h
     extensions/deviceinfo.h
-    extensions/wifimanager.h)
+    extensions/wifimanager.h
+    extensions/inappbrowserextension.h)
 
 qt5_add_resources(RESOURCES resources.qrc)
 

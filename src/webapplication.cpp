@@ -357,4 +357,9 @@ bool WebApplication::allowCrossDomainAccess() const
     return mDescription.allowCrossDomainAccess();
 }
 
+ApplicationDescription WebApplication::desc() const
+{
+    return mDescription;
+}
+
 } // namespace luna

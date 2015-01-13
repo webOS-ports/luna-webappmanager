@@ -73,6 +73,7 @@ public:
     QString userAgent() const;
     bool loadingAnimationDisabled() const;
     bool allowCrossDomainAccess() const;
+    ApplicationDescription desc() const;
 
     void changeActivityFocus(bool focus);
 
