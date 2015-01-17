@@ -189,11 +189,11 @@ void WebApplicationWindow::createAndSetup()
         mWindow->create();
 
         // set different information bits for our window
-        setWindowProperty(QString("type"), QVariant(mWindowType));
-        setWindowProperty(QString("appIcon"), QVariant(mApplication->icon()));
-        setWindowProperty(QString("parentWindowId"), QVariant(mParentWindowId));
-        setWindowProperty(QString("appId"), QVariant(mApplication->id()));
-        setWindowProperty(QString("loadingAnimationDisabled"), QVariant(mApplication->loadingAnimationDisabled()));
+        setWindowProperty(QString("_LUNE_WINDOW_TYPE"), QVariant(mWindowType));
+        setWindowProperty(QString("_LUNE_WINDOW_PARENT_ID"), QVariant(mParentWindowId));
+        setWindowProperty(QString("_LUNE_WINDOW_LOADING_ANIMATION_DISABLED"), QVariant(mApplication->loadingAnimationDisabled()));
+        setWindowProperty(QString("_LUNE_APP_ICON"), QVariant(mApplication->icon()));
+        setWindowProperty(QString("_LUNE_APP_ID"), QVariant(mApplication->id()));
 
         connect(mWindow, SIGNAL(visibleChanged(bool)), this, SLOT(onVisibleChanged(bool)));
 
