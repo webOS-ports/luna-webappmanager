@@ -54,6 +54,7 @@ public:
     QStringList urlsAllowed() const;
     QString userAgent() const;
     bool loadingAnimationDisabled() const;
+    bool allowCrossDomainAccess() const;
 
     QString pluginName() const;
     QString basePath() const;
@@ -73,6 +74,7 @@ private:
     QStringList mUrlsAllowed;
     QString mUserAgent;
     bool mLoadingAnimationDisabled;
+    bool mAllowCrossDomainAccess;
 
     void initializeFromData(const QString &data);
     QUrl locateEntryPoint(const QString &entryPoint);

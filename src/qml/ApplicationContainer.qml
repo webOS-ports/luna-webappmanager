@@ -188,8 +188,17 @@ Flickable {
                 if (experimental.preferences.hasOwnProperty("identifier"))
                     experimental.preferences.identifier = webApp.identifier;
 
-                if (experimental.preferences.hasOwnProperty("appRuntime")) {
-                    experimental.preferences.appRuntime = true;
+                if (webApp.allowCrossDomainAccess) {
+                    if (experimental.preferences.hasOwnProperty("appRuntime"))
+                        experimental.preferences.appRuntime = false;
+
+                    experimental.preferences.universalAccessFromFileURLsAllowed = true;
+                    experimental.preferences.fileAccessFromFileURLsAllowed = true;
+                }
+                else {
+                    if (experimental.preferences.hasOwnProperty("appRuntime"))
+                        experimental.preferences.appRuntime = true;
+
                     experimental.preferences.universalAccessFromFileURLsAllowed = false;
                     experimental.preferences.fileAccessFromFileURLsAllowed = false;
                 }

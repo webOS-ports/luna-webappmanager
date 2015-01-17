@@ -43,7 +43,8 @@ ApplicationDescription::ApplicationDescription(const ApplicationDescription& oth
     mInternetConnectivityRequired(other.internetConnectivityRequired()),
     mUrlsAllowed(other.urlsAllowed()),
     mUserAgent(other.userAgent()),
-    mLoadingAnimationDisabled(other.loadingAnimationDisabled())
+    mLoadingAnimationDisabled(other.loadingAnimationDisabled()),
+    mAllowCrossDomainAccess(other.allowCrossDomainAccess())
 {
 }
 
@@ -53,7 +54,8 @@ ApplicationDescription::ApplicationDescription(const QString &data) :
     mInternetConnectivityRequired(false),
     mApplicationBasePath(""),
     mUserAgent(""),
-    mLoadingAnimationDisabled(false)
+    mLoadingAnimationDisabled(false),
+    mAllowCrossDomainAccess(false)
 {
     initializeFromData(data);
 }
@@ -125,6 +127,9 @@ void ApplicationDescription::initializeFromData(const QString &data)
 
     if (rootObject.contains("loadingAnimationDisabled") && rootObject.value("loadingAnimationDisabled").isBool())
         mLoadingAnimationDisabled = rootObject.value("loadingAnimationDisabled").toBool();
+
+    if (rootObject.contains("allowCrossDomainAccess") && rootObject.value("allowCrossDomainAccess").isBool())
+        mAllowCrossDomainAccess = rootObject.value("allowCrossDomainAccess").toBool();
 }
 
 QUrl ApplicationDescription::locateEntryPoint(const QString &entryPoint)
@@ -210,6 +215,11 @@ QString ApplicationDescription::userAgent() const
 bool ApplicationDescription::loadingAnimationDisabled() const
 {
     return mLoadingAnimationDisabled;
+}
+
+bool ApplicationDescription::allowCrossDomainAccess() const
+{
+    return mAllowCrossDomainAccess;
 }
 
 }

@@ -37,8 +37,8 @@
 #include "webapplicationwindow.h"
 
 #include "extensions/palmsystemextension.h"
-#include "extensions/palmservicebridgeextension.h"
 #include "extensions/wifimanager.h"
+#include "extensions/inappbrowserextension.h"
 
 namespace luna
 {
@@ -156,12 +156,14 @@ void WebApplicationWindow::createAndSetup()
         qDebug() << __PRETTY_FUNCTION__ << "Creating application container for headless ...";
 
         mEngine = new QQmlEngine;
-        QQmlComponent component(mEngine, QUrl(QString("qrc:///qml/ApplicationContainer.qml")));
-        mRootItem = component.create();
-
         configureQmlEngine();
+
+        QQmlComponent component(mEngine, QUrl(QString("qrc:///qml/ApplicationContainer.qml")));
+        mRootItem = qobject_cast<QQuickItem*>(component.create());
     }
     else {
+        QQuickWebViewExperimental::setFlickableViewportEnabled(mApplication->desc().flickable());
+
         mWindow = new QQuickView;
         mWindow->installEventFilter(this);
 
@@ -189,8 +191,8 @@ void WebApplicationWindow::createAndSetup()
         // set different information bits for our window
         setWindowProperty(QString("type"), QVariant(mWindowType));
         setWindowProperty(QString("appIcon"), QVariant(mApplication->icon()));
-        setWindowProperty(QString("appId"), QVariant(mApplication->id()));
         setWindowProperty(QString("parentWindowId"), QVariant(mParentWindowId));
+        setWindowProperty(QString("appId"), QVariant(mApplication->id()));
         setWindowProperty(QString("loadingAnimationDisabled"), QVariant(mApplication->loadingAnimationDisabled()));
 
         connect(mWindow, SIGNAL(visibleChanged(bool)), this, SLOT(onVisibleChanged(bool)));
@@ -364,7 +366,7 @@ void WebApplicationWindow::onSyncMessageReceived(const QVariantMap& message, QSt
 void WebApplicationWindow::createDefaultExtensions()
 {
     addExtension(new PalmSystemExtension(this));
-    // addExtension(new PalmServiceBridgeExtension(this));
+    addExtension(new InAppBrowserExtension(this));
 
     if (mApplication->id() == "org.webosports.app.settings")
         addExtension(new WiFiManager(this));
@@ -576,6 +578,16 @@ QString WebApplicationWindow::windowType() const
 bool WebApplicationWindow::visible() const
 {
     return mWindow ? mWindow->isVisible() : false;
+}
+
+QQmlEngine* WebApplicationWindow::qmlEngine() const
+{
+    return mEngine;
+}
+
+QQuickItem* WebApplicationWindow::rootItem() const
+{
+    return mRootItem;
 }
 
 } // namespace luna
