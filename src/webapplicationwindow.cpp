@@ -92,6 +92,12 @@ WebApplicationWindow::~WebApplicationWindow()
         delete mWindow;
 }
 
+void WebApplicationWindow::destroy()
+{
+    if (mWindow)
+        mWindow->destroy();
+}
+
 void WebApplicationWindow::assignCorrectTrustScope()
 {
     if (mUrl.scheme() == "file")

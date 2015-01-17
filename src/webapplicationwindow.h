@@ -102,6 +102,8 @@ public:
 
     void clearMemoryCaches();
 
+    void destroy();
+
 Q_SIGNALS:
     void javaScriptExecNeeded(const QString &script);
     void extensionWantsToBeAdded(const QString &name, QObject *object);
