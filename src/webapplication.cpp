@@ -234,6 +234,7 @@ void WebApplication::closeWindow(WebApplicationWindow *window)
     // some special conditions
     if (mChildWindows.contains(window)) {
         mChildWindows.removeOne(window);
+        window->destroy();
         window->deleteLater();
 
         // if no child window is left close the main (headless) window too
@@ -241,21 +242,26 @@ void WebApplication::closeWindow(WebApplicationWindow *window)
             qDebug() << "All child windows of app" << id()
                      << "were closed so closing the main window too";
 
+            mMainWindow->destroy();
             mMainWindow->deleteLater();
             mMainWindow = 0;
+
             emit closed();
         }
     }
     else if (window == mMainWindow) {
         // the main window was closed so close all child windows too
+        mMainWindow->destroy();
         mMainWindow->deleteLater();
         mMainWindow = 0;
 
         qDebug() << "The main window of app " << id()
                  << "was closed, so closing all child windows too";
 
-        foreach(WebApplicationWindow *child, mChildWindows)
-            child->deleteLater();
+        foreach(WebApplicationWindow *childWindow, mChildWindows) {
+            childWindow->destroy();
+            childWindow->deleteLater();
+        }
 
         emit closed();
     }

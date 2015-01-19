@@ -39,7 +39,9 @@ Flickable {
        onStateChanged: {
            // When we are online again reload the web view in order to start the application
            // which is still visible to the user
-           if (oldState !== networkManager.state && networkManager.state === "online")
+           if (webApp.internetConnectivityRequired &&
+               oldState !== networkManager.state &&
+               networkManager.state === "online")
                webView.reload();
        }
    }
