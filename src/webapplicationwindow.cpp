@@ -309,7 +309,7 @@ void WebApplicationWindow::onLoadingChanged(QWebLoadRequest *request)
     // if the framework  called us with an explicit stagePreparing call we
     // will wait for the call to stageReady to come in
     if (mStagePreparing && !mStageReady) {
-        if (!mWindow->isVisible() && mStageReadyTimer.isActive()) {
+        if (!mWindow->isVisible() && !mStageReadyTimer.isActive()) {
             qDebug() << Q_FUNC_INFO << "id" << mApplication->id() << "kicking stage ready timer";
             mStageReadyTimer.start(3000);
         }
