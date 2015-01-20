@@ -284,6 +284,8 @@ void WebApplicationWindow::notifyAppAboutFocusState(bool focus)
 
 void WebApplicationWindow::onLoadingChanged(QWebLoadRequest *request)
 {
+    qDebug() << Q_FUNC_INFO << "id" << mApplication->id() << "status" << request->status();
+
     switch (request->status()) {
     case QQuickWebView::LoadStartedStatus:
         setupPage();
@@ -307,8 +309,13 @@ void WebApplicationWindow::onLoadingChanged(QWebLoadRequest *request)
     // if the framework  called us with an explicit stagePreparing call we
     // will wait for the call to stageReady to come in
     if (mStagePreparing && !mStageReady) {
-        if (!mWindow->isVisible() && mStageReadyTimer.isActive())
+        if (!mWindow->isVisible() && mStageReadyTimer.isActive()) {
+            qDebug() << Q_FUNC_INFO << "id" << mApplication->id() << "kicking stage ready timer";
             mStageReadyTimer.start(3000);
+        }
+        else {
+            qDebug() << Q_FUNC_INFO << "id" << mApplication->id() << "omitting stage ready timer as alreay active or window visible";
+        }
         return;
     }
 
@@ -428,12 +435,16 @@ QString WebApplicationWindow::getIdentifierForFrame(const QString& id, const QSt
 
 void WebApplicationWindow::stagePreparing()
 {
+    qDebug() << __PRETTY_FUNCTION__ << "id" << mApplication->id();
+
     mStagePreparing = true;
     emit readyChanged();
 }
 
 void WebApplicationWindow::stageReady()
 {
+    qDebug() << __PRETTY_FUNCTION__ << "id" << mApplication->id();
+
     mStagePreparing = false;
     mStageReady = true;
 
@@ -450,6 +461,8 @@ void WebApplicationWindow::show()
     if (!mWindow)
         return;
 
+    qDebug() << __PRETTY_FUNCTION__ << "id" << mApplication->id();
+
     mWindow->show();
 }
 
@@ -458,6 +471,8 @@ void WebApplicationWindow::hide()
     if (!mWindow)
         return;
 
+    qDebug() << __PRETTY_FUNCTION__ << "id" << mApplication->id();
+
     mWindow->hide();
 }
 
@@ -465,6 +480,8 @@ void WebApplicationWindow::focus()
 {
     if (!mWindow)
         return;
+
+    qDebug() << __PRETTY_FUNCTION__ << "id" << mApplication->id();
 
     /* When we're closed we have to make sure we're visible before
      * raising ourself */
@@ -478,6 +495,8 @@ void WebApplicationWindow::unfocus()
 {
     if (!mWindow)
         return;
+
+    qDebug() << __PRETTY_FUNCTION__ << "id" << mApplication->id();
 
     mWindow->lower();
 }
