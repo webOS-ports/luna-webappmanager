@@ -122,10 +122,10 @@ void WebApplicationWindow::updateWindowProperty(const QString &name)
 {
     qDebug() << Q_FUNC_INFO << "Window property" << name << "was updated";
 
-    if (name == "windowId")
-        mWindowId = getWindowProperty("windowId").toInt();
-    else if (name == "parentWindowId")
-        mParentWindowId = getWindowProperty("parentWindowId").toInt();
+    if (name == "_LUNE_WINDOW_ID")
+        mWindowId = getWindowProperty("_LUNE_WINDOW_ID").toInt();
+    else if (name == "_LUNE_WINDOW_PARENT_ID")
+        mParentWindowId = getWindowProperty("_LUNE_WINDOW_PARENT_ID").toInt();
 }
 
 void WebApplicationWindow::onWindowPropertyChanged(QPlatformWindow *window, const QString &name)
