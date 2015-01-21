@@ -40,13 +40,17 @@ InAppBrowserExtension::~InAppBrowserExtension()
         delete mItem;
 }
 
-void InAppBrowserExtension::open(const QString &url)
+void InAppBrowserExtension::open(const QString &url, const QString &frameName)
 {
     if (mItem)
         return;
 
     if (mApplicationWindow->headless())
         return;
+
+    qDebug() << Q_FUNC_INFO << url << frameName;
+
+    mFrameName = frameName;
 
     QQuickWebViewExperimental::setFlickableViewportEnabled(true);
 
@@ -68,18 +72,19 @@ void InAppBrowserExtension::close()
     mItem->setProperty("visible", QVariant(false));
     mItem->deleteLater();
     mItem = 0;
+    mFrameName = "";
 }
 
 void InAppBrowserExtension::onDone()
 {
-    mAppEnvironment->executeScript("__InAppBrowser.userClickedDone();");
+    mAppEnvironment->executeScript(QString("__InAppBrowser.userClickedDone(\"%1\");").arg(mFrameName));
     close();
 }
 
 void InAppBrowserExtension::onTitleChanged()
 {
     QString title = mItem->property("title").toString();
-    mAppEnvironment->executeScript(QString("__InAppBrowser.setTitle(\"%1\");").arg(title));
+    mAppEnvironment->executeScript(QString("__InAppBrowser.setTitle(\"%1\",\"%2\");").arg(title).arg(mFrameName));
 }
 
 } // namespace luna
