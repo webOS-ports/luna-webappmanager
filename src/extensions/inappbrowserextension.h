@@ -35,7 +35,7 @@ public:
     ~InAppBrowserExtension();
 
 public Q_SLOTS:
-    void open(const QString &url);
+    void open(const QString &url, const QString &frameName);
     void close();
 
 private Q_SLOTS:
@@ -45,6 +45,7 @@ private Q_SLOTS:
 private:
     WebApplicationWindow *mApplicationWindow;
     QQuickItem *mItem;
+    QString mFrameName;
 };
 
 } // namespace luna
