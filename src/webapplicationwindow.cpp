@@ -276,6 +276,8 @@ void WebApplicationWindow::notifyAppAboutFocusState(bool focus)
 
     QString action = focus ? "stageActivated" : "stageDeactivated";
 
+    emit focusChanged();
+
     if (mTrustScope == TrustScopeSystem)
         executeScript(QString("if (window.Mojo && Mojo.%1) Mojo.%1()").arg(action));
 
@@ -613,6 +615,11 @@ QQmlEngine* WebApplicationWindow::qmlEngine() const
 QQuickItem* WebApplicationWindow::rootItem() const
 {
     return mRootItem;
+}
+
+bool WebApplicationWindow::hasFocus() const
+{
+    return mWindow->isActive();
 }
 
 } // namespace luna

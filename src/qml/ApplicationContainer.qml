@@ -79,12 +79,10 @@ Flickable {
                                                     "window.Mojo.positiveSpaceChanged(" + positiveSpace.width +
                                                     "," + positiveSpace.height + ");}");
 
-            if (Qt.inputMethod.visible) {
+            if (Qt.inputMethod.visible && webAppWindow.focus)
                 keyboardContainer.height = Qt.inputMethod.keyboardRectangle.height;
-            }
-            else {
+            else
                 keyboardContainer.height = 0;
-            }
         }
     }
 
