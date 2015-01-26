@@ -619,6 +619,9 @@ QQuickItem* WebApplicationWindow::rootItem() const
 
 bool WebApplicationWindow::hasFocus() const
 {
+    if (!mWindow)
+        return false;
+
     return mWindow->isActive();
 }
 
