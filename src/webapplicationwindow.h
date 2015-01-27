@@ -58,6 +58,7 @@ class WebApplicationWindow : public ApplicationEnvironment
     Q_PROPERTY(bool loadingAnimationDisabled READ loadingAnimationDisabled CONSTANT)
     Q_PROPERTY(QString windowType READ windowType CONSTANT)
     Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
+    Q_PROPERTY(bool focus READ hasFocus NOTIFY focusChanged)
 
 public:
     explicit WebApplicationWindow(WebApplication *application, const QUrl& url, const QString& windowType,
@@ -87,6 +88,7 @@ public:
     bool loadingAnimationDisabled() const;
     QString windowType() const;
     bool visible() const;
+    bool hasFocus() const;
 
     QQmlEngine* qmlEngine() const;
     QQuickItem* rootItem() const;
@@ -112,6 +114,7 @@ Q_SIGNALS:
     void sizeChanged();
     void urlChanged();
     void visibleChanged();
+    void focusChanged();
 
 protected:
     bool eventFilter(QObject *object, QEvent *event);

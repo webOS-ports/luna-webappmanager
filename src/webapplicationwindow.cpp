@@ -122,10 +122,10 @@ void WebApplicationWindow::updateWindowProperty(const QString &name)
 {
     qDebug() << Q_FUNC_INFO << "Window property" << name << "was updated";
 
-    if (name == "windowId")
-        mWindowId = getWindowProperty("windowId").toInt();
-    else if (name == "parentWindowId")
-        mParentWindowId = getWindowProperty("parentWindowId").toInt();
+    if (name == "_LUNE_WINDOW_ID")
+        mWindowId = getWindowProperty("_LUNE_WINDOW_ID").toInt();
+    else if (name == "_LUNE_WINDOW_PARENT_ID")
+        mParentWindowId = getWindowProperty("_LUNE_WINDOW_PARENT_ID").toInt();
 }
 
 void WebApplicationWindow::onWindowPropertyChanged(QPlatformWindow *window, const QString &name)
@@ -275,6 +275,8 @@ void WebApplicationWindow::notifyAppAboutFocusState(bool focus)
     qDebug() << "DEBUG: We become" << (focus ? "focused" : "unfocused");
 
     QString action = focus ? "stageActivated" : "stageDeactivated";
+
+    emit focusChanged();
 
     if (mTrustScope == TrustScopeSystem)
         executeScript(QString("if (window.Mojo && Mojo.%1) Mojo.%1()").arg(action));
@@ -613,6 +615,14 @@ QQmlEngine* WebApplicationWindow::qmlEngine() const
 QQuickItem* WebApplicationWindow::rootItem() const
 {
     return mRootItem;
+}
+
+bool WebApplicationWindow::hasFocus() const
+{
+    if (!mWindow)
+        return false;
+
+    return mWindow->isActive();
 }
 
 } // namespace luna
