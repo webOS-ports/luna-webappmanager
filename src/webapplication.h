@@ -91,6 +91,9 @@ public:
 
     void clearMemoryCaches();
 
+public Q_SLOTS:
+    bool isLauncher() const;
+
 Q_SIGNALS:
     void closed();
     void parametersChanged();

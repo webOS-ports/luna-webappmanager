@@ -106,6 +106,8 @@ public:
 
     void destroy();
 
+    Q_INVOKABLE void configureWebView(QQuickItem *webViewItem);
+
 Q_SIGNALS:
     void javaScriptExecNeeded(const QString &script);
     void extensionWantsToBeAdded(const QString &name, QObject *object);
