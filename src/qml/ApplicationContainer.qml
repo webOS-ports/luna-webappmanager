@@ -155,7 +155,7 @@ Flickable {
                     console.log("   port: " + model.securityOrigin.port);
 
                     // we allow 5 MB for now
-                    model.accepeted(5 * 1024 * 1024);
+                    model.accept(5 * 1024 * 1024);
                 }
             }
 
