@@ -368,4 +368,9 @@ ApplicationDescription WebApplication::desc() const
     return mDescription;
 }
 
+bool WebApplication::isLauncher() const
+{
+    return mDescription.id() == "com.palm.launcher";
+}
+
 } // namespace luna

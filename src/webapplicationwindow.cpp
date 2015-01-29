@@ -211,11 +211,19 @@ void WebApplicationWindow::createAndSetup()
 
         mRootItem = mWindow->rootObject();
     }
+}
 
-
+void WebApplicationWindow::configureWebView(QQuickItem *webViewItem)
+{
     qDebug() << __PRETTY_FUNCTION__ << "Configuring application webview ...";
 
-    mWebView = mRootItem->findChild<QQuickWebView*>("webView");
+    // mWebView = mRootItem->findChild<QQuickWebView*>("webView");
+    mWebView = static_cast<QQuickWebView*>(webViewItem);
+
+    if (!mWebView) {
+        qWarning() << __PRETTY_FUNCTION__ << "Couldn't find webView";
+        return;
+    }
 
     connect(mWebView, SIGNAL(loadingChanged(QWebLoadRequest*)),
             this, SLOT(onLoadingChanged(QWebLoadRequest*)));
