@@ -207,8 +207,13 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
             windowType = windowTypeAttrib;
     }
 
-    if (windowFeatures.contains("height"))
-        height = windowFeatures["attributes"].toInt();
+    if (windowFeatures.contains("height")) {
+        QVariant::Type type = windowFeatures["height"].type();
+        if (type == QVariant::Int)
+            height = windowFeatures["height"].toInt();
+        else if (type == QVariant::Double)
+            height = static_cast<int>(windowFeatures["height"].toDouble());
+    }
 
     qDebug() << Q_FUNC_INFO << "Setting parent window id" << mMainWindow->windowId() << "for new window";
     WebApplicationWindow *window = new WebApplicationWindow(this, request->url(),
