@@ -66,7 +66,7 @@ WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QU
     mLoadingAnimationDisabled(false),
     mLaunchedHidden(application->id() == "com.palm.launcher")
 {
-    qDebug() << __PRETTY_FUNCTION__ << this;
+    qDebug() << __PRETTY_FUNCTION__ << this << size;
 
     connect(&mStageReadyTimer, SIGNAL(timeout()), this, SLOT(onStageReadyTimeout()));
     mStageReadyTimer.setSingleShot(true);
@@ -173,6 +173,7 @@ void WebApplicationWindow::createAndSetup()
         mWindow = new QQuickView;
         mWindow->installEventFilter(this);
 
+
         mEngine = mWindow->engine();
         configureQmlEngine();
 
@@ -210,6 +211,8 @@ void WebApplicationWindow::createAndSetup()
         mWindow->setSource(QUrl(QString("qrc:///qml/ApplicationContainer.qml")));
 
         mRootItem = mWindow->rootObject();
+
+        mWindow->resize(mSize);
     }
 }
 

@@ -1,7 +1,7 @@
 [Unit]
 Description=The Luna Next WebApp manager
 After=luna-next.service
-Requires=luna-next.service
+BindsTo=luna-next.service
 
 [Service]
 Type=simple
