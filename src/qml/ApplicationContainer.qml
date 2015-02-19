@@ -139,7 +139,8 @@ Flickable {
             experimental.preferences.serifFontFamily: "Times New Roman"
             experimental.preferences.cursiveFontFamily: "Prelude"
 
-            experimental.transparentBackground: (webAppWindow.windowType === "dashboard")
+            experimental.transparentBackground: (webAppWindow.windowType === "dashboard" ||
+                                                 webAppWindow.windowType === "popupalert")
 
             experimental.databaseQuotaDialog: Item {
                 Component.onCompleted: {
