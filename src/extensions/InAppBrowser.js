@@ -38,11 +38,15 @@ __InAppBrowser.setTitle = function(title, frameName) {
 __InAppBrowser.userClickedDone = function(frameName) {
     var navObj = null;
 
-    for (var n = 0; n < window.top.frames.length; n++) {
-        console.log(window.top.frames[n].name);
-        if (window.top.frames[n].name === frameName) {
-            navObj = window.top.frames[n].navigator;
-            break;
+    if (window.top.name === frameName) {
+        navObj = window.top.navigator;
+    } else {
+        for (var n = 0; n < window.top.frames.length; n++) {
+            console.log(window.top.frames[n].name);
+            if (window.top.frames[n].name === frameName) {
+                navObj = window.top.frames[n].navigator;
+                break;
+            }
         }
     }
 
