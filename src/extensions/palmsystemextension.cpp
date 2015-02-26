@@ -20,6 +20,7 @@
 #include <QJsonValue>
 #include <QQuickView>
 #include <QFile>
+#include <QFileInfo>
 #include <QUrl>
 #include <QtWebKitVersion>
 
@@ -246,10 +247,16 @@ QString PalmSystemExtension::addBannerMessage(const QJsonArray &params)
 
     QString appId = mApplicationWindow->application()->id();
 
+    QString iconUrl = params.at(2).toString();
+    if (!QFileInfo(iconUrl).isAbsolute()) {
+        iconUrl.prepend("/");
+        iconUrl.prepend(mApplicationWindow->application()->desc().basePath());
+    }
+
     QJsonObject notificationParams;
     notificationParams.insert("title", params.at(0).toString());
     notificationParams.insert("launchParams", params.at(1).toString());
-    notificationParams.insert("iconUrl", params.at(2).toString());
+    notificationParams.insert("iconUrl", iconUrl);
     notificationParams.insert("expireTimeout", params.at(5).toInt());
 
     QJsonDocument document(notificationParams);
