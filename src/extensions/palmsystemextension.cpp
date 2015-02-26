@@ -151,11 +151,11 @@ QString PalmSystemExtension::getProperty(const QJsonArray &params)
     else if (name == "hasAlphaHole")
         result = QString("false");
     else if (name == "locale" || name == "locales.UI")
-        result = QString::fromStdString(LocalePreferences::instance()->locale());
+        result = LocalePreferences::instance()->locale();
     else if (name == "localeRegion")
-        result = QString::fromStdString(LocalePreferences::instance()->localeRegion());
+        result = LocalePreferences::instance()->localeRegion();
     else if (name == "timeFormat")
-        result = QString::fromStdString(LocalePreferences::instance()->timeFormat());
+        result = LocalePreferences::instance()->timeFormat();
     else if (name == "timeZone" || name == "timezone")
         result = SystemTime::instance()->timezone();
     else if (name == "isMinimal")
@@ -177,7 +177,7 @@ QString PalmSystemExtension::getProperty(const QJsonArray &params)
     else if (name == "activityId")
         result = QString("%1").arg(mApplicationWindow->application()->activityId());
     else if (name == "phoneRegion")
-        result = QString::fromStdString(LocalePreferences::instance()->phoneRegion());
+        result = LocalePreferences::instance()->phoneRegion();
     else if (name == "version")
         result = QString(QTWEBKIT_VERSION_STR);
 
