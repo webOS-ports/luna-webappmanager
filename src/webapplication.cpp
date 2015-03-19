@@ -197,14 +197,18 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
 
     // child windows can never be headless ones!
     QString windowType = "card";
+    QString windowMetrics = "";
 
     // check if we got supplied with a different window type
     if (windowFeatures.contains("attributes")) {
         QString attributes = windowFeatures["attributes"].toString();
         QJsonDocument document = QJsonDocument::fromJson(attributes.toUtf8());
+
         QString windowTypeAttrib = document.object().value("window").toString();
         if (windowTypeAttrib.length() > 0)
             windowType = windowTypeAttrib;
+
+        windowMetrics = document.object().value("metrics").toString();
     }
 
     if (windowFeatures.contains("height")) {
@@ -213,6 +217,11 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
             height = windowFeatures["height"].toInt();
         else if (type == QVariant::Double)
             height = static_cast<int>(windowFeatures["height"].toDouble());
+
+        if (windowMetrics == "units") {
+            float gridUnit = Settings::LunaSettings()->gridUnit;
+            height = static_cast<int>(qRound(height * gridUnit));
+        }
     }
 
     qDebug() << Q_FUNC_INFO << "Setting parent window id" << mMainWindow->windowId() << "for new window";
