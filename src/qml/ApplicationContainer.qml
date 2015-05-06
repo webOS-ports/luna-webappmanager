@@ -102,9 +102,7 @@ Flickable {
             id: webView
             objectName: "webView"
 
-            Connections {
-                target: Qt.inputMethod
-                onVisibleChanged: {
+            function _updateWebViewSize() {
                     webView.experimental.evaluateJavaScript("if (window.Mojo && window.Mojo.keyboardShown) {" +
                                                             "window.Mojo.keyboardShown(" + Qt.inputMethod.visible + ");}");
 
@@ -121,7 +119,12 @@ Flickable {
                         keyboardContainer.height = Qt.inputMethod.keyboardRectangle.height;
                     else
                         keyboardContainer.height = 0;
-                }
+            }
+
+            Connections {
+                target: Qt.inputMethod
+                onVisibleChanged: _updateWebViewSize();
+                onKeyboardRectangleChanged: _updateWebViewSize();
             }
 
             UserAgent {
