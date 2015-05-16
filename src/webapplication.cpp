@@ -182,59 +182,10 @@ void WebApplication::relaunch(const QString &parameters)
     mMainWindow->executeScript(QString("Mojo.relaunch();"));
 }
 
-#ifndef WITH_UNMODIFIED_QTWEBKIT
-
-void WebApplication::createWindow(QWebNewPageRequest *request)
+void WebApplication::registerChildWindow(WebApplicationWindow *window)
 {
-    int width = Settings::LunaSettings()->displayWidth;
-    int height = Settings::LunaSettings()->displayHeight;
-
-    qDebug() << __PRETTY_FUNCTION__ << "Creating new window for url" << request->url();
-
-    QVariantMap windowFeatures = request->windowFeatures();
-    foreach(QString key, windowFeatures.keys()) {
-        qDebug() << "[" << key << "] = " << windowFeatures.value(key);
-    }
-
-    // child windows can never be headless ones!
-    QString windowType = "card";
-    QString windowMetrics = "";
-
-    // check if we got supplied with a different window type
-    if (windowFeatures.contains("attributes")) {
-        QString attributes = windowFeatures["attributes"].toString();
-        QJsonDocument document = QJsonDocument::fromJson(attributes.toUtf8());
-
-        QString windowTypeAttrib = document.object().value("window").toString();
-        if (windowTypeAttrib.length() > 0)
-            windowType = windowTypeAttrib;
-
-        windowMetrics = document.object().value("metrics").toString();
-    }
-
-    if (windowFeatures.contains("height")) {
-        QVariant::Type type = windowFeatures["height"].type();
-        if (type == QVariant::Int)
-            height = windowFeatures["height"].toInt();
-        else if (type == QVariant::Double)
-            height = static_cast<int>(windowFeatures["height"].toDouble());
-
-        if (windowMetrics == "units") {
-            float gridUnit = Settings::LunaSettings()->gridUnit;
-            height = static_cast<int>(qRound(height * gridUnit));
-        }
-    }
-
-    qDebug() << Q_FUNC_INFO << "Setting parent window id" << mMainWindow->windowId() << "for new window";
-    WebApplicationWindow *window = WebApplicationWindowFactory::createWindow(this, request->url(), windowType,
-                                                            QSize(width, height), false, mMainWindow->windowId());
-
-    request->setWebView(window->webView());
-
     mChildWindows.append(window);
 }
-
-#endif
 
 void WebApplication::closeWindow(WebApplicationWindow *window)
 {
@@ -385,6 +336,11 @@ ApplicationDescription WebApplication::desc() const
 bool WebApplication::isLauncher() const
 {
     return mDescription.id() == "com.palm.launcher";
+}
+
+bool WebApplication::mainWindow() const
+{
+    return mMainWindow;
 }
 
 } // namespace luna

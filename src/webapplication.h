@@ -75,16 +75,15 @@ public:
     bool allowCrossDomainAccess() const;
     ApplicationDescription desc() const;
 
+    WebApplicationWindow *mainWindow() const;
+
     void changeActivityFocus(bool focus);
 
     bool validateResourcePath(const QString& path);
 
     void relaunch(const QString &parameters);
 
-#ifndef WITH_UNMODIFIED_QTWEBKIT
-    void createWindow(QWebNewPageRequest *request);
-#endif
-
+    void registerChildWindow(WebApplicationWindow *window);
     void closeWindow(WebApplicationWindow *window);
 
     void kill();
