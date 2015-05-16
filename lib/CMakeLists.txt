@@ -1,6 +1,5 @@
 set(SOURCES_LIB
     baseextension.cpp
-    applicationenvironment.cpp
     baseextension.h
     applicationenvironment.h)
 

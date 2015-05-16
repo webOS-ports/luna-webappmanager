@@ -48,7 +48,6 @@ WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QU
                                            bool headless,
                                            int parentWindowId,
                                            QObject *parent) :
-    ApplicationEnvironment(parent),
     mApplication(application),
     mEngine(0),
     mRootItem(0),

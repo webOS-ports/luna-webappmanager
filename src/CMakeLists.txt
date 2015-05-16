@@ -17,7 +17,9 @@ set(SOURCES
     webappmanagerservice.cpp
     webapplication.cpp
     webapplicationplugin.cpp
+    webapplicationwindowbase.cpp
     webapplicationwindow.cpp
+    webapplicationwindowfactory.cpp
     applicationdescription.cpp
     activity.cpp
     systemtime.cpp
@@ -32,7 +34,9 @@ set(HEADERS
     webappmanagerservice.h
     webapplication.h
     webapplicationplugin.h
+    webapplicationwindowbase.h
     webapplicationwindow.h
+    webapplicationwindowfactory.h
     applicationdescription.h
     activity.h
     systemtime.h

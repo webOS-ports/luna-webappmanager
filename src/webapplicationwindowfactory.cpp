@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 Simon Busch <morphis@gravedo.de>
+ * Copyright (C) 2015 Simon Busch <morphis@gravedo.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,22 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef APPLICATIONENVIRONMENT_H
-#define APPLICATIONENVIRONMENT_H
-
-#include <QString>
-#include <QUrl>
+#include "applicationenvironment.h"
+#include "webapplicationwindowbase.h"
+#include "webapplicationwindow.h"
+#include "webapplication.h"
+#include "webapplicationwindowfactory.h"
 
 namespace luna
 {
 
-class ApplicationEnvironment
+WebApplicationWindow* WebApplicationWindowFactory::createWindow(WebApplication *application, const QUrl& url, const QString& windowType,
+                                                                const QSize& size, bool headless, int parentWindowId)
 {
-public:
-    virtual void executeScript(const QString &script) = 0;
-    virtual void registerUserScript(const QUrl &path) = 0;
-};
+    return new WebApplicationWindow(application, url, windowType, size, headless, parentWindowId);
+}
 
 } // namespace luna
-
-#endif // APPLICATIONENVIRONMENT_H

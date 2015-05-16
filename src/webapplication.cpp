@@ -32,6 +32,7 @@
 #include "applicationdescription.h"
 #include "webapplication.h"
 #include "webapplicationwindow.h"
+#include "webapplicationwindowfactory.h"
 
 #include <Settings.h>
 
@@ -132,9 +133,9 @@ WebApplication::WebApplication(WebAppManager *launcher, const QUrl& url, const Q
         mDescription.id().startsWith("org.webosinternals"))
         mPrivileged = true;
 
-    mMainWindow = new WebApplicationWindow(this, url, windowType,
-            QSize(Settings::LunaSettings()->displayWidth, Settings::LunaSettings()->displayHeight),
-            mDescription.headless());
+    mMainWindow = WebApplicationWindowFactory::createWindow(this, url, windowType,
+                                                            QSize(Settings::LunaSettings()->displayWidth, Settings::LunaSettings()->displayHeight),
+                                                            mDescription.headless());
 
     processParameters();
 }
@@ -225,9 +226,8 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
     }
 
     qDebug() << Q_FUNC_INFO << "Setting parent window id" << mMainWindow->windowId() << "for new window";
-    WebApplicationWindow *window = new WebApplicationWindow(this, request->url(),
-                                                            windowType, QSize(width, height), false,
-                                                            mMainWindow->windowId());
+    WebApplicationWindow *window = WebApplicationWindowFactory::createWindow(this, request->url(), windowType,
+                                                            QSize(width, height), false, mMainWindow->windowId());
 
     request->setWebView(window->webView());
 

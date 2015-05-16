@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Simon Busch <morphis@gravedo.de>
+ * Copyright (C) 2015 Simon Busch <morphis@gravedo.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,14 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include "applicationenvironment.h"
+#include "webapplicationwindowbase.h"
 
-namespace luna
-{
-
-ApplicationEnvironment::ApplicationEnvironment(QObject *parent) :
+WebApplicationWindowBase::WebApplicationWindowBase(QObject *parent) :
     QObject(parent)
 {
 }
-
-} // namespace luna

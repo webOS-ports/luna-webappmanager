@@ -31,6 +31,8 @@
 
 #include <applicationenvironment.h>
 
+#include "webapplicationwindowbase.h"
+
 class QQuickView;
 class QQuickItem;
 
@@ -46,7 +48,8 @@ enum TrustScope
     TrustScopeSystem,
 };
 
-class WebApplicationWindow : public ApplicationEnvironment
+class WebApplicationWindow : public WebApplicationWindowBase,
+                             public ApplicationEnvironment
 {
     Q_OBJECT
     Q_PROPERTY(WebApplication *application READ application)
