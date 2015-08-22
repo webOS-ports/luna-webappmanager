@@ -248,7 +248,19 @@ QString PalmSystemExtension::addBannerMessage(const QJsonArray &params)
     QString appId = mApplicationWindow->application()->id();
 
     QString iconUrl = params.at(2).toString();
-    if (!QFileInfo(iconUrl).isAbsolute()) {
+    if (iconUrl == "") {
+    qDebug() << __PRETTY_FUNCTION__ << "iconUrl is empty: " << iconUrl;
+        LS::Call call = mLunaPubHandle.callOneReply("luna://com.palm.applicationManager/getAppBasePath",
+                                                    QString("{\"appId\":\"%1\"}").arg(appId).toUtf8().constData(),
+                                                    appId.toUtf8().constData());
+        LS::Message message(call.get(1000));
+
+        QJsonObject response = QJsonDocument::fromJson(message.getPayload()).object();
+        iconUrl = QFileInfo(QUrl(response.value("icon").toString())).absoluteFilePath();
+    }
+
+    else if (!QFileInfo(iconUrl).isAbsolute()) {
+        qDebug() << __PRETTY_FUNCTION__ << "iconUrl is not empty: " << iconUrl;
         QString appBasePath;
 
         LS::Call call = mLunaPubHandle.callOneReply("luna://com.palm.applicationManager/getAppBasePath",
@@ -262,6 +274,8 @@ QString PalmSystemExtension::addBannerMessage(const QJsonArray &params)
         iconUrl.prepend("/");
         iconUrl.prepend(appBasePath);
     }
+
+    qDebug() << __PRETTY_FUNCTION__ << "Final iconUrl: " << iconUrl;
 
     QJsonObject notificationParams;
     notificationParams.insert("title", params.at(0).toString());
