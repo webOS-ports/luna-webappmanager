@@ -77,7 +77,6 @@ void Activity::setup()
 
     QJsonObject activity;
     activity.insert("name", mAppId);
-    char *description = g_strdup_printf("%i", mProcessId);
     activity.insert("description", (qint64) mProcessId);
 
     QJsonObject activityType;
@@ -99,8 +98,6 @@ void Activity::setup()
         LSErrorFree(&lserror);
         return;
     }
-
-    g_free(description);
 }
 
 bool Activity::activityCallback(LSHandle *handle, LSMessage *message, void *user_data)
