@@ -24,7 +24,6 @@
 #include <QObject>
 
 #include "agent.h"
-#include "agentadaptor.h"
 #include "devicemodel.h"
 
 class Bluetooth : public QObject
@@ -88,6 +87,7 @@ public:
 public:
     Agent * getAgent();
     Device * getSelectedDevice();
+    DeviceModel * getDeviceModel();
     QAbstractItemModel * getConnectedDevices();
     QAbstractItemModel * getDisconnectedDevices();
     QAbstractItemModel * getAutoconnectDevices();

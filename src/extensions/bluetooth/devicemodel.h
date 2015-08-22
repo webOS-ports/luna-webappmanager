@@ -81,6 +81,12 @@ Q_SIGNALS:
     void discoveringChanged(bool isDiscovering);
     void discoverableChanged(bool isDiscoverable);
 
+    void deviceFound(QSharedPointer<Device> &device);
+    void deviceRemoved(const QString &address);
+    void deviceDisappeared(const QString &address);
+    void deviceChanged(QSharedPointer<Device> &device);
+    void propertyChanged(const QString &key, const QVariant &value);
+
 private:
     QDBusConnection m_dbus;
     QDBusInterface m_bluezManager;

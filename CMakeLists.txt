@@ -31,6 +31,11 @@ if(NOT Qt5WebKit_FOUND)
     message(FATAL_ERROR "Qt5WebKit module is required!")
 endif()
 
+find_package(Qt5DBus REQUIRED)
+if(NOT Qt5DBus_FOUND)
+    message(FATAL_ERROR "Qt5DBus module is required!")
+endif()
+
 find_package(PkgConfig "0.22" REQUIRED)
 
 pkg_check_modules(GLIB2 glib-2.0 REQUIRED)

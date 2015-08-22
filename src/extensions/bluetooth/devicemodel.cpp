@@ -248,6 +248,8 @@ void DeviceModel::updateProperty(const QString &key, const QVariant &value)
         if (m_isPowered)
             trySetDiscoverable(true);
     }
+
+    emit propertyChanged(key, value);
 }
 
 void DeviceModel::setDiscoverable(bool discoverable)
@@ -318,12 +320,14 @@ void DeviceModel::addDevice(QSharedPointer<Device> &device)
         beginInsertRows(QModelIndex(), row, row);
         m_devices.append(device);
         endInsertRows();
+        emit deviceFound(device);
     }
 }
 
 void DeviceModel::removeRow(int row)
 {
     if (0<=row && row<m_devices.size()) {
+        emit deviceRemoved(m_devices[row]->getAddress());
         beginRemoveRows(QModelIndex(), row, row);
         m_devices.removeAt(row);
         endRemoveRows();
@@ -410,6 +414,7 @@ void DeviceModel::slotDeviceRemoved(const QDBusObjectPath &path)
 void DeviceModel::slotDeviceDisappeared(const QString &address)
 {
     const int row = findRowFromAddress(address);
+    emit deviceDisappeared(address);
     if ((row >= 0) && !m_devices[row]->isPaired())
         removeRow(row);
 }
@@ -425,8 +430,10 @@ void DeviceModel::slotDeviceChanged()
             if (m_devices[i].data() == device)
                 row = i;
 
-    if (row != -1)
+    if (row != -1) {
         emitRowChanged(row);
+        emit deviceChanged(m_devices[row]);
+    }
 }
 
 QSharedPointer<Device> DeviceModel::getDeviceFromAddress(const QString &address)

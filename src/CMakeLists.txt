@@ -24,7 +24,14 @@ set(SOURCES
     extensions/palmsystemextension.cpp
     extensions/deviceinfo.cpp
     extensions/wifimanager.cpp
-    extensions/inappbrowserextension.cpp)
+    extensions/bluetoothmanager.cpp
+    extensions/inappbrowserextension.cpp
+    extensions/bluetooth/agent.cpp
+    extensions/bluetooth/agentadaptor.cpp
+    extensions/bluetooth/bluetooth.cpp
+    extensions/bluetooth/device.cpp
+    extensions/bluetooth/devicemodel.cpp
+    )
 
 set(HEADERS
     utils.h
@@ -39,7 +46,14 @@ set(HEADERS
     extensions/palmsystemextension.h
     extensions/deviceinfo.h
     extensions/wifimanager.h
-    extensions/inappbrowserextension.h)
+    extensions/bluetoothmanager.h
+    extensions/inappbrowserextension.h
+    extensions/bluetooth/agent.h
+    extensions/bluetooth/agentadaptor.h
+    extensions/bluetooth/bluetooth.h
+    extensions/bluetooth/device.h
+    extensions/bluetooth/devicemodel.h
+    )
 
 qt5_add_resources(RESOURCES resources.qrc)
 
