@@ -251,7 +251,7 @@ QString PalmSystemExtension::addBannerMessage(const QJsonArray &params)
     if (iconUrl.isEmpty()) {
         qDebug() << __PRETTY_FUNCTION__ << "iconUrl is empty: " << iconUrl;
         iconUrl =  mApplicationWindow->application()->icon();
-        qDebug() << __PRETTY_FUNCTION__ << "iconUrl after is empty: " << iconUrl;
+        qDebug() << __PRETTY_FUNCTION__ << "iconUrl after setting mApplicationWindow->application()->icon(): " << iconUrl;
     }
 
     else if (!QFileInfo(iconUrl).isAbsolute()) {
