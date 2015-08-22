@@ -249,14 +249,8 @@ QString PalmSystemExtension::addBannerMessage(const QJsonArray &params)
 
     QString iconUrl = params.at(2).toString();
     if (iconUrl.isEmpty()) {
-    qDebug() << __PRETTY_FUNCTION__ << "iconUrl is empty: " << iconUrl;
-        LS::Call call = mLunaPubHandle.callOneReply("luna://com.palm.applicationManager/getAppInfo",
-                                                    QString("{\"appId\":\"%1\"}").arg(appId).toUtf8().constData(),
-                                                    appId.toUtf8().constData());
-        LS::Message message(call.get(1000));
-
-        QJsonObject response = QJsonDocument::fromJson(message.getPayload()).object();
-        iconUrl = response.value("icon").toString();
+        qDebug() << __PRETTY_FUNCTION__ << "iconUrl is empty: " << iconUrl;
+        iconUrl =  mApplicationWindow->application()->icon();
         qDebug() << __PRETTY_FUNCTION__ << "iconUrl after is empty: " << iconUrl;
     }
 
