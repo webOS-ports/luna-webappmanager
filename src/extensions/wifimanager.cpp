@@ -203,7 +203,7 @@ void WiFiManager::finishConnectionProcess(bool success, const QString &error)
     mConnectCallbacks.second = 0;
 
     if (mNetworkToConnect) {
-      delete mNetworkToConnect;
+      mNetworkToConnect->deleteLater();
       mNetworkToConnect = 0;
     }
 

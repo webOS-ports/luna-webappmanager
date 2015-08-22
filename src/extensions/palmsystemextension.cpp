@@ -229,7 +229,7 @@ QString PalmSystemExtension::getIdentifierForFrame(const QJsonArray &params)
 {
     qDebug() << __PRETTY_FUNCTION__ << params;
 
-    if (params.count() != 2 || !params.at(0).isString() || !params.at(0).isString())
+    if (params.count() != 2 || !params.at(0).isString() || !params.at(1).isString())
         return QString("");
 
     QString id(params.at(0).toString());
