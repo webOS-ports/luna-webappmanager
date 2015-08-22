@@ -256,7 +256,7 @@ QString PalmSystemExtension::addBannerMessage(const QJsonArray &params)
         LS::Message message(call.get(1000));
 
         QJsonObject response = QJsonDocument::fromJson(message.getPayload()).object();
-        iconUrl = QFileInfo(QUrl(response.value("icon").toString()));
+        iconUrl = response.value("icon").toString();
         qDebug() << __PRETTY_FUNCTION__ << "iconUrl after is empty: " << iconUrl;
     }
 
