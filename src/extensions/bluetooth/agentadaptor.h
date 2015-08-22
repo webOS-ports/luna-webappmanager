@@ -23,6 +23,9 @@ class QStringList;
 class QVariant;
 QT_END_NAMESPACE
 
+namespace bluetooth
+{
+
 /*
  * Adaptor class for interface org.bluez.Agent
  */
@@ -75,5 +78,7 @@ public Q_SLOTS: // METHODS
     QString RequestPinCode(const QDBusObjectPath &device);
 Q_SIGNALS: // SIGNALS
 };
+
+} //namespace bluetooth
 
 #endif

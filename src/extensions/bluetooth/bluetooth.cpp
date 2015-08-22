@@ -38,7 +38,7 @@ Bluetooth::Bluetooth(const QDBusConnection &dbus, QObject *parent):
     m_agent(m_dbus, m_devices)
 {
     // export our Agent to handle pairing requests
-    new AgentAdaptor(&m_agent);
+    new bluetooth::AgentAdaptor(&m_agent);
     if(!m_dbus.registerObject(DBUS_ADAPTER_AGENT_PATH, &m_agent))
         qCritical() << "Couldn't register agent at" << DBUS_ADAPTER_AGENT_PATH;
 
@@ -133,6 +133,13 @@ Agent * Bluetooth::getAgent()
     return ret;
 }
 
+DeviceModel * Bluetooth::getDeviceModel()
+{
+    auto ret = &m_devices;
+    QQmlEngine::setObjectOwnership(ret, QQmlEngine::CppOwnership);
+    return ret;
+}
+
 QAbstractItemModel * Bluetooth::getConnectedDevices()
 {
     auto ret = &m_connectedDevices;
@@ -210,6 +217,8 @@ void Bluetooth::connectDevice(const QString &address)
         break;
     default:
         qWarning() << "Nothing to connect: Unsupported device type.";
+        qWarning() << "Nothing to connect: trying to pair...";
+        m_devices.createDevice(address, &m_agent);
         return;
     }
 

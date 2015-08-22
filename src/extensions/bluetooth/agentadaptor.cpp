@@ -17,6 +17,9 @@
 #include <QtCore/QStringList>
 #include <QtCore/QVariant>
 
+namespace bluetooth
+{
+
 /*
  * Implementation of adaptor class AgentAdaptor
  */
@@ -72,4 +75,6 @@ QString AgentAdaptor::RequestPinCode(const QDBusObjectPath &device)
     QMetaObject::invokeMethod(parent(), "RequestPinCode", Q_RETURN_ARG(QString, pincode), Q_ARG(QDBusObjectPath, device));
     return pincode;
 }
+
+} //namespace bluetooth
 
