@@ -38,6 +38,7 @@
 
 #include "extensions/palmsystemextension.h"
 #include "extensions/wifimanager.h"
+#include "extensions/bluetoothmanager.h"
 #include "extensions/inappbrowserextension.h"
 
 namespace luna
@@ -394,8 +395,10 @@ void WebApplicationWindow::createDefaultExtensions()
     addExtension(new PalmSystemExtension(this));
     addExtension(new InAppBrowserExtension(this));
 
-    if (mApplication->id() == "org.webosports.app.settings")
+    if (mApplication->id() == "org.webosports.app.settings") {
         addExtension(new WiFiManager(this));
+        addExtension(new BluetoothManager(this));
+    }
 }
 
 void WebApplicationWindow::addExtension(BaseExtension *extension)
