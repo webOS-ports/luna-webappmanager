@@ -209,6 +209,8 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
             windowType = windowTypeAttrib;
 
         windowMetrics = document.object().value("metrics").toString();
+        
+        qDebug() << __PRETTY_FUNCTION__ << "windowMetric metrics value: " << windowMetrics;
     }
 
     if (windowFeatures.contains("height")) {
@@ -219,8 +221,10 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
             height = static_cast<int>(windowFeatures["height"].toDouble());
 
         if (windowMetrics == "units") {
+            qDebug() << __PRETTY_FUNCTION__ << "windowMetrics == \"units\" Settings::LunaSettings()->gridUnit: " << Settings::LunaSettings()->gridUnit;
             float gridUnit = Settings::LunaSettings()->gridUnit;
             height = static_cast<int>(qRound(height * gridUnit));
+            qDebug() << __PRETTY_FUNCTION__ << "height: " << height;
         }
     }
 
