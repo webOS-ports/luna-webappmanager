@@ -215,12 +215,15 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
 
     if (windowFeatures.contains("height")) {
         QVariant::Type type = windowFeatures["height"].type();
-        if (type == QVariant::Int)
+        if (type == QVariant::Int) {
             height = windowFeatures["height"].toInt();
             qDebug() << __PRETTY_FUNCTION__ << "height is in int value: " << height;
-        else if (type == QVariant::Double)
+        }
+        
+        else if (type == QVariant::Double) {
             height = static_cast<int>(windowFeatures["height"].toDouble());
             qDebug() << __PRETTY_FUNCTION__ << "height is in double value: " << height;
+        }
 
         if (windowMetrics == "units") {
             qDebug() << __PRETTY_FUNCTION__ << "windowMetrics == \"units\" Settings::LunaSettings()->gridUnit: " << Settings::LunaSettings()->gridUnit;
