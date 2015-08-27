@@ -276,7 +276,7 @@ QString PalmSystemExtension::addBannerMessage(const QJsonArray &params)
     notificationParams.insert("title", params.at(0).toString());
     notificationParams.insert("launchParams", params.at(1).toString());
     notificationParams.insert("iconUrl", iconUrl);
-    notificationParams.insert("expireTimeout", params.at(5).toInt());
+    notificationParams.insert("expireTimeout", 0);
 
     QJsonDocument document(notificationParams);
 
