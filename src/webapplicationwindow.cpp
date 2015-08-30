@@ -169,7 +169,7 @@ void WebApplicationWindow::createAndSetup()
         mRootItem = qobject_cast<QQuickItem*>(component.create());
     }
     else {
-        QQuickWebViewExperimental::setFlickableViewportEnabled(mApplication->desc().flickable());
+        QQuickWebViewExperimental::setFlickableViewportEnabled(mApplication->desc().isFlickable());
 
         mWindow = new QQuickView;
         mWindow->installEventFilter(this);

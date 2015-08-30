@@ -117,24 +117,24 @@ WebApplication::WebApplication(WebAppManager *launcher, const QUrl& url, const Q
     mLauncher(launcher),
     mDescription(desc),
     mProcessId(processId),
-    mIdentifier(QString("%1 %2").arg(mDescription.id()).arg(mProcessId)),
+    mIdentifier(QString("%1 %2").arg(mDescription.getId()).arg(mProcessId)),
     mParameters(parameters),
     mMainWindow(0),
     mLaunchedAtBoot(false),
     mPrivileged(false),
-    mActivity(mIdentifier, desc.id(), processId)
+    mActivity(mIdentifier, desc.getId(), processId)
 {
     qDebug() << __PRETTY_FUNCTION__ << this;
 
     // Only system applications with a specific id prefix are privileged to access
     // the private luna bus
-    if (mDescription.id().startsWith("org.webosports") || mDescription.id().startsWith("com.palm") ||
-        mDescription.id().startsWith("org.webosinternals"))
+    if (mDescription.getId().startsWith("org.webosports") || mDescription.getId().startsWith("com.palm") ||
+        mDescription.getId().startsWith("org.webosinternals"))
         mPrivileged = true;
 
     mMainWindow = new WebApplicationWindow(this, url, windowType,
             QSize(Settings::LunaSettings()->displayWidth, Settings::LunaSettings()->displayHeight),
-            mDescription.headless());
+            mDescription.isHeadLess());
 
     processParameters();
 }
@@ -173,7 +173,7 @@ void WebApplication::changeActivityFocus(bool focus)
 
 void WebApplication::relaunch(const QString &parameters)
 {
-    qDebug() << __PRETTY_FUNCTION__ << "Relaunching application" << mDescription.id() << "with parameters" << parameters;
+    qDebug() << __PRETTY_FUNCTION__ << "Relaunching application" << mDescription.getId() << "with parameters" << parameters;
 
     mParameters = parameters;
     emit parametersChanged();
@@ -310,7 +310,7 @@ bool WebApplication::validateResourcePath(const QString &path)
 
 QString WebApplication::id() const
 {
-    return mDescription.id();
+    return mDescription.getId();
 }
 
 int64_t WebApplication::processId() const
@@ -320,12 +320,12 @@ int64_t WebApplication::processId() const
 
 QUrl WebApplication::url() const
 {
-    return mDescription.entryPoint();
+    return mDescription.getEntryPoint();
 }
 
 QUrl WebApplication::icon() const
 {
-    return mDescription.icon();
+    return mDescription.getIcon();
 }
 
 QString WebApplication::identifier() const
@@ -340,7 +340,7 @@ QString WebApplication::parameters() const
 
 bool WebApplication::headless() const
 {
-    return mDescription.headless();
+    return mDescription.isHeadLess();
 }
 
 bool WebApplication::privileged() const
@@ -350,12 +350,12 @@ bool WebApplication::privileged() const
 
 bool WebApplication::internetConnectivityRequired() const
 {
-    return mDescription.internetConnectivityRequired();
+    return mDescription.isInternetConnectivityRequired();
 }
 
 QStringList WebApplication::urlsAllowed() const
 {
-    return mDescription.urlsAllowed();
+    return mDescription.getUrlsAllowed();
 }
 
 bool WebApplication::hasRemoteEntryPoint() const
@@ -365,7 +365,7 @@ bool WebApplication::hasRemoteEntryPoint() const
 
 QString WebApplication::userAgent() const
 {
-    return mDescription.userAgent();
+    return mDescription.getUserAgent();
 }
 
 int WebApplication::activityId() const
@@ -375,7 +375,7 @@ int WebApplication::activityId() const
 
 bool WebApplication::loadingAnimationDisabled() const
 {
-    return mDescription.loadingAnimationDisabled();
+    return mDescription.isLoadingAnimationDisabled();
 }
 
 bool WebApplication::allowCrossDomainAccess() const
@@ -393,7 +393,7 @@ ApplicationDescription WebApplication::desc() const
 
 bool WebApplication::isLauncher() const
 {
-    return mDescription.id() == "com.palm.launcher";
+    return mDescription.getId() == "com.palm.launcher";
 }
 
 } // namespace luna
