@@ -48,10 +48,10 @@ WebAppManager::~WebAppManager()
 
 bool WebAppManager::validateApplication(const ApplicationDescription& desc)
 {
-    if (desc.id().length() == 0)
+    if (desc.getId().length() == 0)
         return false;
 
-    if (desc.entryPoint().isLocalFile() && !QFile::exists(desc.entryPoint().toLocalFile()))
+    if (desc.getEntryPoint().isLocalFile() && !QFile::exists(desc.getEntryPoint().toLocalFile()))
         return false;
 
     return true;
@@ -63,21 +63,21 @@ WebApplication* WebAppManager::launchApp(const QString &appDesc, const QString &
 
     if (!validateApplication(desc)) {
         qWarning("Got invalid application description for app %s",
-                 desc.id().toUtf8().constData());
+                 desc.getId().toUtf8().constData());
         return NULL;
     }
 
-    if (mApplications.contains(desc.id())) {
-        WebApplication *app = mApplications.value(desc.id());
+    if (mApplications.contains(desc.getId())) {
+        WebApplication *app = mApplications.value(desc.getId());
         app->relaunch(parameters);
         return app;
     }
 
     QString windowType = "card";
-    if (desc.id() == "com.palm.launcher")
+    if (desc.getId() == "com.palm.launcher")
         windowType = "launcher";
 
-    QUrl entryPoint = desc.entryPoint();
+    QUrl entryPoint = desc.getEntryPoint();
     WebApplication *app = new WebApplication(this, entryPoint, windowType,
                                              desc, parameters, processId);
     connect(app, SIGNAL(closed()), this, SLOT(onApplicationClosed()));
@@ -98,18 +98,18 @@ WebApplication* WebAppManager::launchUrl(const QUrl &url, const QString &windowT
 
     if (!validateApplication(desc)) {
         qWarning("Got invalid application description for app %s",
-                 desc.id().toUtf8().constData());
+                 desc.getId().toUtf8().constData());
         return NULL;
     }
 
     // FIXME is this correct when launching an URL?
-    if (mApplications.contains(desc.id())) {
-        WebApplication *application = mApplications.value(desc.id());
+    if (mApplications.contains(desc.getId())) {
+        WebApplication *application = mApplications.value(desc.getId());
         application->relaunch(parameters);
         return application;
     }
 
-    QQuickWebViewExperimental::setFlickableViewportEnabled(desc.flickable());
+    QQuickWebViewExperimental::setFlickableViewportEnabled(desc.isFlickable());
 
     WebApplication *app = new WebApplication(this, url, windowType, desc, parameters,
                                              processId);

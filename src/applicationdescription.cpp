@@ -21,41 +21,26 @@
 #include <QFile>
 #include <QDebug>
 
+#include <json-c/json.h>
+
 #include "applicationdescription.h"
 
 namespace luna
 {
 
-ApplicationDescription::ApplicationDescription() :
-    mHeadless(false)
+ApplicationDescription::ApplicationDescription() : ApplicationDescriptionBase()
 {
 }
 
 ApplicationDescription::ApplicationDescription(const ApplicationDescription& other) :
-    mId(other.id()),
-    mTitle(other.title()),
-    mIcon(other.icon()),
-    mEntryPoint(other.entryPoint()),
-    mHeadless(other.headless()),
-    mPluginName(other.pluginName()),
-    mApplicationBasePath(other.basePath()),
-    mFlickable(other.flickable()),
-    mInternetConnectivityRequired(other.internetConnectivityRequired()),
-    mUrlsAllowed(other.urlsAllowed()),
-    mUserAgent(other.userAgent()),
-    mLoadingAnimationDisabled(other.loadingAnimationDisabled()),
-    mAllowCrossDomainAccess(other.allowCrossDomainAccess())
+    ApplicationDescriptionBase(other),
+    mApplicationBasePath(other.basePath())
 {
 }
 
 ApplicationDescription::ApplicationDescription(const QString &data) :
-    mHeadless(false),
-    mFlickable(false),
-    mInternetConnectivityRequired(false),
-    mApplicationBasePath(""),
-    mUserAgent(""),
-    mLoadingAnimationDisabled(false),
-    mAllowCrossDomainAccess(false)
+    ApplicationDescriptionBase(),
+    mApplicationBasePath("")
 {
     initializeFromData(data);
 }
@@ -66,73 +51,20 @@ ApplicationDescription::~ApplicationDescription()
 
 void ApplicationDescription::initializeFromData(const QString &data)
 {
-    QJsonDocument document = QJsonDocument::fromJson(data.toUtf8());
-
-    if (!document.isObject()) {
+    struct json_object* root = json_tokener_parse( data.toUtf8().constData() );
+    if( !root || is_error( root ) )
+    {
         qWarning() << "Failed to parse application description";
         return;
     }
 
-    QJsonObject rootObject = document.object();
+    fromJsonObject(root);
 
-    if (rootObject.contains("id") && rootObject.value("id").isString())
-        mId = rootObject.value("id").toString();
-
-    if (rootObject.contains("main") && rootObject.value("main").isString())
-        mEntryPoint = locateEntryPoint(rootObject.value("main").toString());
-
-    if (rootObject.contains("noWindow") && rootObject.value("noWindow").isBool())
-        mHeadless = rootObject.value("noWindow").toBool();
-
-    if (rootObject.contains("title") && rootObject.value("title").isString())
-        mTitle = rootObject.value("title").toString();
-
-    if (rootObject.contains("icon") && rootObject.value("icon").isString()) {
-        QString iconPath = rootObject.value("icon").toString();
-
-        // we're only allow locally stored icons so we must prefix them with file:// to
-        // store it in a QUrl object
-        if (!iconPath.startsWith("file://"))
-            iconPath.prepend("file://");
-
-        qDebug() << "Appication icon path is" << iconPath;
-
-        mIcon = iconPath;
-    }
-
-    if (rootObject.contains("flickable") && rootObject.value("flickable").isBool())
-        mFlickable = rootObject.value("flickable").toBool();
-
-    if (rootObject.contains("internetConnectivityRequired") && rootObject.value("internetConnectivityRequired").isBool())
-        mInternetConnectivityRequired = rootObject.value("internetConnectivityRequired").toBool();
-
-    if (mIcon.isEmpty() || !mIcon.isLocalFile() || !QFile::exists(mIcon.toLocalFile()))
-        mIcon = QUrl("qrc:///qml/images/default-app-icon.png");
-
-    if (rootObject.contains("urlsAllowed") && rootObject.value("urlsAllowed").isArray()) {
-        QJsonArray urlsAllowed = rootObject.value("urlsAllowed").toArray();
-        for (int n = 0; n < urlsAllowed.size(); n++) {
-            if (!urlsAllowed[n].isString())
-                continue;
-
-            mUrlsAllowed.append(urlsAllowed[n].toString());
-        }
-    }
-
-    if (rootObject.contains("plugin") && rootObject.value("plugin").isString())
-        mPluginName = rootObject.value("plugin").toString();
-
-    if (rootObject.contains("userAgent") && rootObject.value("userAgent").isString())
-        mUserAgent = rootObject.value("userAgent").toString();
-
-    if (rootObject.contains("loadingAnimationDisabled") && rootObject.value("loadingAnimationDisabled").isBool())
-        mLoadingAnimationDisabled = rootObject.value("loadingAnimationDisabled").toBool();
-
-    if (rootObject.contains("allowCrossDomainAccess") && rootObject.value("allowCrossDomainAccess").isBool())
-        mAllowCrossDomainAccess = rootObject.value("allowCrossDomainAccess").toBool();
+    if(root && !is_error(root))
+        json_object_put(root);
 }
 
-QUrl ApplicationDescription::locateEntryPoint(const QString &entryPoint)
+QUrl ApplicationDescription::locateEntryPoint(const QString &entryPoint) const
 {
     QUrl entryPointAsUrl(entryPoint);
 
@@ -144,7 +76,7 @@ QUrl ApplicationDescription::locateEntryPoint(const QString &entryPoint)
     if (entryPointAsUrl.scheme() != "") {
         qWarning("Entry point %s for application %s is invalid",
                  entryPoint.toUtf8().constData(),
-                 mId.toUtf8().constData());
+                 getId().toUtf8().constData());
         return QUrl("");
     }
 
@@ -153,33 +85,39 @@ QUrl ApplicationDescription::locateEntryPoint(const QString &entryPoint)
 
 bool ApplicationDescription::hasRemoteEntryPoint() const
 {
-    return mEntryPoint.scheme() == "http" ||
-           mEntryPoint.scheme() == "https";
+    return getEntryPoint().scheme() == "http" ||
+           getEntryPoint().scheme() == "https";
 }
 
-QString ApplicationDescription::id() const
+QString ApplicationDescription::getId() const
 {
-    return mId;
+    return QString::fromStdString(id());
 }
 
-QString ApplicationDescription::title() const
+QString ApplicationDescription::getTitle() const
 {
-    return mTitle;
+    return QString::fromStdString(title());
 }
 
-QUrl ApplicationDescription::icon() const
+QUrl ApplicationDescription::getIcon() const
 {
-    return mIcon;
+    QString iconPath = 	QString::fromStdString(icon());
+
+    // we're only allow locally stored icons so we must prefix them with file:// to
+    // store it in a QUrl object
+    if (!iconPath.startsWith("file://"))
+        iconPath.prepend("file://");
+
+    QUrl lIcon(iconPath);
+    if (lIcon.isEmpty() || !lIcon.isLocalFile() || !QFile::exists(lIcon.toLocalFile()))
+        lIcon = QUrl("qrc:///qml/images/default-app-icon.png");
+
+    return lIcon;
 }
 
-QUrl ApplicationDescription::entryPoint() const
+QUrl ApplicationDescription::getEntryPoint() const
 {
-    return mEntryPoint;
-}
-
-bool ApplicationDescription::headless() const
-{
-    return mHeadless;
+    return QString::fromStdString(entryPoint());
 }
 
 QString ApplicationDescription::basePath() const
@@ -187,39 +125,26 @@ QString ApplicationDescription::basePath() const
     return mApplicationBasePath;
 }
 
-QString ApplicationDescription::pluginName() const
+QString ApplicationDescription::getPluginName() const
 {
-    return mPluginName;
+    return QString::fromStdString(pluginName());
 }
 
-bool ApplicationDescription::flickable() const
+QStringList ApplicationDescription::getUrlsAllowed() const
 {
-    return mFlickable;
+    QStringList mQStringList;
+
+    std::list<std::string>::const_iterator constIterator;
+    for (constIterator = urlsAllowed().begin(); constIterator != urlsAllowed().end(); ++constIterator) {
+        mQStringList << QString::fromStdString(*constIterator);
+    }
+
+    return mQStringList;
 }
 
-bool ApplicationDescription::internetConnectivityRequired() const
+QString ApplicationDescription::getUserAgent() const
 {
-    return mInternetConnectivityRequired;
-}
-
-QStringList ApplicationDescription::urlsAllowed() const
-{
-    return mUrlsAllowed;
-}
-
-QString ApplicationDescription::userAgent() const
-{
-    return mUserAgent;
-}
-
-bool ApplicationDescription::loadingAnimationDisabled() const
-{
-    return mLoadingAnimationDisabled;
-}
-
-bool ApplicationDescription::allowCrossDomainAccess() const
-{
-    return mAllowCrossDomainAccess;
+    return QString::fromStdString(userAgent());
 }
 
 }
