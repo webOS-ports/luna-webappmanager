@@ -200,15 +200,16 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
     QString windowMetrics = "";
 
     // check if we got supplied with a different window type
+    QJsonDocument attributesJsonDocument;
     if (windowFeatures.contains("attributes")) {
         QString attributes = windowFeatures["attributes"].toString();
-        QJsonDocument document = QJsonDocument::fromJson(attributes.toUtf8());
+        attributesJsonDocument = QJsonDocument::fromJson(attributes.toUtf8());
 
-        QString windowTypeAttrib = document.object().value("window").toString();
+        QString windowTypeAttrib = attributesJsonDocument.object().value("window").toString();
         if (windowTypeAttrib.length() > 0)
             windowType = windowTypeAttrib;
 
-        windowMetrics = document.object().value("metrics").toString();
+        windowMetrics = attributesJsonDocument.object().value("metrics").toString();
         
         qDebug() << __PRETTY_FUNCTION__ << "windowMetric metrics value: " << windowMetrics;
     }
@@ -233,9 +234,16 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
         }
     }
 
+    QVariantMap lWindowAttributesMap;
+    if( !attributesJsonDocument.isEmpty() )
+    {
+        lWindowAttributesMap = attributesJsonDocument.object().toVariantMap();
+    }
+
     qDebug() << Q_FUNC_INFO << "Setting parent window id" << mMainWindow->windowId() << "for new window";
     WebApplicationWindow *window = new WebApplicationWindow(this, request->url(),
-                                                            windowType, QSize(width, height), false,
+                                                            windowType, QSize(width, height),
+                                                            false, lWindowAttributesMap,
                                                             mMainWindow->windowId());
 
     request->setWebView(window->webView());
