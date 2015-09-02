@@ -62,7 +62,7 @@ class WebApplicationWindow : public ApplicationEnvironment
 
 public:
     explicit WebApplicationWindow(WebApplication *application, const QUrl& url, const QString& windowType,
-                                  const QSize& size, bool headless = false, int parentWindowId = 0, QObject *parent = 0);
+                                  const QSize& size, bool headless = false, const QVariantMap &windowAttributesMap = QVariantMap(), int parentWindowId = 0, QObject *parent = 0);
     ~WebApplicationWindow();
 
     WebApplication *application() const;
@@ -107,6 +107,9 @@ public:
     void destroy();
 
     Q_INVOKABLE void configureWebView(QQuickItem *webViewItem);
+
+    void setWindowProperty(const QString &name, const QVariant &value);
+    QVariant getWindowProperty(const QString &name);
 
 Q_SIGNALS:
     void javaScriptExecNeeded(const QString &script);
@@ -155,13 +158,11 @@ private:
     bool mLaunchedHidden;
 
     void assignCorrectTrustScope();
-    void createAndSetup();
+    void createAndSetup(const QVariantMap &windowAttributesMap);
     void configureQmlEngine();
     void loadAllExtensions();
     void addExtension(BaseExtension *extension);
     void createDefaultExtensions();
-    void setWindowProperty(const QString &name, const QVariant &value);
-    QVariant getWindowProperty(const QString &name);
     void updateWindowProperty(const QString &name);
     void setupPage();
     void notifyAppAboutFocusState(bool focus);

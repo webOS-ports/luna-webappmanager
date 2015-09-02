@@ -46,7 +46,7 @@ namespace luna
 
 WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QUrl& url,
                                            const QString& windowType, const QSize& size,
-                                           bool headless,
+                                           bool headless, const QVariantMap &windowAttributesMap,
                                            int parentWindowId,
                                            QObject *parent) :
     ApplicationEnvironment(parent),
@@ -74,7 +74,7 @@ WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QU
 
     assignCorrectTrustScope();
 
-    createAndSetup();
+    createAndSetup(windowAttributesMap);
 }
 
 WebApplicationWindow::~WebApplicationWindow()
@@ -149,7 +149,7 @@ void WebApplicationWindow::configureQmlEngine()
     mEngine->rootContext()->setContextProperty("webAppWindow", this);
 }
 
-void WebApplicationWindow::createAndSetup()
+void WebApplicationWindow::createAndSetup(const QVariantMap &windowAttributesMap)
 {
     if (mTrustScope == TrustScopeSystem) {
         mUserScripts.append(QUrl("qrc:///qml/webos-api.js"));
@@ -197,6 +197,10 @@ void WebApplicationWindow::createAndSetup()
         mWindow->create();
 
         // set different information bits for our window
+        foreach(QString attrKey, windowAttributesMap.keys()) {
+            setWindowProperty("LuneOS_"+attrKey,windowAttributesMap.value(attrKey));
+        }
+
         setWindowProperty(QString("_LUNE_WINDOW_TYPE"), QVariant(mWindowType));
         setWindowProperty(QString("_LUNE_WINDOW_PARENT_ID"), QVariant(mParentWindowId));
         setWindowProperty(QString("_LUNE_WINDOW_LOADING_ANIMATION_DISABLED"), QVariant(mApplication->loadingAnimationDisabled()));
