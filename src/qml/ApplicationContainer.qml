@@ -99,7 +99,7 @@ Flickable {
     Component {
         id: webViewComponent
 
-        WebView {
+        LunaWebView {
             id: webView
             objectName: "webView"
 
@@ -132,39 +132,8 @@ Flickable {
                 id: userAgent
             }
 
-            experimental.preferences.navigatorQtObjectEnabled: true
-            experimental.preferences.localStorageEnabled: true
-            experimental.preferences.offlineWebApplicationCacheEnabled: true
-            experimental.preferences.webGLEnabled: true
-            experimental.preferences.developerExtrasEnabled: true
-
-            experimental.preferences.standardFontFamily: "Prelude"
-            experimental.preferences.fixedFontFamily: "Courier new"
-            experimental.preferences.serifFontFamily: "Times New Roman"
-            experimental.preferences.cursiveFontFamily: "Prelude"
-
             experimental.transparentBackground: (webAppWindow.windowType === "dashboard" ||
                                                  webAppWindow.windowType === "popupalert")
-
-            experimental.databaseQuotaDialog: Item {
-                Component.onCompleted: {
-                    console.log("Database quota extension request:");
-                    console.log(" databaseName: " + model.databaseName);
-                    console.log(" displayName: " + model.displayName);
-                    console.log(" currentQuota: " + model.currentQuota);
-                    console.log(" currentOriginUsage: " + model.currentOriginUsage);
-                    console.log(" expectedUsage: " + model.expectedUsage);
-                    if( model.securityOrigin ) {
-                        console.log(" securityOrigin:");
-                        console.log("   scheme: " + model.securityOrigin.scheme);
-                        console.log("   host: " + model.securityOrigin.host);
-                        console.log("   port: " + model.securityOrigin.port);
-                    }
-
-                    // we allow 5 MB for now
-                    model.accept(5 * 1024 * 1024);
-                }
-            }
 
             function getUserAgentForApp(url) {
                 /* if the app wants a specific user agent assign it instead of the default one */
@@ -176,60 +145,6 @@ Flickable {
 
             experimental.userAgent: getUserAgentForApp(null)
 
-            experimental.authenticationDialog: AuthenticationDialog {
-                serverURL: webView.url
-                hostname: model.hostname
-                onAccepted: {
-                    //TODO: Need to implement password manager using KeyManager where possible
-                    if (savePwd) {
-                        //TODO Function to call and do the password management
-                    }
-                    model.accept(username, pass);
-                }
-            }
-            experimental.certificateVerificationDialog: CertDialog {
-                onViewCertificate: { /*TODO*/ }
-                onTrust: {
-                    model.accept();
-                    if(always) { /*TODO*/ }
-                }
-                onReject: {
-                    model.reject();
-                    webview.stop();
-                }
-            }
-            experimental.proxyAuthenticationDialog: ProxyAuthenticationDialog {
-                hostname: model.hostname
-                port: model.port
-                onAccepted: {
-                    //TODO: Need to implement password manager using KeyManager where possible
-                    if (savePwd) {
-                        //TODO Function to call and do the password management
-                    }
-                    model.accept(username, pass);
-                }
-            }
-            experimental.alertDialog: AlertDialog {
-                message: model.message
-                onAccepted: model.dismiss();
-            }
-            experimental.confirmDialog: ConfirmDialog {
-                message: model.message
-                onAccepted: model.accept();
-                onRejected: model.reject();
-            }
-            experimental.promptDialog: PromptDialog {
-                message: model.message
-                defaultValue: model.defaultValue
-                onAccepted: model.accept(input.text);
-                onRejected: model.reject();
-            }
-            experimental.filePicker: FilePicker {
-                fileModel: model
-            }
-            experimental.itemSelector: ItemSelector {
-                selectorModel: model;
-            }
 
             onNavigationRequested: {
                 var action = WebView.AcceptRequest;
