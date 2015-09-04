@@ -154,10 +154,12 @@ Flickable {
                     console.log(" currentQuota: " + model.currentQuota);
                     console.log(" currentOriginUsage: " + model.currentOriginUsage);
                     console.log(" expectedUsage: " + model.expectedUsage);
-                    console.log(" securityOrigin:");
-                    console.log("   scheme: " + model.securityOrigin.scheme);
-                    console.log("   host: " + model.securityOrigin.host);
-                    console.log("   port: " + model.securityOrigin.port);
+                    if( model.securityOrigin ) {
+                        console.log(" securityOrigin:");
+                        console.log("   scheme: " + model.securityOrigin.scheme);
+                        console.log("   host: " + model.securityOrigin.host);
+                        console.log("   port: " + model.securityOrigin.port);
+                    }
 
                     // we allow 5 MB for now
                     model.accept(5 * 1024 * 1024);
