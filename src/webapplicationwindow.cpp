@@ -27,6 +27,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QTimer>
+#include <QDir>
 
 #include <QScreen>
 
@@ -147,6 +148,9 @@ void WebApplicationWindow::configureQmlEngine()
 
     mEngine->rootContext()->setContextProperty("webApp", mApplication);
     mEngine->rootContext()->setContextProperty("webAppWindow", this);
+    if( QDir().mkpath("/media/internal/.app-storage") )
+        mEngine->setOfflineStoragePath("/media/internal/.app-storage");
+
 }
 
 void WebApplicationWindow::createAndSetup(const QVariantMap &windowAttributesMap)
