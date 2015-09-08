@@ -120,6 +120,8 @@ WebApplication::WebApplication(WebAppManager *launcher, const QUrl& url, const Q
     mIdentifier(QString("%1 %2").arg(mDescription.getId()).arg(mProcessId)),
     mParameters(parameters),
     mMainWindow(0),
+    mMainUrl(url),
+    mMainWindowType(windowType),
     mLaunchedAtBoot(false),
     mPrivileged(false),
     mActivity(mIdentifier, desc.getId(), processId)
@@ -132,9 +134,7 @@ WebApplication::WebApplication(WebAppManager *launcher, const QUrl& url, const Q
         mDescription.getId().startsWith("org.webosinternals"))
         mPrivileged = true;
 
-    mMainWindow = new WebApplicationWindow(this, url, windowType,
-            QSize(Settings::LunaSettings()->displayWidth, Settings::LunaSettings()->displayHeight),
-            mDescription.isHeadLess());
+    createMainWindow();
 
     processParameters();
 }
@@ -143,13 +143,11 @@ WebApplication::~WebApplication()
 {
     qDebug() << __PRETTY_FUNCTION__ << this;
 
-    Q_FOREACH(WebApplicationWindow *window, mChildWindows) {
-        mChildWindows.removeAll(window);
+    Q_FOREACH(WebApplicationWindow *window, mAppWindows) {
+        mAppWindows.removeAll(window);
         delete window;
     }
-
-    if (mMainWindow)
-        delete mMainWindow;
+    mMainWindow = NULL;
 }
 
 void WebApplication::processParameters()
@@ -178,7 +176,22 @@ void WebApplication::relaunch(const QString &parameters)
     mParameters = parameters;
     emit parametersChanged();
 
+    if( !mMainWindow ) {
+        createMainWindow();
+    }
+
     mMainWindow->executeScript(QString("Mojo.relaunch();"));
+}
+
+void WebApplication::createMainWindow()
+{
+    if( mMainWindow ) return;
+
+    mMainWindow = new WebApplicationWindow(this, mMainUrl, mMainWindowType,
+            QSize(Settings::LunaSettings()->displayWidth, Settings::LunaSettings()->displayHeight),
+            headless());
+
+    mAppWindows.append(mMainWindow);
 }
 
 #ifndef WITH_UNMODIFIED_QTWEBKIT
@@ -195,7 +208,6 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
         qDebug() << "[" << key << "] = " << windowFeatures.value(key);
     }
 
-    // child windows can never be headless ones!
     QString windowType = "card";
     QString windowMetrics = "";
 
@@ -240,15 +252,20 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
         lWindowAttributesMap = attributesJsonDocument.object().toVariantMap();
     }
 
-    qDebug() << Q_FUNC_INFO << "Setting parent window id" << mMainWindow->windowId() << "for new window";
+    int launchedFromWindowId = 0;
+    if( mMainWindow ) {
+        launchedFromWindowId = mMainWindow->windowId();
+    }
+
+    qDebug() << Q_FUNC_INFO << "Setting parent window id" << launchedFromWindowId << "for new window";
     WebApplicationWindow *window = new WebApplicationWindow(this, request->url(),
                                                             windowType, QSize(width, height),
                                                             false, lWindowAttributesMap,
-                                                            mMainWindow->windowId());
+                                                            launchedFromWindowId);
 
     request->setWebView(window->webView());
 
-    mChildWindows.append(window);
+    mAppWindows.append(window);
 }
 
 #endif
@@ -263,38 +280,23 @@ void WebApplication::closeWindow(WebApplicationWindow *window)
 
     // if it's a child window we remove it but have to take care about
     // some special conditions
-    if (mChildWindows.contains(window)) {
-        mChildWindows.removeOne(window);
+    if (mAppWindows.contains(window)) {
+        mAppWindows.removeOne(window);
         window->destroy();
         window->deleteLater();
 
-        // if no child window is left close the main (headless) window too
-        if (mChildWindows.count() == 0 && !mLaunchedAtBoot && headless()) {
-            qDebug() << "All child windows of app" << id()
-                     << "were closed so closing the main window too";
+        if( window == mMainWindow ) mMainWindow = 0;
 
-            mMainWindow->destroy();
-            mMainWindow->deleteLater();
-            mMainWindow = 0;
-
+        if( mAppWindows.size() == 0 ) {
             emit closed();
         }
-    }
-    else if (window == mMainWindow) {
-        // the main window was closed so close all child windows too
-        mMainWindow->destroy();
-        mMainWindow->deleteLater();
-        mMainWindow = 0;
+        // if the last remaining window is an headless window, close it too
+        else if (mAppWindows.count() == 1 && mAppWindows.at(0)->headless() && !mLaunchedAtBoot) {
+            qDebug() << "All visible windows of app" << id()
+                     << "were closed so closing the main window too";
 
-        qDebug() << "The main window of app " << id()
-                 << "was closed, so closing all child windows too";
-
-        foreach(WebApplicationWindow *childWindow, mChildWindows) {
-            childWindow->destroy();
-            childWindow->deleteLater();
+            closeWindow(mAppWindows.at(0));
         }
-
-        emit closed();
     }
 }
 
@@ -307,7 +309,7 @@ void WebApplication::clearMemoryCaches()
 {
     mMainWindow->clearMemoryCaches();
 
-    foreach (WebApplicationWindow *window, mChildWindows)
+    foreach (WebApplicationWindow *window, mAppWindows)
         window->clearMemoryCaches();
 }
 

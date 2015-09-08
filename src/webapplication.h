@@ -81,6 +81,8 @@ public:
 
     void relaunch(const QString &parameters);
 
+    void createMainWindow();
+
 #ifndef WITH_UNMODIFIED_QTWEBKIT
     void createWindow(QWebNewPageRequest *request);
 #endif
@@ -108,7 +110,9 @@ private:
     QString mIdentifier;
     QString mParameters;
     WebApplicationWindow *mMainWindow;
-    QList<WebApplicationWindow*> mChildWindows;
+    QUrl mMainUrl;
+    QString mMainWindowType;
+    QList<WebApplicationWindow*> mAppWindows;
     bool mLaunchedAtBoot;
     bool mPrivileged;
     Activity mActivity;
