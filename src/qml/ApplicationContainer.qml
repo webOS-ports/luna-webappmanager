@@ -16,8 +16,9 @@
  */
 
 import QtQuick 2.0
-import QtWebKit 3.0
-import QtWebKit.experimental 1.0
+import QtWebEngine 1.1
+import QtWebEngine.experimental 1.1
+import Qt.labs.settings 1.0
 import "extensionmanager.js" as ExtensionManager
 import LunaNext.Common 0.1
 import LuneOS.Components 1.0
@@ -99,12 +100,13 @@ Flickable {
     Component {
         id: webViewComponent
 
-        LunaWebView {
+        LunaWebEngineView {
             id: webView
             objectName: "webView"
 
             function _updateWebViewSize() {
-                    webView.experimental.evaluateJavaScript("if (window.Mojo && window.Mojo.keyboardShown) {" +
+                    // beware: async call
+                    webView.runJavaScript("if (window.Mojo && window.Mojo.keyboardShown) {" +
                                                             "window.Mojo.keyboardShown(" + Qt.inputMethod.visible + ");}");
 
                     var positiveSpace = {
@@ -112,7 +114,8 @@ Flickable {
                         height: webViewContainer.height - (Qt.inputMethod ? Qt.inputMethod.keyboardRectangle.height : 0)
                     };
 
-                    webView.experimental.evaluateJavaScript("if (window.Mojo && window.Mojo.positiveSpaceChanged) {" +
+                    // beware: async call
+                    webView.runJavaScript("if (window.Mojo && window.Mojo.positiveSpaceChanged) {" +
                                                             "window.Mojo.positiveSpaceChanged(" + positiveSpace.width +
                                                             "," + positiveSpace.height + ");}");
 
@@ -132,8 +135,8 @@ Flickable {
                 id: userAgent
             }
 
-            experimental.transparentBackground: (webAppWindow.windowType === "dashboard" ||
-                                                 webAppWindow.windowType === "popupalert")
+            //experimental.transparentBackground: (webAppWindow.windowType === "dashboard" ||
+            //                                     webAppWindow.windowType === "popupalert")
 
             function getUserAgentForApp(url) {
                 /* if the app wants a specific user agent assign it instead of the default one */
@@ -143,9 +146,10 @@ Flickable {
                 return userAgent.defaultUA;
             }
 
-            experimental.userAgent: getUserAgentForApp(null)
+           profile.httpUserAgent: getUserAgentForApp(null)
+           userScripts: webAppWindow.userScripts;
 
-
+            /*
             onNavigationRequested: {
                 var action = WebView.AcceptRequest;
                 var url = request.url.toString();
@@ -172,22 +176,15 @@ Flickable {
 
                 webView.experimental.userAgent = getUserAgentForApp(url);
             }
-
+            */
             Component.onCompleted: {
                 // Let the native side configure us as needed
                 webAppWindow.configureWebView(webView);
-
+                /*
                 // Only when we have a system application we enable the webOS API and the
                 // PalmServiceBridge to avoid remote applications accessing unwanted system
                 // internals
                 if (webAppWindow.trustScope === "system") {
-                    if (experimental.hasOwnProperty('userScriptsInjectAtStart') &&
-                        experimental.hasOwnProperty('userScriptsForAllFrames')) {
-                        experimental.userScripts = webAppWindow.userScripts;
-                        experimental.userScriptsInjectAtStart = true;
-                        experimental.userScriptsForAllFrames = true;
-                    }
-
                     if (experimental.preferences.hasOwnProperty("palmServiceBridgeEnabled"))
                         experimental.preferences.palmServiceBridgeEnabled = true;
 
@@ -218,17 +215,21 @@ Flickable {
 
                 if (experimental.preferences.hasOwnProperty("suppressIncrementalRendering"))
                     experimental.preferences.suppressIncrementalRendering = true;
+                */
             }
 
+            /*
             experimental.onMessageReceived: {
                 ExtensionManager.messageHandler(message);
             }
+            */
 
             Connections {
                 target: webAppWindow
 
                 onJavaScriptExecNeeded: {
-                    webView.experimental.evaluateJavaScript(script);
+                    // beware: async call
+                    webView.experimental.runJavaScript(script);
                 }
 
                 onExtensionWantsToBeAdded: {

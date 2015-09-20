@@ -23,11 +23,8 @@
 #include <QQuickWindow>
 #include <QTimer>
 
-#include <QtWebKit/private/qquickwebview_p.h>
-#ifndef WITH_UNMODIFIED_QTWEBKIT
-#include <QtWebKit/private/qwebnewpagerequest_p.h>
-#endif
-#include <QtWebKit/private/qwebloadrequest_p.h>
+#include <QtWebEngine/5.5.0/QtWebEngine/private/qquickwebengineview_p.h>
+#include <QtWebEngine/5.5.0/QtWebEngine/private/qquickwebenginescript_p.h>
 
 #include <applicationenvironment.h>
 
@@ -50,7 +47,7 @@ class WebApplicationWindow : public ApplicationEnvironment
 {
     Q_OBJECT
     Q_PROPERTY(WebApplication *application READ application)
-    Q_PROPERTY(QList<QUrl> userScripts READ userScripts)
+    Q_PROPERTY(QList<QQuickWebEngineScript> userScripts READ userScripts)
     Q_PROPERTY(bool ready READ ready NOTIFY readyChanged)
     Q_PROPERTY(QSize size READ size NOTIFY sizeChanged)
     Q_PROPERTY(QString trustScope READ trustScope CONSTANT)
@@ -93,7 +90,7 @@ public:
     QQmlEngine* qmlEngine() const;
     QQuickItem* rootItem() const;
 
-    QList<QUrl> userScripts() const;
+    QList<QQuickWebEngineScript> userScripts() const;
 
     void setKeepAlive(bool alive);
 
@@ -125,15 +122,19 @@ protected:
     bool eventFilter(QObject *object, QEvent *event);
 
 private Q_SLOTS:
+
 #ifndef WITH_UNMODIFIED_QTWEBKIT
     void onCreateNewPage(QWebNewPageRequest *request);
     void onClosePage();
     void onSyncMessageReceived(const QVariantMap& message, QString& response);
 #endif
+
     void onLoadingChanged(QWebLoadRequest *request);
     void onStageReadyTimeout();
     void onVisibleChanged(bool visible);
     void onWindowPropertyChanged(QPlatformWindow *window, const QString &name);
+
+    QQuickWebEngineScript *WebApplicationWindow::getScriptFromUrl(const QString &iscriptName, QUrl iUrl, bool injectAtStart, bool forAllFrames);
 
 private:
     WebApplication *mApplication;
@@ -149,7 +150,7 @@ private:
     bool mStagePreparing;
     bool mStageReady;
     QTimer mStageReadyTimer;
-    QList<QUrl> mUserScripts;
+    QList<QQuickWebEngineScript> mUserScripts;
     QSize mSize;
     TrustScope mTrustScope;
     int mWindowId;

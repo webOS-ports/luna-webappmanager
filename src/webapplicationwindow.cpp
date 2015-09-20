@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2013 Simon Busch <morphis@gravedo.de>
+ * Copyright (C) 2015 Christophe Chapuis <chris.chapuis@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,16 +19,15 @@
 #include <QDebug>
 #include <QQmlContext>
 #include <QQmlComponent>
-#include <QtWebKit/private/qquickwebview_p.h>
-#ifndef WITH_UNMODIFIED_QTWEBKIT
-#include <QtWebKit/private/qwebnewpagerequest_p.h>
-#endif
 #include <QtGui/QGuiApplication>
 #include <QtGui/qpa/qplatformnativeinterface.h>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QTimer>
 #include <QDir>
+
+#include <QtWebEngine/5.5.0/QtWebEngine/private/qquickwebengineview_p.h>
+#include <QtWebEngine/5.5.0/QtWebEngine/private/qquickwebenginescript_p.h>
 
 #include <QScreen>
 
@@ -153,10 +153,18 @@ void WebApplicationWindow::configureQmlEngine()
 
 }
 
+QQuickWebEngineScript *WebApplicationWindow::getScriptFromUrl(const QString &iscriptName, QUrl iUrl, bool injectAtStart, bool forAllFrames)
+{
+    QQuickWebEngineScript *newScript = new QQuickWebEngineScript();
+    newScript->setSourceUrl(iUrl);
+    newScript->setInjectionPoint(injectAtStart ? QQuickWebEngineScript::DocumentCreation : QQuickWebEngineScript::Deferred);
+    newScript->setRunOnSubframes(forAllFrames);
+}
+
 void WebApplicationWindow::createAndSetup(const QVariantMap &windowAttributesMap)
 {
     if (mTrustScope == TrustScopeSystem) {
-        mUserScripts.append(QUrl("qrc:///qml/webos-api.js"));
+        mUserScripts.append(getScriptFromUrl("webosAPI", QUrl("qrc:///qml/webos-api.js"), true, true));
         createDefaultExtensions();
     }
 
@@ -230,7 +238,7 @@ void WebApplicationWindow::configureWebView(QQuickItem *webViewItem)
     qDebug() << __PRETTY_FUNCTION__ << "Configuring application webview ...";
 
     // mWebView = mRootItem->findChild<QQuickWebView*>("webView");
-    mWebView = static_cast<QQuickWebView*>(webViewItem);
+    mWebView = static_cast<QQuickWebEngineView*>(webViewItem);
 
     if (!mWebView) {
         qWarning() << __PRETTY_FUNCTION__ << "Couldn't find webView";
@@ -282,7 +290,7 @@ void WebApplicationWindow::setupPage()
         Settings::LunaSettings()->compatApps.end())
         zoomFactor = Settings::LunaSettings()->layoutScaleCompat;
 
-    mWebView->setZoomFactor(zoomFactor);
+    mWebView->experimental()->viewport()->setDevicePixelRatio(zoomFactor);
 
     // We need to finish the stage preparation in case of a remote entry point
     // otherwise it will never stop loading
@@ -532,7 +540,7 @@ void WebApplicationWindow::executeScript(const QString &script)
 
 void WebApplicationWindow::registerUserScript(const QUrl &path)
 {
-    mUserScripts.append(path);
+    mUserScripts.append(getScriptFromUrl(QString("userScript%1").arg(mUserScripts.size()), path, mTrustScope == TrustScopeSystem, mTrustScope == TrustScopeSystem));
 }
 
 void WebApplicationWindow::clearMemoryCaches()
