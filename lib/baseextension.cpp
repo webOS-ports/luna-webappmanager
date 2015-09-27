@@ -41,30 +41,3 @@ QString BaseExtension::handleSynchronousCall(const QString& funcName, const QJso
     return QString("");
 }
 
-void BaseExtension::callback(int id, const QString &parameters)
-{
-    QString script;
-
-    if (parameters.length() > 0) {
-        script = QString("_webOS.callback(%1, %2);").arg(id).arg(parameters);
-    }
-    else {
-        script = QString("_webOS.callback(%1);").arg(id);
-    }
-
-    mAppEnvironment->executeScript(script);
-}
-
-void BaseExtension::callbackWithoutRemove(int id, const QString &parameters)
-{
-    QString script;
-
-    if (parameters.length() > 0) {
-        script = QString("_webOS.callbackWithoutRemove(%1, %2);").arg(id).arg(parameters);
-    }
-    else {
-        script = QString("_webOS.callbackWithoutRemove(%1);").arg(id);
-    }
-
-    mAppEnvironment->executeScript(script);
-}

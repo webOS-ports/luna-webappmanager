@@ -1,5 +1,6 @@
 include_directories(
-    ${Qt5WebKit_PRIVATE_INCLUDE_DIRS}
+    ${Qt5WebEngine_PRIVATE_INCLUDE_DIRS}
+    ${Qt5WebChannel_PRIVATE_INCLUDE_DIRS}
     ${Qt5Quick_PRIVATE_INCLUDE_DIRS}
     ${GLIB2_INCLUDE_DIRS}
     ${LS2_INCLUDE_DIRS}
@@ -62,7 +63,7 @@ set(WEBOS_FRAMEWORK qml/webos-api.js)
 install (FILES ${WEBOS_FRAMEWORK} DESTINATION ${WEBOS_INSTALL_WEBOS_FRAMEWORKSDIR}/webos)
 
 add_executable(LunaWebAppManager ${SOURCES} ${HEADERS} ${RESOURCES})
-qt5_use_modules(LunaWebAppManager Quick Gui WebKit DBus)
+qt5_use_modules(LunaWebAppManager Quick Gui WebEngine WebChannel DBus)
 target_link_libraries(LunaWebAppManager
     webapp-plugin
     ${LS2_LIBRARIES}

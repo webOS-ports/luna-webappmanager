@@ -18,6 +18,8 @@
 #ifndef PALMSYSTEMPLUGIN_H
 #define PALMSYSTEMPLUGIN_H
 
+#include <QString>
+
 #include <baseextension.h>
 #include <luna-service2++/handle.hpp>
 
@@ -29,6 +31,24 @@ class WebApplicationWindow;
 class PalmSystemExtension : public BaseExtension
 {
     Q_OBJECT
+
+    Q_PROPERTY(QString launchParams READ launchParams)
+    Q_PROPERTY(bool hasAlphaHole READ hasAlphaHole WRITE setHasAlphaHole)
+    Q_PROPERTY(QString locale READ locale)
+    Q_PROPERTY(QString localeRegion READ localeRegion)
+    Q_PROPERTY(QString timeFormat READ timeFormat)
+    Q_PROPERTY(QString timeZone READ timeZone)
+    Q_PROPERTY(bool isMinimal READ isMinimal)
+    Q_PROPERTY(QString identifier READ identifier)
+    Q_PROPERTY(QString screenOrientation READ screenOrientation)
+    Q_PROPERTY(QString windowOrientation READ windowOrientation WRITE setWindowOrientation)
+    Q_PROPERTY(QString specifiedWindowOrientation READ specifiedWindowOrientation)
+    Q_PROPERTY(QString videoOrientation READ videoOrientation)
+    Q_PROPERTY(QString deviceInfo READ deviceInfo)
+    Q_PROPERTY(bool isActivated READ isActivated)
+    Q_PROPERTY(int activityId READ activityId)
+    Q_PROPERTY(QString phoneRegion READ phoneRegion)
+    Q_PROPERTY(QString version READ version)
 public:
     explicit PalmSystemExtension(WebApplicationWindow *applicationWindow, QObject *parent = 0);
 
@@ -93,7 +113,25 @@ public Q_SLOTS:
     QVariant getResource(QVariant a, QVariant b);
     */
 
-    void setProperty(const QString &name, const QVariant &value);
+    QString launchParams();
+    bool    hasAlphaHole();
+    void    setHasAlphaHole(bool iVal);
+    QString locale();
+    QString localeRegion();
+    QString timeFormat();
+    QString timeZone();
+    bool    isMinimal();
+    QString identifier();
+    QString screenOrientation();
+    QString windowOrientation();
+    void    setWindowOrientation(QString iVal);
+    QString specifiedWindowOrientation();
+    QString videoOrientation();
+    QString deviceInfo();
+    bool    isActivated();
+    int     activityId();
+    QString phoneRegion();
+    QString version();
 
 private:
     WebApplicationWindow *mApplicationWindow;
@@ -102,7 +140,6 @@ private:
     QString getIdentifierForFrame(const QJsonArray& params);
     QString getActivityId(const QJsonArray& params);
     QString addBannerMessage(const QJsonArray& params);
-    QString getProperty(const QJsonArray &params);
 
     LS::Handle mLunaPubHandle;
 };

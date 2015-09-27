@@ -18,8 +18,8 @@
 import QtQuick 2.0
 import QtWebEngine 1.1
 import QtWebEngine.experimental 1.1
+import QtWebChannel 1.0
 import Qt.labs.settings 1.0
-import "extensionmanager.js" as ExtensionManager
 import LunaNext.Common 0.1
 import LuneOS.Components 1.0
 import Connman 0.2
@@ -218,22 +218,18 @@ Flickable {
                 */
             }
 
-            /*
-            experimental.onMessageReceived: {
-                ExtensionManager.messageHandler(message);
-            }
-            */
+            webChannel: WebChannel {}
 
             Connections {
                 target: webAppWindow
 
                 onJavaScriptExecNeeded: {
                     // beware: async call
-                    webView.experimental.runJavaScript(script);
+                    webView.runJavaScript(script);
                 }
 
                 onExtensionWantsToBeAdded: {
-                    ExtensionManager.addExtension(name, object);
+                    webView.webChannel.registerObject(name, object);
                 }
             }
 

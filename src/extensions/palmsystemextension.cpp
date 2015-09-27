@@ -133,56 +133,26 @@ void PalmSystemExtension::markFirstUseDone()
     firstUseMarker.close();
 }
 
-void PalmSystemExtension::setProperty(const QString &name, const QVariant &value)
-{
-    qDebug() << __PRETTY_FUNCTION__ << name << value;
-}
 
-QString PalmSystemExtension::getProperty(const QJsonArray &params)
-{
-    if (params.count() != 1 || !params.at(0).isString())
-        return QString("");
-
-    QString name = params.at(0).toString();
-    QString result = "";
-
-    if (name == "launchParams")
-        result = mApplicationWindow->application()->parameters();
-    else if (name == "hasAlphaHole")
-        result = QString("false");
-    else if (name == "locale" || name == "locales.UI")
-        result = LocalePreferences::instance()->locale();
-    else if (name == "localeRegion")
-        result = LocalePreferences::instance()->localeRegion();
-    else if (name == "timeFormat")
-        result = LocalePreferences::instance()->timeFormat();
-    else if (name == "timeZone" || name == "timezone")
-        result = SystemTime::instance()->timezone();
-    else if (name == "isMinimal")
-        result = QString("false");
-    else if (name == "identifier")
-        result = mApplicationWindow->application()->identifier();
-    else if (name == "screenOrientation")
-        result = QString("");
-    else if (name == "windowOrientation")
-        result = QString("");
-    else if (name == "specifiedWindowOrientation")
-        result = QString("");
-    else if (name == "videoOrientation")
-        result = QString("");
-    else if (name == "deviceInfo")
-        result = DeviceInfo::instance()->jsonString();
-    else if (name == "isActivated")
-        result = QString(mApplicationWindow->active() ? "true" : "false");
-    else if (name == "activityId")
-        result = QString("%1").arg(mApplicationWindow->application()->activityId());
-    else if (name == "phoneRegion")
-        result = LocalePreferences::instance()->phoneRegion();
-    else if (name == "version")
-        result = QString(QTWEBKIT_VERSION_STR);
-
-    return result;
-}
+QString PalmSystemExtension::launchParams() { return mApplicationWindow->application()->parameters(); }
+bool    PalmSystemExtension::hasAlphaHole() { return false; }
+void    PalmSystemExtension::setHasAlphaHole(bool iVal) {}
+QString PalmSystemExtension::locale() { return LocalePreferences::instance()->locale(); }
+QString PalmSystemExtension::localeRegion() { return LocalePreferences::instance()->localeRegion(); }
+QString PalmSystemExtension::timeFormat() { return LocalePreferences::instance()->timeFormat(); }
+QString PalmSystemExtension::timeZone() { return SystemTime::instance()->timezone(); }
+bool    PalmSystemExtension::isMinimal() { return false; }
+QString PalmSystemExtension::identifier() { return mApplicationWindow->application()->identifier(); }
+QString PalmSystemExtension::screenOrientation() { return ""; }
+QString PalmSystemExtension::windowOrientation() { return ""; }
+void    PalmSystemExtension::setWindowOrientation(QString iVal) {}
+QString PalmSystemExtension::specifiedWindowOrientation() { return ""; }
+QString PalmSystemExtension::videoOrientation() { return ""; }
+QString PalmSystemExtension::deviceInfo() { return DeviceInfo::instance()->jsonString(); }
+bool    PalmSystemExtension::isActivated() { return mApplicationWindow->active(); }
+int     PalmSystemExtension::activityId() { return mApplicationWindow->application()->activityId(); }
+QString PalmSystemExtension::phoneRegion() { return LocalePreferences::instance()->phoneRegion(); }
+QString PalmSystemExtension::version() { return QString(QTWEBENGINE_VERSION_STR); }
 
 QString PalmSystemExtension::handleSynchronousCall(const QString& funcName, const QJsonArray& params)
 {

@@ -20,71 +20,71 @@
  ******************************************************************************/
 
 _webOS = {
-    extensions: {},
-    constructors: {},
-    callbacks: {},
 };
 
-var callbackId = 1;
+var webOSApiChannel = new QWebChannel(qt.webChannelTransport, function(channel) {
+    // all published objects are available in channel.objects under
+    // the identifier set in their attached WebChannel.id property
+    _webOS.objects = channel.objects;
+/*
+    // access a property
+    alert(foo.hello);
 
-_webOS.callback = function() {
-    var scId = arguments[0];
-    var callbackRef = null;
+    // connect to a signal
+    foo.someSignal.connect(function(message) {
+        alert("Got signal: " + message);
+    });
 
-    var parameters = [];
-    for (var i = 1; i < arguments.length; i++) {
-        parameters[i-1] = arguments[i];
-    }
-    callbackRef = _webOS.callbacks[scId];
-
-    // Even IDs are success-, odd are error-callbacks - make sure we remove both
-    if ((scId % 2) !== 0) {
-        scId = scId - 1;
-    }
-    // Remove both the success as well as the error callback from the stack
-    delete _webOS.callbacks[scId];
-    delete _webOS.callbacks[scId + 1];
-
-    if (typeof callbackRef == "function") callbackRef.apply(this, parameters);
-};
-
-_webOS.callbackWithoutRemove = function() {
-    var scId = arguments[0];
-    var callbackRef = null;
-
-    var parameters = [];
-    for (var i = 1; i < arguments.length; i++) {
-        parameters[i-1] = arguments[i];
-    }
-    callbackRef = _webOS.callbacks[scId];
-
-    if (typeof(callbackRef) == "function") callbackRef.apply(this, parameters);
-};
+    // invoke a method, and receive the return value asynchronously
+    foo.someMethod("bar", function(ret) {
+        alert("Got return value: " + ret);
+    });
+*/
+});
 
 /**
  * Execute a call to a extension function
  * @return bool true on success, false on error (e.g. function doesn't exist)
  */
 _webOS.exec = function(successCallback, errorCallback, extensionName, functionName, parameters) {
-    if (callbackId % 2) {
-        callbackId++;
-    }
-
-    // Store a reference to the callback functions
-    var scId = callbackId++;
-    var ecId = callbackId++;
-    _webOS.callbacks[scId] = successCallback;
-    _webOS.callbacks[ecId] = errorCallback;
-
     // if no parameters are supplied create an empty array
     if (typeof parameters === 'undefined')
         parameters = [];
 
-    parameters.unshift(ecId);
-    parameters.unshift(scId);
+    if( _webOS.objects.hasOwnProperty(extensionName) ) {
+        var extensionObj = _webOS.objects[extensionName];
+        if( extensionObj.hasOwnProperty(functionName) ) {
 
-    navigator.qt.postMessage(JSON.stringify({messageType: "callExtensionFunction", extension: extensionName, func: functionName, params: parameters}))
-    return true;
+            var callId = getNextCallId();
+            // Create a contextual callback function for this specific call
+            var callbackFunction = function(callbackId, keepCallback, success, payload) {
+                if( callbackId === callId ) {
+                    if( success && typeof(successCallback) === "function" ) {
+                        successCallback.apply(this, payload);
+                    }
+                    else if( !success && typeof(errorCallback) === "function" ) {
+                        errorCallback.apply(this, payload);
+                    }
+
+                    if( !keepCallback ) {
+                        // unsubscribe ourself from the signal
+                        extensionObj.callback.disconnect(callbackFunction);
+                    }
+                };
+            };
+            // Associate the callback signal with our contextual function
+            extensionObj.callback.connect(callbackFunction);
+
+            // Give the unique call id to the method we are calling
+            parameters.unshift(callId);
+            // ... And do the call
+            extensionObj[functionName].apply(this, parameters);
+
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /**
@@ -96,8 +96,39 @@ _webOS.execWithoutCallback = function(extensionName, functionName, parameters) {
     if (typeof parameters === 'undefined')
         parameters = [];
 
-    navigator.qt.postMessage(JSON.stringify({messageType: "callExtensionFunction", extension: extensionName, func: functionName, params: parameters}))
-    return true;
+    if( _webOS.objects.hasOwnProperty(extensionName) ) {
+        var extensionObj = _webOS.objects[extensionName];
+        if( extensionObj.hasOwnProperty(functionName) ) {
+
+            extensionObj[functionName].apply(this, parameters);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Get the property of en extension
+ * @return property value
+ */
+_webOS.getProperty = function(extensionName, propertyName) {
+    if( _webOS.objects.hasOwnProperty(extensionName) ) {
+        var extensionObj = _webOS.objects[extensionName];
+        return extensionObj[propertyName];
+    }
+
+    return null;
+}
+
+/**
+ * Set the property of en extension
+ */
+_webOS.setProperty = function(extensionName, propertyName, value) {
+    if( _webOS.objects.hasOwnProperty(extensionName) ) {
+        var extensionObj = _webOS.objects[extensionName];
+        extensionObj[propertyName] = value;
+    }
 }
 
 /**
@@ -108,6 +139,7 @@ _webOS.execSync = function(extensionName, functionName, parameters) {
     if (typeof parameters === 'undefined')
       parameters = [];
 
+    // Tofe remark: how to achieve that ??
     return navigator.qt.postSyncMessage(JSON.stringify({messageType: "callSyncExtensionFunction", extension: extensionName, func: functionName, params: parameters}));
 }
 

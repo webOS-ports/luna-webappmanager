@@ -163,6 +163,7 @@ QQuickWebEngineScript *WebApplicationWindow::getScriptFromUrl(const QString &isc
 
 void WebApplicationWindow::createAndSetup(const QVariantMap &windowAttributesMap)
 {
+    mUserScripts.append(getScriptFromUrl("QmlChannelScript", QUrl("qrc:///qtwebchannel/qwebchannel.js"), true, true));
     if (mTrustScope == TrustScopeSystem) {
         mUserScripts.append(getScriptFromUrl("webosAPI", QUrl("qrc:///qml/webos-api.js"), true, true));
         createDefaultExtensions();
@@ -237,7 +238,6 @@ void WebApplicationWindow::configureWebView(QQuickItem *webViewItem)
 {
     qDebug() << __PRETTY_FUNCTION__ << "Configuring application webview ...";
 
-    // mWebView = mRootItem->findChild<QQuickWebView*>("webView");
     mWebView = static_cast<QQuickWebEngineView*>(webViewItem);
 
     if (!mWebView) {

@@ -128,11 +128,11 @@ QString WiFiManager::createNetworksResponse()
 void WiFiManager::scanFinished()
 {
     QString payload = createNetworksResponse();
-    foreach(CallbackHandle request, mScanRequests) {
-        callback(request.first, payload);
+    foreach(int callId, mCallIds) {
+        callback(callId, false /*keepCallback*/, true /*success*/, payload);
     }
 
-    mScanRequests.clear();
+    mCallIds.clear();
 }
 
 void WiFiManager::handleUserInputRequested(const QString &servicePath, const QVariantMap &fields)
@@ -159,14 +159,14 @@ void WiFiManager::setPowered(bool powered)
     mWifi->setPowered(powered);
 }
 
-void WiFiManager::retrieveNetworks(int scid, int ecid)
+void WiFiManager::retrieveNetworks(int callId)
 {
     if (!mWifi) {
-        callback(ecid, "WiFi is not available");
+        callback(callId, false, false, "WiFi is not available");
         return;
     }
 
-    mScanRequests.append(CallbackHandle(scid, ecid));
+    mCallIds.append(callId);
 
     mWifi->scan();
 }
@@ -195,12 +195,11 @@ void WiFiManager::finishConnectionProcess(bool success, const QString &error)
     qDebug() << __PRETTY_FUNCTION__;
 
     if (mConnecting)
-        callback(success ? mConnectCallbacks.first : mConnectCallbacks.second, error);
+        callback(mConnectCallbacks, false, success, error);
     else if (mDisconnecting)
-        callback(success ? mDisconnectCallbacks.first : mDisconnectCallbacks.second, error);
+        callback(mDisconnectCallbacks, false, success, error);
 
-    mConnectCallbacks.first = 0;
-    mConnectCallbacks.second = 0;
+    mConnectCallbacks = 0;
 
     if (mNetworkToConnect) {
       mNetworkToConnect->deleteLater();
@@ -214,12 +213,12 @@ void WiFiManager::finishConnectionProcess(bool success, const QString &error)
     disconnect(this, SLOT(connectRequestFailed(const QString&)));
 }
 
-void WiFiManager::connectNetwork(int scid, int ecid, const QString &network)
+void WiFiManager::connectNetwork(int callId, const QString &network)
 {
     qDebug() << __PRETTY_FUNCTION__ << network;
 
     if (mConnecting) {
-        callback(ecid, "Already connecting to a network");
+        callback(callId, false /*keepCallback*/, false /*success*/, "Already connecting to a network");
         return;
     }
 
@@ -228,20 +227,20 @@ void WiFiManager::connectNetwork(int scid, int ecid, const QString &network)
     QJsonDocument document = QJsonDocument::fromJson(network.toUtf8());
 
     if (!document.isObject()) {
-        callback(ecid, "Invalid arguments");
+        callback(callId, false /*keepCallback*/, false /*success*/, "Invalid arguments");
         return;
     }
 
     QJsonObject root = document.object();
     if (!root.contains("path") || !root.value("path").isString()) {
-        callback(ecid, "Invalud arguments");
+        callback(callId, false /*keepCallback*/, false /*success*/, "Invalid arguments");
         return;
     }
 
     path = root.value("path").toString();
 
     if (!root.contains("password") || !root.value("password").isString()) {
-        callback(ecid, "Invalud arguments");
+        callback(callId, false /*keepCallback*/, false /*success*/, "Invalid arguments");
         return;
     }
 
@@ -251,8 +250,7 @@ void WiFiManager::connectNetwork(int scid, int ecid, const QString &network)
     mNetworkToConnect = new NetworkService(path, emptyProperties, 0);
 
     mConnecting = true;
-    mConnectCallbacks.first = scid;
-    mConnectCallbacks.second = ecid;
+    mConnectCallbacks = callId;
 
     connect(mNetworkToConnect, SIGNAL(connectedChanged(bool)),
             this, SLOT(networkConnected(bool)));
