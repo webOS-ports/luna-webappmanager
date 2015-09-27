@@ -123,11 +123,9 @@ protected:
 
 private Q_SLOTS:
 
-#ifndef WITH_UNMODIFIED_QTWEBKIT
-    void onCreateNewPage(QWebNewPageRequest *request);
+    void onCreateNewPage(QQuickWebEngineNewViewRequest *request);
     void onClosePage();
     void onSyncMessageReceived(const QVariantMap& message, QString& response);
-#endif
 
     void onLoadingChanged(QWebLoadRequest *request);
     void onStageReadyTimeout();

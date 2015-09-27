@@ -248,13 +248,11 @@ void WebApplicationWindow::configureWebView(QQuickItem *webViewItem)
     connect(mWebView, SIGNAL(loadingChanged(QWebLoadRequest*)),
             this, SLOT(onLoadingChanged(QWebLoadRequest*)));
 
-#ifndef WITH_UNMODIFIED_QTWEBKIT
-    connect(mWebView->experimental(), SIGNAL(createNewPage(QWebNewPageRequest*)),
-            this, SLOT(onCreateNewPage(QWebNewPageRequest*)));
-    connect(mWebView->experimental(), SIGNAL(closePage()), this, SLOT(onClosePage()));
-    connect(mWebView->experimental(), SIGNAL(syncMessageReceived(const QVariantMap&, QString&)),
-            this, SLOT(onSyncMessageReceived(const QVariantMap&, QString&)));
-#endif
+    connect(mWebView, SIGNAL(newViewRequested(QQuickWebEngineNewViewRequest*)),
+            this, SLOT(onCreateNewPage(QQuickWebEngineNewViewRequest*)));
+//    connect(mWebView->experimental(), SIGNAL(closePage()), this, SLOT(onClosePage()));
+//    connect(mWebView->experimental(), SIGNAL(syncMessageReceived(const QVariantMap&, QString&)),
+//            this, SLOT(onSyncMessageReceived(const QVariantMap&, QString&)));
 
     if (mTrustScope == TrustScopeSystem)
         loadAllExtensions();
@@ -353,9 +351,7 @@ void WebApplicationWindow::onLoadingChanged(QWebLoadRequest *request)
         mWindow->show();
 }
 
-#ifndef WITH_UNMODIFIED_QTWEBKIT
-
-void WebApplicationWindow::onCreateNewPage(QWebNewPageRequest *request)
+void WebApplicationWindow::onCreateNewPage(QQuickWebEngineNewViewRequest *request)
 {
     mApplication->createWindow(request);
 }
@@ -403,8 +399,6 @@ void WebApplicationWindow::onSyncMessageReceived(const QVariantMap& message, QSt
     BaseExtension *extension = mExtensions.value(extensionName);
     response = extension->handleSynchronousCall(funcName, params);
 }
-
-#endif
 
 void WebApplicationWindow::createDefaultExtensions()
 {

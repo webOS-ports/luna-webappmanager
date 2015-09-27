@@ -20,9 +20,8 @@
 
 #include <QQuickView>
 #include <QMap>
-#ifndef WITH_UNMODIFIED_QTWEBKIT
-#include <QtWebKit/private/qwebnewpagerequest_p.h>
-#endif
+#include <QtWebEngine/5.5.0/QtWebEngine/private/qquickwebengineview_p.h>
+#include <QtWebEngine/5.5.0/QtWebEngine/private/qquickwebenginescript_p.h>
 
 #include "applicationdescription.h"
 #include "activity.h"
@@ -83,9 +82,7 @@ public:
 
     void createMainWindow();
 
-#ifndef WITH_UNMODIFIED_QTWEBKIT
-    void createWindow(QWebNewPageRequest *request);
-#endif
+    void createWindow(QQuickWebEngineNewViewRequest *request);
 
     void closeWindow(WebApplicationWindow *window);
 
