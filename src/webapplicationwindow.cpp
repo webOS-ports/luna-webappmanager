@@ -26,8 +26,10 @@
 #include <QTimer>
 #include <QDir>
 
-#include <QtWebEngine/5.5.0/QtWebEngine/private/qquickwebengineview_p.h>
-#include <QtWebEngine/5.5.0/QtWebEngine/private/qquickwebenginescript_p.h>
+#include <QtWebEngine/5.5.1/QtWebEngine/private/qquickwebengineview_p.h>
+#include <QtWebEngine/5.5.1/QtWebEngine/private/qquickwebenginescript_p.h>
+#include <QtWebEngine/5.5.1/QtWebEngine/private/qquickwebengineloadrequest_p.h>
+#include <QtWebEngine/5.5.1/QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
 
 #include <QScreen>
 
@@ -159,6 +161,8 @@ QQuickWebEngineScript *WebApplicationWindow::getScriptFromUrl(const QString &isc
     newScript->setSourceUrl(iUrl);
     newScript->setInjectionPoint(injectAtStart ? QQuickWebEngineScript::DocumentCreation : QQuickWebEngineScript::Deferred);
     newScript->setRunOnSubframes(forAllFrames);
+
+    return newScript;
 }
 
 void WebApplicationWindow::createAndSetup(const QVariantMap &windowAttributesMap)
@@ -182,7 +186,7 @@ void WebApplicationWindow::createAndSetup(const QVariantMap &windowAttributesMap
         mRootItem = qobject_cast<QQuickItem*>(component.create());
     }
     else {
-        QQuickWebViewExperimental::setFlickableViewportEnabled(mApplication->desc().isFlickable());
+        //QQuickWebViewExperimental::setFlickableViewportEnabled(mApplication->desc().isFlickable());
 
         mWindow = new QQuickView;
         mWindow->installEventFilter(this);
@@ -245,8 +249,8 @@ void WebApplicationWindow::configureWebView(QQuickItem *webViewItem)
         return;
     }
 
-    connect(mWebView, SIGNAL(loadingChanged(QWebLoadRequest*)),
-            this, SLOT(onLoadingChanged(QWebLoadRequest*)));
+    connect(mWebView, SIGNAL(loadingChanged(QWebEngineLoadRequest*)),
+            this, SLOT(onLoadingChanged(QWebEngineLoadRequest*)));
 
     connect(mWebView, SIGNAL(newViewRequested(QQuickWebEngineNewViewRequest*)),
             this, SLOT(onCreateNewPage(QQuickWebEngineNewViewRequest*)));
@@ -288,7 +292,8 @@ void WebApplicationWindow::setupPage()
         Settings::LunaSettings()->compatApps.end())
         zoomFactor = Settings::LunaSettings()->layoutScaleCompat;
 
-    mWebView->experimental()->viewport()->setDevicePixelRatio(zoomFactor);
+    mWebView->setProperty("devicePixelRatio", QVariant(zoomFactor));
+    // mWebView->experimental()->viewport()->setDevicePixelRatio(zoomFactor); // not accessible by C++ API
 
     // We need to finish the stage preparation in case of a remote entry point
     // otherwise it will never stop loading
@@ -310,18 +315,18 @@ void WebApplicationWindow::notifyAppAboutFocusState(bool focus)
     mApplication->changeActivityFocus(focus);
 }
 
-void WebApplicationWindow::onLoadingChanged(QWebLoadRequest *request)
+void WebApplicationWindow::onLoadingChanged(QQuickWebEngineLoadRequest *request)
 {
     qDebug() << Q_FUNC_INFO << "id" << mApplication->id() << "status" << request->status();
 
     switch (request->status()) {
-    case QQuickWebView::LoadStartedStatus:
+    case QQuickWebEngineView::LoadStartedStatus:
         setupPage();
         return;
-    case QQuickWebView::LoadStoppedStatus:
-    case QQuickWebView::LoadFailedStatus:
+    case QQuickWebEngineView::LoadStoppedStatus:
+    case QQuickWebEngineView::LoadFailedStatus:
         return;
-    case QQuickWebView::LoadSucceededStatus:
+    case QQuickWebEngineView::LoadSucceededStatus:
         break;
     }
 
@@ -542,7 +547,9 @@ void WebApplicationWindow::clearMemoryCaches()
     if (!mWebView)
         return;
 
-    mWebView->clearMemoryCaches();
+    // Didn't find yet any equivalent for QtWebEngine.
+    // There is a WebCache::clearCache() in Blink, but I didn't see where that was exposed in chromium.
+    // mWebView->clearMemoryCaches();
 }
 
 WebApplication* WebApplicationWindow::application() const
@@ -550,7 +557,7 @@ WebApplication* WebApplicationWindow::application() const
     return mApplication;
 }
 
-QQuickWebView *WebApplicationWindow::webView() const
+QQuickWebEngineView *WebApplicationWindow::webView() const
 {
     return mWebView;
 }
@@ -570,9 +577,9 @@ bool WebApplicationWindow::headless() const
     return mHeadless;
 }
 
-QList<QUrl> WebApplicationWindow::userScripts() const
+QQmlListProperty<QQuickWebEngineScript> WebApplicationWindow::userScripts()
 {
-    return mUserScripts;
+    return QQmlListProperty<QQuickWebEngineScript>(this, mUserScripts);
 }
 
 bool WebApplicationWindow::ready() const

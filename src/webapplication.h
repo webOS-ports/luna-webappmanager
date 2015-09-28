@@ -20,8 +20,8 @@
 
 #include <QQuickView>
 #include <QMap>
-#include <QtWebEngine/5.5.0/QtWebEngine/private/qquickwebengineview_p.h>
-#include <QtWebEngine/5.5.0/QtWebEngine/private/qquickwebenginescript_p.h>
+#include <QtWebEngine/5.5.1/QtWebEngine/private/qquickwebengineview_p.h>
+#include <QtWebEngine/5.5.1/QtWebEngine/private/qquickwebenginescript_p.h>
 
 #include "applicationdescription.h"
 #include "activity.h"

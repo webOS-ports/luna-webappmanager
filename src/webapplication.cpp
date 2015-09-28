@@ -20,13 +20,10 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
-#include <QtWebKit/private/qquickwebview_p.h>
-#ifndef WITH_UNMODIFIED_QTWEBKI
-#include <QtWebKit/private/qwebnewpagerequest_p.h>
-#endif
-
 #include <set>
 #include <string>
+
+#include <QtWebEngine/5.5.1/QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
 
 #include "webappmanager.h"
 #include "applicationdescription.h"

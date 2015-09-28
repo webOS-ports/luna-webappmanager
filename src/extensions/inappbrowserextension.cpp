@@ -18,7 +18,6 @@
 #include <QUrl>
 #include <QQmlComponent>
 #include <QQuickItem>
-#include <QtWebKit/private/qquickwebview_p.h>
 
 #include "../webapplicationwindow.h"
 #include "inappbrowserextension.h"
@@ -52,7 +51,7 @@ void InAppBrowserExtension::open(const QString &url, const QString &frameName)
 
     mFrameName = frameName;
 
-    QQuickWebViewExperimental::setFlickableViewportEnabled(true);
+    //QQuickWebViewExperimental::setFlickableViewportEnabled(true);
 
     QQmlComponent component(mApplicationWindow->qmlEngine(),
                             QUrl("qrc:///qml/InAppBrowser.qml"));

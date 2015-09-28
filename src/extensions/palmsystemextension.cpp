@@ -22,7 +22,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QUrl>
-#include <QtWebKitVersion>
+#include <QtWebEngineVersion>
 
 #include <luna-service2++/message.hpp>
 #include <luna-service2++/call.hpp>
@@ -162,8 +162,6 @@ QString PalmSystemExtension::handleSynchronousCall(const QString& funcName, cons
         response = getResource(params);
     else if (funcName == "getIdentifierForFrame")
         response = getIdentifierForFrame(params);
-    else if (funcName == "getProperty")
-        response = getProperty(params);
     else if (funcName == "addBannerMessage")
         response = addBannerMessage(params);
 

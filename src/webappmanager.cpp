@@ -17,8 +17,8 @@
 
 #include <QDebug>
 #include <QDir>
-#include <QtWebKit/private/qquickwebview_p.h>
 #include <QTimer>
+#include <QtWebEngine/qtwebengineglobal.h>
 
 #include "applicationdescription.h"
 #include "webappmanager.h"
@@ -34,7 +34,7 @@ WebAppManager::WebAppManager(int &argc, char **argv)
     setApplicationName("LunaWebAppMgr");
     setQuitOnLastWindowClosed(false);
 
-    QQuickWebViewExperimental::setFlickableViewportEnabled(false);
+    QtWebEngine::initialize();
 
     connect(this, SIGNAL(aboutToQuit()), this, SLOT(onAboutToQuit()));
 
@@ -109,7 +109,7 @@ WebApplication* WebAppManager::launchUrl(const QUrl &url, const QString &windowT
         return application;
     }
 
-    QQuickWebViewExperimental::setFlickableViewportEnabled(desc.isFlickable());
+    //QQuickWebViewExperimental::setFlickableViewportEnabled(desc.isFlickable());
 
     WebApplication *app = new WebApplication(this, url, windowType, desc, parameters,
                                              processId);

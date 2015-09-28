@@ -23,8 +23,8 @@
 #include <QQuickWindow>
 #include <QTimer>
 
-#include <QtWebEngine/5.5.0/QtWebEngine/private/qquickwebengineview_p.h>
-#include <QtWebEngine/5.5.0/QtWebEngine/private/qquickwebenginescript_p.h>
+#include <QtWebEngine/5.5.1/QtWebEngine/private/qquickwebengineview_p.h>
+#include <QtWebEngine/5.5.1/QtWebEngine/private/qquickwebenginescript_p.h>
 
 #include <applicationenvironment.h>
 
@@ -47,7 +47,7 @@ class WebApplicationWindow : public ApplicationEnvironment
 {
     Q_OBJECT
     Q_PROPERTY(WebApplication *application READ application)
-    Q_PROPERTY(QList<QQuickWebEngineScript> userScripts READ userScripts)
+    Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts)
     Q_PROPERTY(bool ready READ ready NOTIFY readyChanged)
     Q_PROPERTY(QSize size READ size NOTIFY sizeChanged)
     Q_PROPERTY(QString trustScope READ trustScope CONSTANT)
@@ -75,7 +75,7 @@ public:
     bool ready() const;
     bool headless() const;
     bool keepAlive() const;
-    QQuickWebView *webView() const;
+    QQuickWebEngineView *webView() const;
     QSize size() const;
     bool active() const;
     QString trustScope() const;
@@ -90,7 +90,7 @@ public:
     QQmlEngine* qmlEngine() const;
     QQuickItem* rootItem() const;
 
-    QList<QQuickWebEngineScript> userScripts() const;
+    QQmlListProperty<QQuickWebEngineScript> userScripts();
 
     void setKeepAlive(bool alive);
 
@@ -127,28 +127,28 @@ private Q_SLOTS:
     void onClosePage();
     void onSyncMessageReceived(const QVariantMap& message, QString& response);
 
-    void onLoadingChanged(QWebLoadRequest *request);
+    void onLoadingChanged(QQuickWebEngineLoadRequest *request);
     void onStageReadyTimeout();
     void onVisibleChanged(bool visible);
     void onWindowPropertyChanged(QPlatformWindow *window, const QString &name);
 
-    QQuickWebEngineScript *WebApplicationWindow::getScriptFromUrl(const QString &iscriptName, QUrl iUrl, bool injectAtStart, bool forAllFrames);
-
 private:
+    QQuickWebEngineScript *getScriptFromUrl(const QString &iscriptName, QUrl iUrl, bool injectAtStart, bool forAllFrames);
+
     WebApplication *mApplication;
     QMap<QString, BaseExtension*> mExtensions;
     QQmlEngine *mEngine;
     QQuickItem *mRootItem;
     QQuickView *mWindow;
     bool mHeadless;
-    QQuickWebView *mWebView;
+    QQuickWebEngineView *mWebView;
     QUrl mUrl;
     QString mWindowType;
     bool mKeepAlive;
     bool mStagePreparing;
     bool mStageReady;
     QTimer mStageReadyTimer;
-    QList<QQuickWebEngineScript> mUserScripts;
+    QList<QQuickWebEngineScript*> mUserScripts;
     QSize mSize;
     TrustScope mTrustScope;
     int mWindowId;

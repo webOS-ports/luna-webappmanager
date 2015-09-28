@@ -148,6 +148,7 @@ Flickable {
 
            profile.httpUserAgent: getUserAgentForApp(null)
            userScripts: webAppWindow.userScripts;
+           property alias devicePixelRatio: experimental.viewport.devicePixelRatio
 
             /*
             onNavigationRequested: {
