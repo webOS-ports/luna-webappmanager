@@ -17,8 +17,9 @@
 
 import QtQuick 2.0
 import QtWebEngine 1.1
-import QtWebEngine.experimental 1.1
+import QtWebEngine.experimental 1.0
 import QtWebChannel 1.0
+import QtWebSockets 1.0
 import Qt.labs.settings 1.0
 import LunaNext.Common 0.1
 import LuneOS.Components 1.0
@@ -46,6 +47,11 @@ Flickable {
                networkManager.state === "online")
                webView.reload();
        }
+   }
+   
+   WebSocketServer {
+      id: webAppMgrSockerServer
+      listen: true
    }
 
     Rectangle {
@@ -219,8 +225,17 @@ Flickable {
                 */
             }
 
-            webChannel: WebChannel {}
-
+            webChannel: WebChannel {
+               id: webViewChannel
+            }
+            
+            WebSocket {
+               id: webViewSocket
+               url: webAppMgrSockerServer.url
+               active: true
+               onStatusChanged: if(status === WebSockets.Open) webViewChannel.connectTo(webViewSocket);
+            }
+            
             Connections {
                 target: webAppWindow
 
