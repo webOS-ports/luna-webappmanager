@@ -52,7 +52,13 @@ class PalmSystemExtension : public BaseExtension
 public:
     explicit PalmSystemExtension(WebApplicationWindow *applicationWindow, QObject *parent = 0);
 
-    QString handleSynchronousCall(const QString& funcName, const QJsonArray& params);
+    Q_INVOKABLE QString getResource(const QString&, const QString &path);
+    Q_INVOKABLE QString getIdentifierForFrame(const QString&id, const QString &url);
+    Q_INVOKABLE QString addBannerMessage(const QString&msgTitle, const QString &launchParams,
+                                         const QString&msgIconUrl, const QString &soundClass,
+                                         const QString&soundFile, int duration,
+                                         bool doNotSuppress);
+    Q_INVOKABLE QString getActivityId(const QJsonArray& params);
 
 public Q_SLOTS:
 
@@ -135,11 +141,6 @@ public Q_SLOTS:
 
 private:
     WebApplicationWindow *mApplicationWindow;
-
-    QString getResource(const QJsonArray& params);
-    QString getIdentifierForFrame(const QJsonArray& params);
-    QString getActivityId(const QJsonArray& params);
-    QString addBannerMessage(const QJsonArray& params);
 
     LS::Handle mLunaPubHandle;
 };

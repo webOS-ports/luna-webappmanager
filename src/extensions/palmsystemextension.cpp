@@ -154,28 +154,10 @@ int     PalmSystemExtension::activityId() { return mApplicationWindow->applicati
 QString PalmSystemExtension::phoneRegion() { return LocalePreferences::instance()->phoneRegion(); }
 QString PalmSystemExtension::version() { return QString(QTWEBENGINE_VERSION_STR); }
 
-QString PalmSystemExtension::handleSynchronousCall(const QString& funcName, const QJsonArray& params)
-{
-    QString response = "{}";
-
-    if (funcName == "getResource")
-        response = getResource(params);
-    else if (funcName == "getIdentifierForFrame")
-        response = getIdentifierForFrame(params);
-    else if (funcName == "addBannerMessage")
-        response = addBannerMessage(params);
-
-    return response;
-}
-
-QString PalmSystemExtension::getResource(const QJsonArray& params)
+QString PalmSystemExtension::getResource(const QString&, const QString &path)
 {
     qDebug() << __PRETTY_FUNCTION__ << params;
 
-    if (params.count() != 2 || !params.at(0).isString())
-        return QString("");
-
-    QString path = params.at(0).toString();
     if (path.startsWith("file://"))
         path = path.right(path.size() - 7);
 
@@ -193,29 +175,23 @@ QString PalmSystemExtension::getResource(const QJsonArray& params)
     return data;
 }
 
-QString PalmSystemExtension::getIdentifierForFrame(const QJsonArray &params)
+QString PalmSystemExtension::getIdentifierForFrame(const QString&id, const QString &url)
 {
-    qDebug() << __PRETTY_FUNCTION__ << params;
-
-    if (params.count() != 2 || !params.at(0).isString() || !params.at(1).isString())
-        return QString("");
-
-    QString id(params.at(0).toString());
-    QString url(params.at(1).toString());
+    qDebug() << __PRETTY_FUNCTION__ << id << ", " << url;
 
     return mApplicationWindow->getIdentifierForFrame(id, url);
 }
 
-QString PalmSystemExtension::addBannerMessage(const QJsonArray &params)
+QString PalmSystemExtension::addBannerMessage(const QString&msgTitle, const QString &launchParams,
+                                              const QString&msgIconUrl, const QString &soundClass,
+                                              const QString&soundFile, int duration,
+                                              bool doNotSuppress)
 {
-    qDebug() << __PRETTY_FUNCTION__ << params;
-
-    if (params.count() != 7)
-        return QString("");
+    qDebug() << __PRETTY_FUNCTION__;
 
     QString appId = mApplicationWindow->application()->id();
 
-    QString iconUrl = params.at(2).toString();
+    QString iconUrl = msgIconUrl;
     if (iconUrl.isEmpty()) {
         qDebug() << __PRETTY_FUNCTION__ << "iconUrl is empty: " << iconUrl;
         iconUrl = mApplicationWindow->application()->icon().toString();
@@ -241,8 +217,8 @@ QString PalmSystemExtension::addBannerMessage(const QJsonArray &params)
     qDebug() << __PRETTY_FUNCTION__ << "Final iconUrl: " << iconUrl;
 
     QJsonObject notificationParams;
-    notificationParams.insert("title", params.at(0).toString());
-    notificationParams.insert("launchParams", params.at(1).toString());
+    notificationParams.insert("title", msgTitle);
+    notificationParams.insert("launchParams", launchParams);
     notificationParams.insert("iconUrl", iconUrl);
     notificationParams.insert("expireTimeout", "0");
 

@@ -125,7 +125,6 @@ private Q_SLOTS:
 
     void onCreateNewPage(QQuickWebEngineNewViewRequest *request);
     void onClosePage();
-    void onSyncMessageReceived(const QVariantMap& message, QString& response);
 
     void onLoadingChanged(QQuickWebEngineLoadRequest *request);
     void onStageReadyTimeout();

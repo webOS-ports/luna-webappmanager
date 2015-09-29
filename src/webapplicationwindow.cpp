@@ -255,8 +255,6 @@ void WebApplicationWindow::configureWebView(QQuickItem *webViewItem)
     connect(mWebView, SIGNAL(newViewRequested(QQuickWebEngineNewViewRequest*)),
             this, SLOT(onCreateNewPage(QQuickWebEngineNewViewRequest*)));
 //    connect(mWebView->experimental(), SIGNAL(closePage()), this, SLOT(onClosePage()));
-//    connect(mWebView->experimental(), SIGNAL(syncMessageReceived(const QVariantMap&, QString&)),
-//            this, SLOT(onSyncMessageReceived(const QVariantMap&, QString&)));
 
     if (mTrustScope == TrustScopeSystem)
         loadAllExtensions();
@@ -365,44 +363,6 @@ void WebApplicationWindow::onClosePage()
 {
     qDebug() << __PRETTY_FUNCTION__;
     mApplication->closeWindow(this);
-}
-
-void WebApplicationWindow::onSyncMessageReceived(const QVariantMap& message, QString& response)
-{
-    if (!message.contains("data"))
-        return;
-
-    QString data = message.value("data").toString();
-
-    QJsonDocument document = QJsonDocument::fromJson(data.toUtf8());
-
-    if (!document.isObject())
-        return;
-
-    QJsonObject rootObject = document.object();
-
-    QString messageType;
-    if (!rootObject.contains("messageType") || !rootObject.value("messageType").isString())
-        return;
-
-    messageType = rootObject.value("messageType").toString();
-    if (messageType != "callSyncExtensionFunction")
-        return;
-
-    if (!(rootObject.contains("extension") && rootObject.value("extension").isString()) ||
-        !(rootObject.contains("func") && rootObject.value("func").isString()) ||
-        !(rootObject.contains("params") && rootObject.value("params").isArray()))
-        return;
-
-    QString extensionName = rootObject.value("extension").toString();
-    QString funcName = rootObject.value("func").toString();
-    QJsonArray params = rootObject.value("params").toArray();
-
-    if (!mExtensions.contains(extensionName))
-        return;
-
-    BaseExtension *extension = mExtensions.value(extensionName);
-    response = extension->handleSynchronousCall(funcName, params);
 }
 
 void WebApplicationWindow::createDefaultExtensions()

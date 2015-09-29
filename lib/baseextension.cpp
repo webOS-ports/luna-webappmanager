@@ -36,8 +36,3 @@ QString BaseExtension::name() const
     return mName;
 }
 
-QString BaseExtension::handleSynchronousCall(const QString& funcName, const QJsonArray& params)
-{
-    return QString("");
-}
-

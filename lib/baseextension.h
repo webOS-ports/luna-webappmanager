@@ -39,8 +39,6 @@ public:
 
     QString name() const;
 
-    virtual QString handleSynchronousCall(const QString& funcName, const QJsonArray& params);
-
 Q_SIGNALS:
     void callback(int id, bool keepCallback, bool success, const QString &parameters);
 

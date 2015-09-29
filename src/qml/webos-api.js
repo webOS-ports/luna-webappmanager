@@ -136,11 +136,21 @@ _webOS.setProperty = function(extensionName, propertyName, value) {
  * @return string response data
  */
 _webOS.execSync = function(extensionName, functionName, parameters) {
+    // if no parameters are supplied create an empty array
     if (typeof parameters === 'undefined')
-      parameters = [];
+        parameters = [];
 
-    // Tofe remark: how to achieve that ??
-    return navigator.qt.postSyncMessage(JSON.stringify({messageType: "callSyncExtensionFunction", extension: extensionName, func: functionName, params: parameters}));
+    var syncFunctionName = functionName + "_Sync";
+
+    if( _webOS.objects.hasOwnProperty(extensionName) ) {
+        var extensionObj = _webOS.objects[extensionName];
+        if( extensionObj.hasOwnProperty(syncFunctionName) ) {
+
+            return extensionObj[syncFunctionName].apply(this, parameters);
+        }
+    }
+
+    return "";
 }
 
 var unusedCallback = function() { }
