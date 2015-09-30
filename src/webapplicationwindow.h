@@ -95,7 +95,7 @@ public:
     void setKeepAlive(bool alive);
 
     void executeScript(const QString &script);
-    void registerUserScript(const QUrl &path);
+    void registerUserScript(const QString &path);
 
     QString getIdentifierForFrame(const QString& id, const QString& url);
 
@@ -132,7 +132,7 @@ private Q_SLOTS:
     void onWindowPropertyChanged(QPlatformWindow *window, const QString &name);
 
 private:
-    QQuickWebEngineScript *getScriptFromUrl(const QString &iscriptName, QUrl iUrl, bool injectAtStart, bool forAllFrames);
+    QQuickWebEngineScript *getScriptFromUrl(const QString &iscriptName, QString iUrl, bool injectAtStart, bool forAllFrames);
 
     WebApplication *mApplication;
     QMap<QString, BaseExtension*> mExtensions;

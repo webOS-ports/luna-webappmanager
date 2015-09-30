@@ -43,7 +43,7 @@ PalmSystemExtension::PalmSystemExtension(WebApplicationWindow *applicationWindow
     mApplicationWindow(applicationWindow),
     mLunaPubHandle(NULL, true)
 {
-    applicationWindow->registerUserScript(QUrl("qrc:///extensions/PalmSystem.js"));
+    applicationWindow->registerUserScript(QString("://extensions/PalmSystem.js"));
 
     mLunaPubHandle.attachToLoop(g_main_context_default());
 }
@@ -154,10 +154,11 @@ int     PalmSystemExtension::activityId() { return mApplicationWindow->applicati
 QString PalmSystemExtension::phoneRegion() { return LocalePreferences::instance()->phoneRegion(); }
 QString PalmSystemExtension::version() { return QString(QTWEBENGINE_VERSION_STR); }
 
-QString PalmSystemExtension::getResource(const QString&, const QString &path)
+QString PalmSystemExtension::getResource(const QString&, const QString &resPath)
 {
-    qDebug() << __PRETTY_FUNCTION__ << params;
+    qDebug() << __PRETTY_FUNCTION__ << resPath;
 
+    QString path = resPath;
     if (path.startsWith("file://"))
         path = path.right(path.size() - 7);
 
@@ -187,7 +188,7 @@ QString PalmSystemExtension::addBannerMessage(const QString&msgTitle, const QStr
                                               const QString&soundFile, int duration,
                                               bool doNotSuppress)
 {
-    qDebug() << __PRETTY_FUNCTION__;
+    qDebug() << __PRETTY_FUNCTION__ << msgTitle << ":" << launchParams;
 
     QString appId = mApplicationWindow->application()->id();
 

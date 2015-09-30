@@ -62,7 +62,7 @@ BluetoothManager::BluetoothManager(luna::ApplicationEnvironment *environment, QO
             this, SLOT(pairingDone()));
 
     qDebug() << "Registering BluetoothManager extension ...";
-    environment->registerUserScript(QUrl("qrc:///extensions/BluetoothManager.js"));
+    environment->registerUserScript(QString("://extensions/BluetoothManager.js"));
 }
 
 void BluetoothManager::initialize()

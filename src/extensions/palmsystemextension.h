@@ -58,7 +58,6 @@ public:
                                          const QString&msgIconUrl, const QString &soundClass,
                                          const QString&soundFile, int duration,
                                          bool doNotSuppress);
-    Q_INVOKABLE QString getActivityId(const QJsonArray& params);
 
 public Q_SLOTS:
 

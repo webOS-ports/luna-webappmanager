@@ -48,7 +48,7 @@ WiFiManager::WiFiManager(luna::ApplicationEnvironment *environment, QObject *par
             this, SLOT(handleUserInputRequested(const QString&, const QVariantMap&)));
 
     qDebug() << "Registering WiFiManager extension ...";
-    environment->registerUserScript(QUrl("qrc:///extensions/WiFiManager.js"));
+    environment->registerUserScript(QString("://extensions/WiFiManager.js"));
 }
 
 void WiFiManager::initialize()
