@@ -251,15 +251,15 @@ void WebApplicationWindow::configureWebView(QQuickItem *webViewItem)
 {
     qDebug() << __PRETTY_FUNCTION__ << "Configuring application webview ...";
 
-    mWebView = static_cast<QQuickWebEngineView*>(webViewItem);
+    mWebView = qobject_cast<QQuickWebEngineView*>(webViewItem);
 
     if (!mWebView) {
         qWarning() << __PRETTY_FUNCTION__ << "Couldn't find webView";
         return;
     }
 
-    connect(mWebView, SIGNAL(loadingChanged(QWebEngineLoadRequest*)),
-            this, SLOT(onLoadingChanged(QWebEngineLoadRequest*)));
+    connect(mWebView, SIGNAL(loadingChanged(QQuickWebEngineLoadRequest*)),
+            this, SLOT(onLoadingChanged(QQuickWebEngineLoadRequest*)));
 
     connect(mWebView, SIGNAL(newViewRequested(QQuickWebEngineNewViewRequest*)),
             this, SLOT(onCreateNewPage(QQuickWebEngineNewViewRequest*)));
@@ -509,6 +509,7 @@ void WebApplicationWindow::executeScript(const QString &script)
 void WebApplicationWindow::registerUserScript(const QString &path)
 {
     mUserScripts.append(getScriptFromUrl(QString("userScript%1").arg(mUserScripts.size()), path, mTrustScope == TrustScopeSystem, mTrustScope == TrustScopeSystem));
+    emit userScriptsChanged();
 }
 
 void WebApplicationWindow::clearMemoryCaches()

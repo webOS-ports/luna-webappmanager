@@ -47,7 +47,7 @@ class WebApplicationWindow : public ApplicationEnvironment
 {
     Q_OBJECT
     Q_PROPERTY(WebApplication *application READ application)
-    Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts)
+    Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts NOTIFY userScriptsChanged)
     Q_PROPERTY(bool ready READ ready NOTIFY readyChanged)
     Q_PROPERTY(QSize size READ size NOTIFY sizeChanged)
     Q_PROPERTY(QString trustScope READ trustScope CONSTANT)
@@ -117,6 +117,7 @@ Q_SIGNALS:
     void urlChanged();
     void visibleChanged();
     void focusChanged();
+    void userScriptsChanged();
 
 protected:
     bool eventFilter(QObject *object, QEvent *event);
