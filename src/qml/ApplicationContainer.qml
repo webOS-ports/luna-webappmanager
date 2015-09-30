@@ -182,42 +182,38 @@ Flickable {
                 // Let the native side configure us as needed
                 webAppWindow.configureWebView(webView);
                 webView.webChannel = webViewChannel;
-                /*
+
+                console.log("Loaded User Scripts: " + userScripts.length);
+
                 // Only when we have a system application we enable the webOS API and the
                 // PalmServiceBridge to avoid remote applications accessing unwanted system
                 // internals
                 if (webAppWindow.trustScope === "system") {
-                    if (experimental.preferences.hasOwnProperty("palmServiceBridgeEnabled"))
-                        experimental.preferences.palmServiceBridgeEnabled = true;
-
-                    if (experimental.preferences.hasOwnProperty("privileged"))
-                        experimental.preferences.privileged = webApp.privileged;
-
-                    if (experimental.preferences.hasOwnProperty("identifier"))
-                        experimental.preferences.identifier = webApp.identifier;
+                    webView.settings.palmServiceBridgeEnabled = true;
+                    webView.settings.luneOSPrivileged = webApp.privileged;
+                    webView.settings.luneOSIdentifier = webApp.identifier;
 
                     if (webApp.allowCrossDomainAccess) {
-                        if (experimental.preferences.hasOwnProperty("appRuntime"))
-                            experimental.preferences.appRuntime = false;
+                        if (webView.settings.hasOwnProperty("appRuntime"))
+                            webView.settings.appRuntime = false;
 
-                        experimental.preferences.universalAccessFromFileURLsAllowed = true;
-                        experimental.preferences.fileAccessFromFileURLsAllowed = true;
+                        webView.settings.localContentCanAccessRemoteUrls = true;
+                        webView.settings.localContentCanAccessFileUrls = true;
                     }
                     else {
-                        if (experimental.preferences.hasOwnProperty("appRuntime"))
-                            experimental.preferences.appRuntime = true;
+                        if (webView.settings.hasOwnProperty("appRuntime"))
+                            webView.settings.appRuntime = true;
 
-                        experimental.preferences.universalAccessFromFileURLsAllowed = false;
-                        experimental.preferences.fileAccessFromFileURLsAllowed = false;
+                        webView.settings.localContentCanAccessRemoteUrls = false;
+                        webView.settings.localContentCanAccessFileUrls = false;
                     }
                 }
 
-                if (experimental.preferences.hasOwnProperty("logsPageMessagesToSystemConsole"))
-                    experimental.preferences.logsPageMessagesToSystemConsole = true;
+                //if (webView.settings.hasOwnProperty("logsPageMessagesToSystemConsole"))
+                //    webView.settings.logsPageMessagesToSystemConsole = true;
 
-                if (experimental.preferences.hasOwnProperty("suppressIncrementalRendering"))
-                    experimental.preferences.suppressIncrementalRendering = true;
-                */
+                //if (webView.settings.hasOwnProperty("suppressIncrementalRendering"))
+                //    webView.settings.suppressIncrementalRendering = true;
             }
 
             WebChannel {
@@ -236,7 +232,7 @@ Flickable {
                     webView.webChannel.registerObject(name, object);
                 }
             }
-
+/*
             Connections {
                 target: webView.experimental
                 onProcessDidCrash: {
@@ -253,6 +249,7 @@ Flickable {
                     }
                 }
             }
+            */
         }
     }
 
