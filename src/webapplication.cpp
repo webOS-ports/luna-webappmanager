@@ -23,7 +23,7 @@
 #include <set>
 #include <string>
 
-#include <QtWebEngine/5.5.1/QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
+#include <QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
 
 #include "webappmanager.h"
 #include "applicationdescription.h"

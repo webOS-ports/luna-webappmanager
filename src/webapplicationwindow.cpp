@@ -26,10 +26,10 @@
 #include <QTimer>
 #include <QDir>
 
-#include <QtWebEngine/5.5.1/QtWebEngine/private/qquickwebengineview_p.h>
-#include <QtWebEngine/5.5.1/QtWebEngine/private/qquickwebenginescript_p.h>
-#include <QtWebEngine/5.5.1/QtWebEngine/private/qquickwebengineloadrequest_p.h>
-#include <QtWebEngine/5.5.1/QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
+#include <QtWebEngine/private/qquickwebengineview_p.h>
+#include <QtWebEngine/private/qquickwebenginescript_p.h>
+#include <QtWebEngine/private/qquickwebengineloadrequest_p.h>
+#include <QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
 
 #include <QScreen>
 
