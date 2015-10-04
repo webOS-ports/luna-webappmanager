@@ -155,10 +155,8 @@ void WebApplicationWindow::configureQmlEngine()
 
 }
 
-QQuickWebEngineScript *WebApplicationWindow::getScriptFromUrl(const QString &iscriptName, QString iUrl, bool injectAtStart, bool forAllFrames)
+QQuickWebEngineScript *WebApplicationWindow::getScriptFromUrl(const QString &iscriptName, QString iUrl, bool injectAtStart, bool forAllFrames, bool inMainWorld)
 {
-    Q_UNUSED(iscriptName);
-
     QFile f(iUrl);
     if (!f.open(QIODevice::ReadOnly)) {
         qWarning() << "Can't open user script " << iUrl;
@@ -167,16 +165,18 @@ QQuickWebEngineScript *WebApplicationWindow::getScriptFromUrl(const QString &isc
 
     QQuickWebEngineScript *newScript = new QQuickWebEngineScript();
 
+    newScript->setName(iscriptName);
     newScript->setSourceCode(QString::fromUtf8(f.readAll()));
     newScript->setInjectionPoint(injectAtStart ? QQuickWebEngineScript::DocumentCreation : QQuickWebEngineScript::Deferred);
     newScript->setRunOnSubframes(forAllFrames);
+    newScript->setWorldId(inMainWorld?QQuickWebEngineScript::MainWorld:QQuickWebEngineScript::ApplicationWorld); // default: ApplicationWorld
 
     return newScript;
 }
 
 void WebApplicationWindow::createAndSetup(const QVariantMap &windowAttributesMap)
 {
-    mUserScripts.append(getScriptFromUrl("QmlChannelScript", QString("://qtwebchannel/qwebchannel.js"), true, true));
+ //   mUserScripts.append(getScriptFromUrl("QmlChannelScript", QString("://qtwebchannel/qwebchannel.js"), true, true));
     if (mTrustScope == TrustScopeSystem) {
         mUserScripts.append(getScriptFromUrl("webosAPI", QString("://qml/webos-api.js"), true, true));
         createDefaultExtensions();

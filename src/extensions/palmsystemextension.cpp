@@ -154,7 +154,7 @@ int     PalmSystemExtension::activityId() { return mApplicationWindow->applicati
 QString PalmSystemExtension::phoneRegion() { return LocalePreferences::instance()->phoneRegion(); }
 QString PalmSystemExtension::version() { return QString(QTWEBENGINE_VERSION_STR); }
 
-QString PalmSystemExtension::getResource(const QString&, const QString &resPath)
+QString PalmSystemExtension::getResource(const QString&resPath, const QString &)
 {
     qDebug() << __PRETTY_FUNCTION__ << resPath;
 

@@ -146,9 +146,11 @@ Flickable {
             }
 
            profile.httpUserAgent: getUserAgentForApp(null)
-           userScripts: webAppWindow.userScripts;
+          // userScripts: webAppWindow.userScripts;
            property real devicePixelRatio: 1.0 // experimental.viewport.devicePixelRatio
            zoomFactor: devicePixelRatio
+
+           onJavaScriptConsoleMessage: console.warn("CONSOLE JS: " + message);
 
             /*
             onNavigationRequested: {
@@ -183,7 +185,19 @@ Flickable {
                 webAppWindow.configureWebView(webView);
                 webView.webChannel = webViewChannel;
 
-                console.log("Loaded User Scripts: " + userScripts.length);
+                var i=-1;
+                var doNextScript = function(result) {
+                    i = i + 1;
+                    if( i < webAppWindow.userScripts.length )
+                    {
+                        console.warn("Loading script " + i + ": " + webAppWindow.userScripts[i].name);
+                        webView.runJavaScript(webAppWindow.userScripts[i].sourceCode, doNextScript);
+                    }
+                    else {
+                        console.warn("Loaded User Scripts: " + i);
+                    }
+                }
+                doNextScript();
 
                 // Only when we have a system application we enable the webOS API and the
                 // PalmServiceBridge to avoid remote applications accessing unwanted system
@@ -193,7 +207,8 @@ Flickable {
                     webView.settings.luneOSPrivileged = webApp.privileged;
                     webView.settings.luneOSIdentifier = webApp.identifier;
 
-                    if (webApp.allowCrossDomainAccess) {
+                    console.warn("webApp.allowCrossDomainAccess: " + webApp.allowCrossDomainAccess);
+                    if (true || webApp.allowCrossDomainAccess) {
                         if (webView.settings.hasOwnProperty("appRuntime"))
                             webView.settings.appRuntime = false;
 
@@ -229,7 +244,8 @@ Flickable {
                 }
 
                 onExtensionWantsToBeAdded: {
-                    webView.webChannel.registerObject(name, object);
+                    console.warn("registering " + name + "to WebChannel: " + object);
+                    webViewChannel.registerObject(name, object);
                 }
             }
 /*

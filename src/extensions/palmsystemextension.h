@@ -32,27 +32,27 @@ class PalmSystemExtension : public BaseExtension
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString launchParams READ launchParams)
+    Q_PROPERTY(QString launchParams READ launchParams CONSTANT)
     Q_PROPERTY(bool hasAlphaHole READ hasAlphaHole WRITE setHasAlphaHole)
-    Q_PROPERTY(QString locale READ locale)
-    Q_PROPERTY(QString localeRegion READ localeRegion)
-    Q_PROPERTY(QString timeFormat READ timeFormat)
-    Q_PROPERTY(QString timeZone READ timeZone)
-    Q_PROPERTY(bool isMinimal READ isMinimal)
-    Q_PROPERTY(QString identifier READ identifier)
-    Q_PROPERTY(QString screenOrientation READ screenOrientation)
+    Q_PROPERTY(QString locale READ locale CONSTANT)
+    Q_PROPERTY(QString localeRegion READ localeRegion CONSTANT)
+    Q_PROPERTY(QString timeFormat READ timeFormat CONSTANT)
+    Q_PROPERTY(QString timeZone READ timeZone CONSTANT)
+    Q_PROPERTY(bool isMinimal READ isMinimal CONSTANT)
+    Q_PROPERTY(QString identifier READ identifier CONSTANT)
+    Q_PROPERTY(QString screenOrientation READ screenOrientation CONSTANT)
     Q_PROPERTY(QString windowOrientation READ windowOrientation WRITE setWindowOrientation)
-    Q_PROPERTY(QString specifiedWindowOrientation READ specifiedWindowOrientation)
-    Q_PROPERTY(QString videoOrientation READ videoOrientation)
-    Q_PROPERTY(QString deviceInfo READ deviceInfo)
-    Q_PROPERTY(bool isActivated READ isActivated)
-    Q_PROPERTY(int activityId READ activityId)
-    Q_PROPERTY(QString phoneRegion READ phoneRegion)
-    Q_PROPERTY(QString version READ version)
+    Q_PROPERTY(QString specifiedWindowOrientation READ specifiedWindowOrientation CONSTANT)
+    Q_PROPERTY(QString videoOrientation READ videoOrientation CONSTANT)
+    Q_PROPERTY(QString deviceInfo READ deviceInfo CONSTANT)
+    Q_PROPERTY(bool isActivated READ isActivated CONSTANT)
+    Q_PROPERTY(int activityId READ activityId CONSTANT)
+    Q_PROPERTY(QString phoneRegion READ phoneRegion CONSTANT)
+    Q_PROPERTY(QString version READ version CONSTANT)
 public:
     explicit PalmSystemExtension(WebApplicationWindow *applicationWindow, QObject *parent = 0);
 
-    Q_INVOKABLE QString getResource(const QString&, const QString &path);
+    Q_INVOKABLE QString getResource(const QString&resPath, const QString &);
     Q_INVOKABLE QString getIdentifierForFrame(const QString&id, const QString &url);
     Q_INVOKABLE QString addBannerMessage(const QString&msgTitle, const QString &launchParams,
                                          const QString&msgIconUrl, const QString &soundClass,

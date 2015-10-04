@@ -133,7 +133,7 @@ private Q_SLOTS:
     void onWindowPropertyChanged(QPlatformWindow *window, const QString &name);
 
 private:
-    QQuickWebEngineScript *getScriptFromUrl(const QString &iscriptName, QString iUrl, bool injectAtStart, bool forAllFrames);
+    QQuickWebEngineScript *getScriptFromUrl(const QString &iscriptName, QString iUrl, bool injectAtStart, bool forAllFrames, bool inMainWorld = false);
 
     WebApplication *mApplication;
     QMap<QString, BaseExtension*> mExtensions;
