@@ -116,12 +116,12 @@ int main(int argc, char **argv)
     g_option_context_free(context);
 
     if (option_version) {
-        g_message("LunaWebAppMgr %s", VERSION);
+        g_message("LunaWebAppManager %s", VERSION);
         goto cleanup;
     }
 
     if (QFile::exists("/var/luna/dev-mode-enabled"))
-        setenv("QTWEBKIT_INSPECTOR_SERVER", "1122", 0);
+        setenv("QTWEBENGINE_REMOTE_DEBUGGING", "1122", 0);
 
     LocalePreferences::instance();
     luna::SystemTime::instance();
