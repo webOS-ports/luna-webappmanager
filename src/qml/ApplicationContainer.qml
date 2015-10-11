@@ -17,6 +17,7 @@
 
 import QtQuick 2.0
 import QtWebEngine 1.1
+import QtWebEngine.experimental 1.0
 import QtWebChannel 1.0
 import Qt.labs.settings 1.0
 import LunaNext.Common 0.1
@@ -147,8 +148,8 @@ Flickable {
 
            profile.httpUserAgent: getUserAgentForApp(null)
           // userScripts: webAppWindow.userScripts;
-           property real devicePixelRatio: 1.0 // experimental.viewport.devicePixelRatio
-           zoomFactor: devicePixelRatio
+           // property real devicePixelRatio: 1.0 // experimental.viewport.devicePixelRatio
+           experimental.viewport.devicePixelRatio: webAppWindow.devicePixelRatio
 
            onJavaScriptConsoleMessage: console.warn("CONSOLE JS: " + message);
 
@@ -206,21 +207,20 @@ Flickable {
                     webView.settings.palmServiceBridgeEnabled = true;
                     webView.settings.luneOSPrivileged = webApp.privileged;
                     webView.settings.luneOSIdentifier = webApp.identifier;
+                    webView.settings.localContentCanAccessFileUrls = true;
 
                     console.warn("webApp.allowCrossDomainAccess: " + webApp.allowCrossDomainAccess);
-                    if (true || webApp.allowCrossDomainAccess) {
+                    if (webApp.allowCrossDomainAccess) {
                         if (webView.settings.hasOwnProperty("appRuntime"))
                             webView.settings.appRuntime = false;
 
                         webView.settings.localContentCanAccessRemoteUrls = true;
-                        webView.settings.localContentCanAccessFileUrls = true;
                     }
                     else {
                         if (webView.settings.hasOwnProperty("appRuntime"))
                             webView.settings.appRuntime = true;
 
                         webView.settings.localContentCanAccessRemoteUrls = false;
-                        webView.settings.localContentCanAccessFileUrls = false;
                     }
                 }
 

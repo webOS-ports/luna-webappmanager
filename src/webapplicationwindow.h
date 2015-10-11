@@ -56,6 +56,7 @@ class WebApplicationWindow : public ApplicationEnvironment
     Q_PROPERTY(QString windowType READ windowType CONSTANT)
     Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
     Q_PROPERTY(bool focus READ hasFocus NOTIFY focusChanged)
+    Q_PROPERTY(double devicePixelRatio READ devicePixelRatio CONSTANT)
 
 public:
     explicit WebApplicationWindow(WebApplication *application, const QUrl& url, const QString& windowType,
@@ -86,6 +87,7 @@ public:
     QString windowType() const;
     bool visible() const;
     bool hasFocus() const;
+    double devicePixelRatio() const;
 
     QQmlEngine* qmlEngine() const;
     QQuickItem* rootItem() const;

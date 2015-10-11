@@ -291,6 +291,14 @@ void WebApplicationWindow::onVisibleChanged(bool visible)
 
 void WebApplicationWindow::setupPage()
 {
+    // We need to finish the stage preparation in case of a remote entry point
+    // otherwise it will never stop loading
+    if (mApplication->hasRemoteEntryPoint())
+        stageReady();
+}
+
+double WebApplicationWindow::devicePixelRatio() const
+{
     qreal zoomFactor = Settings::LunaSettings()->layoutScale;
 
     // correct zoom factor for some applications which are not scaled properly (aka
@@ -299,13 +307,7 @@ void WebApplicationWindow::setupPage()
         Settings::LunaSettings()->compatApps.end())
         zoomFactor = Settings::LunaSettings()->layoutScaleCompat;
 
-    mWebView->setProperty("devicePixelRatio", QVariant(zoomFactor));
-    // mWebView->experimental()->viewport()->setDevicePixelRatio(zoomFactor); // not accessible by C++ API
-
-    // We need to finish the stage preparation in case of a remote entry point
-    // otherwise it will never stop loading
-    if (mApplication->hasRemoteEntryPoint())
-        stageReady();
+    return zoomFactor;
 }
 
 void WebApplicationWindow::notifyAppAboutFocusState(bool focus)
