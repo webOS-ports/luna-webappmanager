@@ -155,7 +155,7 @@ void WebApplicationWindow::configureQmlEngine()
 
 }
 
-QQuickWebEngineScript *WebApplicationWindow::getScriptFromUrl(const QString &iscriptName, QString iUrl, bool injectAtStart, bool forAllFrames, bool inMainWorld)
+QQuickWebEngineScript *WebApplicationWindow::getScriptFromUrl(const QString &iscriptName, QString iUrl, QQuickWebEngineScript::InjectionPoint injectionPoint, bool forAllFrames)
 {
     QFile f(iUrl);
     if (!f.open(QIODevice::ReadOnly)) {
@@ -167,9 +167,8 @@ QQuickWebEngineScript *WebApplicationWindow::getScriptFromUrl(const QString &isc
 
     newScript->setName(iscriptName);
     newScript->setSourceCode(QString::fromUtf8(f.readAll()));
-    newScript->setInjectionPoint(injectAtStart ? QQuickWebEngineScript::DocumentCreation : QQuickWebEngineScript::Deferred);
+    newScript->setInjectionPoint(injectionPoint);
     newScript->setRunOnSubframes(forAllFrames);
-    newScript->setWorldId(inMainWorld?QQuickWebEngineScript::MainWorld:QQuickWebEngineScript::ApplicationWorld); // default: ApplicationWorld
 
     return newScript;
 }
@@ -178,7 +177,7 @@ void WebApplicationWindow::createAndSetup(const QVariantMap &windowAttributesMap
 {
  //   mUserScripts.append(getScriptFromUrl("QmlChannelScript", QString("://qtwebchannel/qwebchannel.js"), true, true));
     if (mTrustScope == TrustScopeSystem) {
-        mUserScripts.append(getScriptFromUrl("webosAPI", QString("://qml/webos-api.js"), true, true));
+        mUserScripts.append(getScriptFromUrl("webosAPI", QString("://qml/webos-api.js"), QQuickWebEngineScript::DocumentCreation, true));
         createDefaultExtensions();
     }
 
@@ -341,6 +340,12 @@ void WebApplicationWindow::onLoadingChanged(QQuickWebEngineLoadRequest *request)
 
     Q_FOREACH(BaseExtension *extension, mExtensions.values())
         extension->initialize();
+
+    // Fix the viewport of the app
+    QFile f("://qml/setupViewport.js");
+    if (f.open(QIODevice::ReadOnly)) {
+        mWebView->runJavaScript(QString::fromUtf8(f.readAll()));
+    }
 
     // If we're a headless app we don't show the window and in case of an
     // application with an remote entry point it's already visible at
@@ -510,7 +515,10 @@ void WebApplicationWindow::executeScript(const QString &script)
 
 void WebApplicationWindow::registerUserScript(const QString &path)
 {
-    mUserScripts.append(getScriptFromUrl(QString("userScript%1").arg(mUserScripts.size()), path, mTrustScope == TrustScopeSystem, mTrustScope == TrustScopeSystem));
+    mUserScripts.append(getScriptFromUrl(QString("userScript%1").arg(mUserScripts.size()),
+                                         path,
+                                         mTrustScope == TrustScopeSystem ? QQuickWebEngineScript::DocumentCreation : QQuickWebEngineScript::Deferred,
+                                         mTrustScope == TrustScopeSystem));
     emit userScriptsChanged();
 }
 
