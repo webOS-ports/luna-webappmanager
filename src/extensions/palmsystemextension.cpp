@@ -134,25 +134,97 @@ void PalmSystemExtension::markFirstUseDone()
 }
 
 
-QString PalmSystemExtension::launchParams() { return mApplicationWindow->application()->parameters(); }
-bool    PalmSystemExtension::hasAlphaHole() { return false; }
-void    PalmSystemExtension::setHasAlphaHole(bool iVal) {}
-QString PalmSystemExtension::locale() { return LocalePreferences::instance()->locale(); }
-QString PalmSystemExtension::localeRegion() { return LocalePreferences::instance()->localeRegion(); }
-QString PalmSystemExtension::timeFormat() { return LocalePreferences::instance()->timeFormat(); }
-QString PalmSystemExtension::timeZone() { return SystemTime::instance()->timezone(); }
-bool    PalmSystemExtension::isMinimal() { return false; }
-QString PalmSystemExtension::identifier() { return mApplicationWindow->application()->identifier(); }
-QString PalmSystemExtension::screenOrientation() { return ""; }
-QString PalmSystemExtension::windowOrientation() { return ""; }
-void    PalmSystemExtension::setWindowOrientation(QString iVal) {}
-QString PalmSystemExtension::specifiedWindowOrientation() { return ""; }
-QString PalmSystemExtension::videoOrientation() { return ""; }
-QString PalmSystemExtension::deviceInfo() { return DeviceInfo::instance()->jsonString(); }
-bool    PalmSystemExtension::isActivated() { return mApplicationWindow->active(); }
-int     PalmSystemExtension::activityId() { return mApplicationWindow->application()->activityId(); }
-QString PalmSystemExtension::phoneRegion() { return LocalePreferences::instance()->phoneRegion(); }
-QString PalmSystemExtension::version() { return QString(QTWEBENGINE_VERSION_STR); }
+QString PalmSystemExtension::launchParams()
+{
+    return mApplicationWindow->application()->parameters();
+}
+
+bool    PalmSystemExtension::hasAlphaHole()
+{
+    return false;
+}
+void    PalmSystemExtension::setHasAlphaHole(bool iVal)
+{
+}
+
+QString PalmSystemExtension::locale()
+{
+    return LocalePreferences::instance()->locale();
+}
+
+QString PalmSystemExtension::localeRegion()
+{
+    return LocalePreferences::instance()->localeRegion();
+}
+
+QString PalmSystemExtension::timeFormat()
+{
+    return LocalePreferences::instance()->timeFormat();
+}
+
+QString PalmSystemExtension::timeZone()
+{
+    return SystemTime::instance()->timezone();
+}
+
+bool    PalmSystemExtension::isMinimal()
+{
+    return false;
+}
+
+QString PalmSystemExtension::identifier()
+{
+    return mApplicationWindow->application()->identifier();
+}
+
+QString PalmSystemExtension::screenOrientation()
+{
+    return "";
+}
+
+QString PalmSystemExtension::windowOrientation()
+{
+    return "";
+}
+
+void    PalmSystemExtension::setWindowOrientation(QString iVal)
+{
+}
+
+QString PalmSystemExtension::specifiedWindowOrientation()
+{
+    return "";
+}
+
+QString PalmSystemExtension::videoOrientation()
+{
+    return "";
+}
+
+QString PalmSystemExtension::deviceInfo()
+{
+    return DeviceInfo::instance()->jsonString();
+}
+
+bool    PalmSystemExtension::isActivated()
+{
+    return mApplicationWindow->active();
+}
+
+int     PalmSystemExtension::activityId()
+{
+    return mApplicationWindow->application()->activityId();
+}
+
+QString PalmSystemExtension::phoneRegion()
+{
+    return LocalePreferences::instance()->phoneRegion();
+}
+
+QString PalmSystemExtension::version()
+{
+    return QString(QTWEBENGINE_VERSION_STR);
+}
 
 QString PalmSystemExtension::getResource(const QString&resPath, const QString &)
 {

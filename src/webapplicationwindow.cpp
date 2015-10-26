@@ -636,4 +636,9 @@ bool WebApplicationWindow::hasFocus() const
     return mWindow->isActive();
 }
 
+bool WebApplicationWindow::isMainWindow() const
+{
+    return mApplication->isMainWindow(this);
+}
+
 } // namespace luna

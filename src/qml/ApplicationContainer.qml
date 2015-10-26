@@ -147,8 +147,7 @@ Flickable {
             }
 
            profile.httpUserAgent: getUserAgentForApp(null)
-          // userScripts: webAppWindow.userScripts;
-           // property real devicePixelRatio: 1.0 // experimental.viewport.devicePixelRatio
+           userScripts: webAppWindow.userScripts;
            experimental.viewport.devicePixelRatio: webAppWindow.devicePixelRatio
 
            onJavaScriptConsoleMessage: console.warn("CONSOLE JS: " + message);
@@ -185,20 +184,6 @@ Flickable {
                 // Let the native side configure us as needed
                 webAppWindow.configureWebView(webView);
                 webView.webChannel = webViewChannel;
-
-                var i=-1;
-                var doNextScript = function(result) {
-                    i = i + 1;
-                    if( i < webAppWindow.userScripts.length )
-                    {
-                        console.warn("Loading script " + i + ": " + webAppWindow.userScripts[i].name);
-                        webView.runJavaScript(webAppWindow.userScripts[i].sourceCode, doNextScript);
-                    }
-                    else {
-                        console.warn("Loaded User Scripts: " + i);
-                    }
-                }
-                doNextScript();
 
                 // Only when we have a system application we enable the webOS API and the
                 // PalmServiceBridge to avoid remote applications accessing unwanted system

@@ -88,6 +88,7 @@ public:
     bool visible() const;
     bool hasFocus() const;
     double devicePixelRatio() const;
+    bool isMainWindow() const;
 
     QQmlEngine* qmlEngine() const;
     QQuickItem* rootItem() const;

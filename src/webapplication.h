@@ -86,6 +86,8 @@ public:
 
     void closeWindow(WebApplicationWindow *window);
 
+    bool isMainWindow(const WebApplicationWindow *window) { return (!mMainWindow || window == mMainWindow); }
+
     void kill();
 
     void clearMemoryCaches();
