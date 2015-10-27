@@ -156,7 +156,7 @@ var QWebChannel = function(transport, initCallback)
         channel.send({type: QWebChannelMessageTypes.debug, data: message});
     };
 
-    channel.exec({type: QWebChannelMessageTypes.init}, function(data) {
+    this.finalizeInit = function(data) {
         for (var objectName in data) {
             var object = new QObject(objectName, data[objectName], channel);
         }
@@ -168,7 +168,10 @@ var QWebChannel = function(transport, initCallback)
             initCallback(channel);
         }
         channel.exec({type: QWebChannelMessageTypes.idle});
-    });
+    }
+
+    var dataInit = channel.execSync({type: QWebChannelMessageTypes.init});
+    channel.finalizeInit(dataInit.data);
 };
 
 function QObject(name, data, webChannel)
