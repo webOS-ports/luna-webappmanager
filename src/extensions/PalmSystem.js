@@ -4,83 +4,83 @@ window.PalmSystem = {}
 window.PalmSystem.locales = {}
 
 Object.defineProperty(window.PalmSystem, "launchParams", {
-  get: function() { return _webOS.execSync("PalmSystem", "getProperty", ["launchParams"]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "launchParams"); }
 });
 
 Object.defineProperty(window.PalmSystem, "hasAlphaHole", {
-  get: function() { return JSON.parse(_webOS.execSync("PalmSystem", "getProperty", ["hasAlphaHole"])); },
-  set: function(value) { _webOS.exec(unusedCallback, unusedCallback, "PalmSystem", "setProperty", ["hasAlphaHole", value]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "hasAlphaHole"); },
+  set: function(value) { _webOS.setProperty("PalmSystem", "hasAlphaHole", value); }
 });
 
 Object.defineProperty(window.PalmSystem, "locale", {
-  get: function() { return _webOS.execSync("PalmSystem", "getProperty", ["locale"]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "locale"); }
 });
 
 Object.defineProperty(window.PalmSystem, "localeRegion", {
-  get: function() { return _webOS.execSync("PalmSystem", "getProperty", ["localeRegion"]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "localeRegion"); }
 });
 
 /* enyo-ilib requires PalmSystem.locales.UI on webOS */
 Object.defineProperty(window.PalmSystem.locales, "UI", {
-  get: function() { return _webOS.execSync("PalmSystem", "getProperty", ["locales.UI"]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "locale"); }
 });
 
 Object.defineProperty(window.PalmSystem, "timeFormat", {
-  get: function() { return _webOS.execSync("PalmSystem", "getProperty", ["timeFormat"]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "timeFormat"); }
 });
 
 Object.defineProperty(window.PalmSystem, "timeZone", {
-  get: function() { return _webOS.execSync("PalmSystem", "getProperty", ["timeZone"]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "timeZone"); }
 });
 
 /* enyo-ilib requires PalmSystem.timezone on webOS */
 Object.defineProperty(window.PalmSystem, "timezone", {
-  get: function() { return _webOS.execSync("PalmSystem", "getProperty", ["timezone"]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "timeZone"); }
 });
 
 Object.defineProperty(window.PalmSystem, "isMinimal", {
-  get: function() { return JSON.parse(_webOS.execSync("PalmSystem", "getProperty", ["isMinimal"])); }
+  get: function() { return _webOS.getProperty("PalmSystem", "isMinimal"); }
 });
 
 Object.defineProperty(window.PalmSystem, "identifier", {
-  get: function() { return _webOS.execSync("PalmSystem", "getProperty", ["identifier"]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "identifier"); }
 });
 
 Object.defineProperty(window.PalmSystem, "version", {
-  get: function() { return _webOS.execSync("PalmSystem", "getProperty", ["version"]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "version"); }
 });
 
 Object.defineProperty(window.PalmSystem, "screenOrientation", {
-  get: function() { return _webOS.execSync("PalmSystem", "getProperty", ["screenOrientation"]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "screenOrientation"); }
 });
 
 Object.defineProperty(window.PalmSystem, "windowOrientation", {
-  get: function() { return _webOS.execSync("PalmSystem", "getProperty", ["windowOrientation"]); },
-  set: function(value) { _webOS.exec(unusedCallback, unusedCallback, "PalmSystem", "setProperty", ["windowOrientation", value]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "windowOrientation"); },
+  set: function(value) { _webOS.setProperty("PalmSystem", "windowOrientation", value); }
 });
 
 Object.defineProperty(window.PalmSystem, "specifiedWindowOrientation", {
-  get: function() { return _webOS.execSync("PalmSystem", "getProperty", ["specifiedWindowOrientation"]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "specifiedWindowOrientation"); }
 });
 
 Object.defineProperty(window.PalmSystem, "videoOrientation", {
-  get: function() { return _webOS.execSync("PalmSystem", "getProperty", ["videoOrientation"]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "videoOrientation"); }
 });
 
 Object.defineProperty(window.PalmSystem, "deviceInfo", {
-  get: function() { return _webOS.execSync("PalmSystem", "getProperty", ["deviceInfo"]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "deviceInfo"); }
 });
 
 Object.defineProperty(window.PalmSystem, "isActivated", {
-  get: function() { return JSON.parse(_webOS.execSync("PalmSystem", "getProperty", ["isActivated"])); }
+  get: function() { return _webOS.getProperty("PalmSystem", "isActivated"); }
 });
 
 Object.defineProperty(window.PalmSystem, "activityId", {
-  get: function() { return parseInt(_webOS.execSync("PalmSystem", "getProperty", ["activityId"])); }
+  get: function() { return _webOS.getProperty("PalmSystem", "activityId"); }
 });
 
 Object.defineProperty(window.PalmSystem, "phoneRegion", {
-  get: function() { return _webOS.execSync("PalmSystem", "getProperty", ["phoneRegion"]); }
+  get: function() { return _webOS.getProperty("PalmSystem", "phoneRegion"); }
 });
 
 PalmSystem.getIdentifier = function() {

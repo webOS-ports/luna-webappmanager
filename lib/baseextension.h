@@ -39,11 +39,8 @@ public:
 
     QString name() const;
 
-    virtual QString handleSynchronousCall(const QString& funcName, const QJsonArray& params);
-
-protected:
-    void callbackWithoutRemove(int id, const QString &parameters);
-    void callback(int id, const QString &parameters);
+Q_SIGNALS:
+    void callback(int id, bool keepCallback, bool success, const QString &parameters);
 
 protected:
     ApplicationEnvironment *mAppEnvironment;

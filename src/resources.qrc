@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>qml/extensionmanager.js</file>
         <file>qml/webos-api.js</file>
         <file>qml/ApplicationContainer.qml</file>
         <file>extensions/PalmSystem.js</file>
@@ -12,5 +11,6 @@
         <file>extensions/InAppBrowser.js</file>
         <file>qml/images/palm-notification-button-press.png</file>
         <file>qml/images/palm-notification-button.png</file>
+        <file>qml/setupViewport.js</file>
     </qresource>
 </RCC>

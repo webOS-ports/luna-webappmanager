@@ -20,13 +20,10 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
-#include <QtWebKit/private/qquickwebview_p.h>
-#ifndef WITH_UNMODIFIED_QTWEBKI
-#include <QtWebKit/private/qwebnewpagerequest_p.h>
-#endif
-
 #include <set>
 #include <string>
+
+#include <QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
 
 #include "webappmanager.h"
 #include "applicationdescription.h"
@@ -194,18 +191,23 @@ void WebApplication::createMainWindow()
     mAppWindows.append(mMainWindow);
 }
 
-#ifndef WITH_UNMODIFIED_QTWEBKIT
-
-void WebApplication::createWindow(QWebNewPageRequest *request)
+void WebApplication::createWindow(QQuickWebEngineNewViewRequest *request)
 {
     int width = Settings::LunaSettings()->displayWidth;
     int height = Settings::LunaSettings()->displayHeight;
 
     qDebug() << __PRETTY_FUNCTION__ << "Creating new window for url" << request->url();
 
-    QVariantMap windowFeatures = request->windowFeatures();
-    foreach(QString key, windowFeatures.keys()) {
-        qDebug() << "[" << key << "] = " << windowFeatures.value(key);
+    const QStringList &additionalFeatures = request->additionalFeatures();
+    // The list could be something like a,b={titi},attributes={"window":"card","height":"150"}
+    // Let's convert it to a Map for more convenient parsing
+    QVariantMap windowFeatures;
+    foreach(const QString &elt, additionalFeatures) {
+        int indexSep = elt.indexOf('=');
+        if( indexSep < 0 )
+            windowFeatures.insert(elt, "1");
+        else
+            windowFeatures.insert(elt.left(indexSep), elt.mid(indexSep+1));
     }
 
     QString windowType = "card";
@@ -263,12 +265,10 @@ void WebApplication::createWindow(QWebNewPageRequest *request)
                                                             false, lWindowAttributesMap,
                                                             launchedFromWindowId);
 
-    request->setWebView(window->webView());
+    request->openIn(window->webView());
 
     mAppWindows.append(window);
 }
-
-#endif
 
 void WebApplication::closeWindow(WebApplicationWindow *window)
 {

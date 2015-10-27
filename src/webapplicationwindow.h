@@ -23,11 +23,8 @@
 #include <QQuickWindow>
 #include <QTimer>
 
-#include <QtWebKit/private/qquickwebview_p.h>
-#ifndef WITH_UNMODIFIED_QTWEBKIT
-#include <QtWebKit/private/qwebnewpagerequest_p.h>
-#endif
-#include <QtWebKit/private/qwebloadrequest_p.h>
+#include <QtWebEngine/private/qquickwebengineview_p.h>
+#include <QtWebEngine/private/qquickwebenginescript_p.h>
 
 #include <applicationenvironment.h>
 
@@ -50,7 +47,7 @@ class WebApplicationWindow : public ApplicationEnvironment
 {
     Q_OBJECT
     Q_PROPERTY(WebApplication *application READ application)
-    Q_PROPERTY(QList<QUrl> userScripts READ userScripts)
+    Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts NOTIFY userScriptsChanged)
     Q_PROPERTY(bool ready READ ready NOTIFY readyChanged)
     Q_PROPERTY(QSize size READ size NOTIFY sizeChanged)
     Q_PROPERTY(QString trustScope READ trustScope CONSTANT)
@@ -59,6 +56,7 @@ class WebApplicationWindow : public ApplicationEnvironment
     Q_PROPERTY(QString windowType READ windowType CONSTANT)
     Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
     Q_PROPERTY(bool focus READ hasFocus NOTIFY focusChanged)
+    Q_PROPERTY(double devicePixelRatio READ devicePixelRatio CONSTANT)
 
 public:
     explicit WebApplicationWindow(WebApplication *application, const QUrl& url, const QString& windowType,
@@ -78,7 +76,7 @@ public:
     bool ready() const;
     bool headless() const;
     bool keepAlive() const;
-    QQuickWebView *webView() const;
+    QQuickWebEngineView *webView() const;
     QSize size() const;
     bool active() const;
     QString trustScope() const;
@@ -89,16 +87,18 @@ public:
     QString windowType() const;
     bool visible() const;
     bool hasFocus() const;
+    double devicePixelRatio() const;
+    bool isMainWindow() const;
 
     QQmlEngine* qmlEngine() const;
     QQuickItem* rootItem() const;
 
-    QList<QUrl> userScripts() const;
+    QQmlListProperty<QQuickWebEngineScript> userScripts();
 
     void setKeepAlive(bool alive);
 
     void executeScript(const QString &script);
-    void registerUserScript(const QUrl &path);
+    void registerUserScript(const QString &path);
 
     QString getIdentifierForFrame(const QString& id, const QString& url);
 
@@ -120,36 +120,38 @@ Q_SIGNALS:
     void urlChanged();
     void visibleChanged();
     void focusChanged();
+    void userScriptsChanged();
 
 protected:
     bool eventFilter(QObject *object, QEvent *event);
 
 private Q_SLOTS:
-#ifndef WITH_UNMODIFIED_QTWEBKIT
-    void onCreateNewPage(QWebNewPageRequest *request);
+
+    void onCreateNewPage(QQuickWebEngineNewViewRequest *request);
     void onClosePage();
-    void onSyncMessageReceived(const QVariantMap& message, QString& response);
-#endif
-    void onLoadingChanged(QWebLoadRequest *request);
+
+    void onLoadingChanged(QQuickWebEngineLoadRequest *request);
     void onStageReadyTimeout();
     void onVisibleChanged(bool visible);
     void onWindowPropertyChanged(QPlatformWindow *window, const QString &name);
 
 private:
+    QQuickWebEngineScript *getScriptFromUrl(const QString &iscriptName, QString iUrl, QQuickWebEngineScript::InjectionPoint injectionPoint, bool forAllFrames);
+
     WebApplication *mApplication;
     QMap<QString, BaseExtension*> mExtensions;
     QQmlEngine *mEngine;
     QQuickItem *mRootItem;
     QQuickView *mWindow;
     bool mHeadless;
-    QQuickWebView *mWebView;
+    QQuickWebEngineView *mWebView;
     QUrl mUrl;
     QString mWindowType;
     bool mKeepAlive;
     bool mStagePreparing;
     bool mStageReady;
     QTimer mStageReadyTimer;
-    QList<QUrl> mUserScripts;
+    QList<QQuickWebEngineScript*> mUserScripts;
     QSize mSize;
     TrustScope mTrustScope;
     int mWindowId;

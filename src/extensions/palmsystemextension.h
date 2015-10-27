@@ -18,6 +18,8 @@
 #ifndef PALMSYSTEMPLUGIN_H
 #define PALMSYSTEMPLUGIN_H
 
+#include <QString>
+
 #include <baseextension.h>
 #include <luna-service2++/handle.hpp>
 
@@ -29,10 +31,33 @@ class WebApplicationWindow;
 class PalmSystemExtension : public BaseExtension
 {
     Q_OBJECT
+
+    Q_PROPERTY(QString launchParams READ launchParams CONSTANT)
+    Q_PROPERTY(bool hasAlphaHole READ hasAlphaHole WRITE setHasAlphaHole)
+    Q_PROPERTY(QString locale READ locale CONSTANT)
+    Q_PROPERTY(QString localeRegion READ localeRegion CONSTANT)
+    Q_PROPERTY(QString timeFormat READ timeFormat CONSTANT)
+    Q_PROPERTY(QString timeZone READ timeZone CONSTANT)
+    Q_PROPERTY(bool isMinimal READ isMinimal CONSTANT)
+    Q_PROPERTY(QString identifier READ identifier CONSTANT)
+    Q_PROPERTY(QString screenOrientation READ screenOrientation CONSTANT)
+    Q_PROPERTY(QString windowOrientation READ windowOrientation WRITE setWindowOrientation)
+    Q_PROPERTY(QString specifiedWindowOrientation READ specifiedWindowOrientation CONSTANT)
+    Q_PROPERTY(QString videoOrientation READ videoOrientation CONSTANT)
+    Q_PROPERTY(QString deviceInfo READ deviceInfo CONSTANT)
+    Q_PROPERTY(bool isActivated READ isActivated CONSTANT)
+    Q_PROPERTY(int activityId READ activityId CONSTANT)
+    Q_PROPERTY(QString phoneRegion READ phoneRegion CONSTANT)
+    Q_PROPERTY(QString version READ version CONSTANT)
 public:
     explicit PalmSystemExtension(WebApplicationWindow *applicationWindow, QObject *parent = 0);
 
-    QString handleSynchronousCall(const QString& funcName, const QJsonArray& params);
+    Q_INVOKABLE QString getResource(const QString&resPath, const QString &);
+    Q_INVOKABLE QString getIdentifierForFrame(const QString&id, const QString &url);
+    Q_INVOKABLE QString addBannerMessage(const QString&msgTitle, const QString &launchParams,
+                                         const QString&msgIconUrl, const QString &soundClass,
+                                         const QString&soundFile, int duration,
+                                         bool doNotSuppress);
 
 public Q_SLOTS:
 
@@ -93,16 +118,28 @@ public Q_SLOTS:
     QVariant getResource(QVariant a, QVariant b);
     */
 
-    void setProperty(const QString &name, const QVariant &value);
+    QString launchParams();
+    bool    hasAlphaHole();
+    void    setHasAlphaHole(bool iVal);
+    QString locale();
+    QString localeRegion();
+    QString timeFormat();
+    QString timeZone();
+    bool    isMinimal();
+    QString identifier();
+    QString screenOrientation();
+    QString windowOrientation();
+    void    setWindowOrientation(QString iVal);
+    QString specifiedWindowOrientation();
+    QString videoOrientation();
+    QString deviceInfo();
+    bool    isActivated();
+    int     activityId();
+    QString phoneRegion();
+    QString version();
 
 private:
     WebApplicationWindow *mApplicationWindow;
-
-    QString getResource(const QJsonArray& params);
-    QString getIdentifierForFrame(const QJsonArray& params);
-    QString getActivityId(const QJsonArray& params);
-    QString addBannerMessage(const QJsonArray& params);
-    QString getProperty(const QJsonArray &params);
 
     LS::Handle mLunaPubHandle;
 };

@@ -22,7 +22,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QUrl>
-#include <QtWebKitVersion>
+#include <QtWebEngineVersion>
 
 #include <luna-service2++/message.hpp>
 #include <luna-service2++/call.hpp>
@@ -43,7 +43,7 @@ PalmSystemExtension::PalmSystemExtension(WebApplicationWindow *applicationWindow
     mApplicationWindow(applicationWindow),
     mLunaPubHandle(NULL, true)
 {
-    applicationWindow->registerUserScript(QUrl("qrc:///extensions/PalmSystem.js"));
+    applicationWindow->registerUserScript(QString("://extensions/PalmSystem.js"));
 
     mLunaPubHandle.attachToLoop(g_main_context_default());
 }
@@ -133,81 +133,104 @@ void PalmSystemExtension::markFirstUseDone()
     firstUseMarker.close();
 }
 
-void PalmSystemExtension::setProperty(const QString &name, const QVariant &value)
+
+QString PalmSystemExtension::launchParams()
 {
-    qDebug() << __PRETTY_FUNCTION__ << name << value;
+    return mApplicationWindow->application()->parameters();
 }
 
-QString PalmSystemExtension::getProperty(const QJsonArray &params)
+bool    PalmSystemExtension::hasAlphaHole()
 {
-    if (params.count() != 1 || !params.at(0).isString())
-        return QString("");
-
-    QString name = params.at(0).toString();
-    QString result = "";
-
-    if (name == "launchParams")
-        result = mApplicationWindow->application()->parameters();
-    else if (name == "hasAlphaHole")
-        result = QString("false");
-    else if (name == "locale" || name == "locales.UI")
-        result = LocalePreferences::instance()->locale();
-    else if (name == "localeRegion")
-        result = LocalePreferences::instance()->localeRegion();
-    else if (name == "timeFormat")
-        result = LocalePreferences::instance()->timeFormat();
-    else if (name == "timeZone" || name == "timezone")
-        result = SystemTime::instance()->timezone();
-    else if (name == "isMinimal")
-        result = QString("false");
-    else if (name == "identifier")
-        result = mApplicationWindow->application()->identifier();
-    else if (name == "screenOrientation")
-        result = QString("");
-    else if (name == "windowOrientation")
-        result = QString("");
-    else if (name == "specifiedWindowOrientation")
-        result = QString("");
-    else if (name == "videoOrientation")
-        result = QString("");
-    else if (name == "deviceInfo")
-        result = DeviceInfo::instance()->jsonString();
-    else if (name == "isActivated")
-        result = QString(mApplicationWindow->active() ? "true" : "false");
-    else if (name == "activityId")
-        result = QString("%1").arg(mApplicationWindow->application()->activityId());
-    else if (name == "phoneRegion")
-        result = LocalePreferences::instance()->phoneRegion();
-    else if (name == "version")
-        result = QString(QTWEBKIT_VERSION_STR);
-
-    return result;
+    return false;
+}
+void    PalmSystemExtension::setHasAlphaHole(bool iVal)
+{
 }
 
-QString PalmSystemExtension::handleSynchronousCall(const QString& funcName, const QJsonArray& params)
+QString PalmSystemExtension::locale()
 {
-    QString response = "{}";
-
-    if (funcName == "getResource")
-        response = getResource(params);
-    else if (funcName == "getIdentifierForFrame")
-        response = getIdentifierForFrame(params);
-    else if (funcName == "getProperty")
-        response = getProperty(params);
-    else if (funcName == "addBannerMessage")
-        response = addBannerMessage(params);
-
-    return response;
+    return LocalePreferences::instance()->locale();
 }
 
-QString PalmSystemExtension::getResource(const QJsonArray& params)
+QString PalmSystemExtension::localeRegion()
 {
-    qDebug() << __PRETTY_FUNCTION__ << params;
+    return LocalePreferences::instance()->localeRegion();
+}
 
-    if (params.count() != 2 || !params.at(0).isString())
-        return QString("");
+QString PalmSystemExtension::timeFormat()
+{
+    return LocalePreferences::instance()->timeFormat();
+}
 
-    QString path = params.at(0).toString();
+QString PalmSystemExtension::timeZone()
+{
+    return SystemTime::instance()->timezone();
+}
+
+bool    PalmSystemExtension::isMinimal()
+{
+    return false;
+}
+
+QString PalmSystemExtension::identifier()
+{
+    return mApplicationWindow->application()->identifier();
+}
+
+QString PalmSystemExtension::screenOrientation()
+{
+    return "";
+}
+
+QString PalmSystemExtension::windowOrientation()
+{
+    return "";
+}
+
+void    PalmSystemExtension::setWindowOrientation(QString iVal)
+{
+}
+
+QString PalmSystemExtension::specifiedWindowOrientation()
+{
+    return "";
+}
+
+QString PalmSystemExtension::videoOrientation()
+{
+    return "";
+}
+
+QString PalmSystemExtension::deviceInfo()
+{
+    return DeviceInfo::instance()->jsonString();
+}
+
+bool    PalmSystemExtension::isActivated()
+{
+    return mApplicationWindow->active();
+}
+
+int     PalmSystemExtension::activityId()
+{
+    return mApplicationWindow->application()->activityId();
+}
+
+QString PalmSystemExtension::phoneRegion()
+{
+    return LocalePreferences::instance()->phoneRegion();
+}
+
+QString PalmSystemExtension::version()
+{
+    return QString(QTWEBENGINE_VERSION_STR);
+}
+
+QString PalmSystemExtension::getResource(const QString&resPath, const QString &)
+{
+    qDebug() << __PRETTY_FUNCTION__ << resPath;
+
+    QString path = resPath;
     if (path.startsWith("file://"))
         path = path.right(path.size() - 7);
 
@@ -225,29 +248,23 @@ QString PalmSystemExtension::getResource(const QJsonArray& params)
     return data;
 }
 
-QString PalmSystemExtension::getIdentifierForFrame(const QJsonArray &params)
+QString PalmSystemExtension::getIdentifierForFrame(const QString&id, const QString &url)
 {
-    qDebug() << __PRETTY_FUNCTION__ << params;
-
-    if (params.count() != 2 || !params.at(0).isString() || !params.at(1).isString())
-        return QString("");
-
-    QString id(params.at(0).toString());
-    QString url(params.at(1).toString());
+    qDebug() << __PRETTY_FUNCTION__ << id << ", " << url;
 
     return mApplicationWindow->getIdentifierForFrame(id, url);
 }
 
-QString PalmSystemExtension::addBannerMessage(const QJsonArray &params)
+QString PalmSystemExtension::addBannerMessage(const QString&msgTitle, const QString &launchParams,
+                                              const QString&msgIconUrl, const QString &soundClass,
+                                              const QString&soundFile, int duration,
+                                              bool doNotSuppress)
 {
-    qDebug() << __PRETTY_FUNCTION__ << params;
-
-    if (params.count() != 7)
-        return QString("");
+    qDebug() << __PRETTY_FUNCTION__ << msgTitle << ":" << launchParams;
 
     QString appId = mApplicationWindow->application()->id();
 
-    QString iconUrl = params.at(2).toString();
+    QString iconUrl = msgIconUrl;
     if (iconUrl.isEmpty()) {
         qDebug() << __PRETTY_FUNCTION__ << "iconUrl is empty: " << iconUrl;
         iconUrl = mApplicationWindow->application()->icon().toString();
@@ -273,8 +290,8 @@ QString PalmSystemExtension::addBannerMessage(const QJsonArray &params)
     qDebug() << __PRETTY_FUNCTION__ << "Final iconUrl: " << iconUrl;
 
     QJsonObject notificationParams;
-    notificationParams.insert("title", params.at(0).toString());
-    notificationParams.insert("launchParams", params.at(1).toString());
+    notificationParams.insert("title", msgTitle);
+    notificationParams.insert("launchParams", launchParams);
     notificationParams.insert("iconUrl", iconUrl);
     notificationParams.insert("expireTimeout", "0");
 

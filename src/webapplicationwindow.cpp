@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2013 Simon Busch <morphis@gravedo.de>
+ * Copyright (C) 2015 Christophe Chapuis <chris.chapuis@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,16 +19,17 @@
 #include <QDebug>
 #include <QQmlContext>
 #include <QQmlComponent>
-#include <QtWebKit/private/qquickwebview_p.h>
-#ifndef WITH_UNMODIFIED_QTWEBKIT
-#include <QtWebKit/private/qwebnewpagerequest_p.h>
-#endif
 #include <QtGui/QGuiApplication>
 #include <QtGui/qpa/qplatformnativeinterface.h>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QTimer>
 #include <QDir>
+
+#include <QtWebEngine/private/qquickwebengineview_p.h>
+#include <QtWebEngine/private/qquickwebenginescript_p.h>
+#include <QtWebEngine/private/qquickwebengineloadrequest_p.h>
+#include <QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
 
 #include <QScreen>
 
@@ -153,10 +155,29 @@ void WebApplicationWindow::configureQmlEngine()
 
 }
 
+QQuickWebEngineScript *WebApplicationWindow::getScriptFromUrl(const QString &iscriptName, QString iUrl, QQuickWebEngineScript::InjectionPoint injectionPoint, bool forAllFrames)
+{
+    QFile f(iUrl);
+    if (!f.open(QIODevice::ReadOnly)) {
+        qWarning() << "Can't open user script " << iUrl;
+        return 0;
+    }
+
+    QQuickWebEngineScript *newScript = new QQuickWebEngineScript();
+
+    newScript->setName(iscriptName);
+    newScript->setSourceCode(QString::fromUtf8(f.readAll()));
+    newScript->setInjectionPoint(injectionPoint);
+    newScript->setRunOnSubframes(forAllFrames);
+    newScript->setWorldId(QQuickWebEngineScript::MainWorld);
+
+    return newScript;
+}
+
 void WebApplicationWindow::createAndSetup(const QVariantMap &windowAttributesMap)
 {
     if (mTrustScope == TrustScopeSystem) {
-        mUserScripts.append(QUrl("qrc:///qml/webos-api.js"));
+        mUserScripts.append(getScriptFromUrl("webosAPI", QString("://qml/webos-api.js"), QQuickWebEngineScript::DocumentCreation, true));
         createDefaultExtensions();
     }
 
@@ -173,8 +194,6 @@ void WebApplicationWindow::createAndSetup(const QVariantMap &windowAttributesMap
         mRootItem = qobject_cast<QQuickItem*>(component.create());
     }
     else {
-        QQuickWebViewExperimental::setFlickableViewportEnabled(mApplication->desc().isFlickable());
-
         mWindow = new QQuickView;
         mWindow->installEventFilter(this);
 
@@ -229,24 +248,19 @@ void WebApplicationWindow::configureWebView(QQuickItem *webViewItem)
 {
     qDebug() << __PRETTY_FUNCTION__ << "Configuring application webview ...";
 
-    // mWebView = mRootItem->findChild<QQuickWebView*>("webView");
-    mWebView = static_cast<QQuickWebView*>(webViewItem);
+    mWebView = qobject_cast<QQuickWebEngineView*>(webViewItem);
 
     if (!mWebView) {
         qWarning() << __PRETTY_FUNCTION__ << "Couldn't find webView";
         return;
     }
 
-    connect(mWebView, SIGNAL(loadingChanged(QWebLoadRequest*)),
-            this, SLOT(onLoadingChanged(QWebLoadRequest*)));
+    connect(mWebView, SIGNAL(loadingChanged(QQuickWebEngineLoadRequest*)),
+            this, SLOT(onLoadingChanged(QQuickWebEngineLoadRequest*)));
 
-#ifndef WITH_UNMODIFIED_QTWEBKIT
-    connect(mWebView->experimental(), SIGNAL(createNewPage(QWebNewPageRequest*)),
-            this, SLOT(onCreateNewPage(QWebNewPageRequest*)));
-    connect(mWebView->experimental(), SIGNAL(closePage()), this, SLOT(onClosePage()));
-    connect(mWebView->experimental(), SIGNAL(syncMessageReceived(const QVariantMap&, QString&)),
-            this, SLOT(onSyncMessageReceived(const QVariantMap&, QString&)));
-#endif
+    connect(mWebView, SIGNAL(newViewRequested(QQuickWebEngineNewViewRequest*)),
+            this, SLOT(onCreateNewPage(QQuickWebEngineNewViewRequest*)));
+    connect(mWebView, SIGNAL(windowCloseRequested()), this, SLOT(onClosePage()));
 
     if (mTrustScope == TrustScopeSystem)
         loadAllExtensions();
@@ -274,6 +288,14 @@ void WebApplicationWindow::onVisibleChanged(bool visible)
 
 void WebApplicationWindow::setupPage()
 {
+    // We need to finish the stage preparation in case of a remote entry point
+    // otherwise it will never stop loading
+    if (mApplication->hasRemoteEntryPoint())
+        stageReady();
+}
+
+double WebApplicationWindow::devicePixelRatio() const
+{
     qreal zoomFactor = Settings::LunaSettings()->layoutScale;
 
     // correct zoom factor for some applications which are not scaled properly (aka
@@ -282,12 +304,7 @@ void WebApplicationWindow::setupPage()
         Settings::LunaSettings()->compatApps.end())
         zoomFactor = Settings::LunaSettings()->layoutScaleCompat;
 
-    mWebView->setZoomFactor(zoomFactor);
-
-    // We need to finish the stage preparation in case of a remote entry point
-    // otherwise it will never stop loading
-    if (mApplication->hasRemoteEntryPoint())
-        stageReady();
+    return zoomFactor;
 }
 
 void WebApplicationWindow::notifyAppAboutFocusState(bool focus)
@@ -304,23 +321,29 @@ void WebApplicationWindow::notifyAppAboutFocusState(bool focus)
     mApplication->changeActivityFocus(focus);
 }
 
-void WebApplicationWindow::onLoadingChanged(QWebLoadRequest *request)
+void WebApplicationWindow::onLoadingChanged(QQuickWebEngineLoadRequest *request)
 {
     qDebug() << Q_FUNC_INFO << "id" << mApplication->id() << "status" << request->status();
 
     switch (request->status()) {
-    case QQuickWebView::LoadStartedStatus:
+    case QQuickWebEngineView::LoadStartedStatus:
         setupPage();
         return;
-    case QQuickWebView::LoadStoppedStatus:
-    case QQuickWebView::LoadFailedStatus:
+    case QQuickWebEngineView::LoadStoppedStatus:
+    case QQuickWebEngineView::LoadFailedStatus:
         return;
-    case QQuickWebView::LoadSucceededStatus:
+    case QQuickWebEngineView::LoadSucceededStatus:
         break;
     }
 
     Q_FOREACH(BaseExtension *extension, mExtensions.values())
         extension->initialize();
+
+    // Fix the viewport of the app
+    QFile f("://qml/setupViewport.js");
+    if (f.open(QIODevice::ReadOnly)) {
+        mWebView->runJavaScript(QString::fromUtf8(f.readAll()));
+    }
 
     // If we're a headless app we don't show the window and in case of an
     // application with an remote entry point it's already visible at
@@ -345,9 +368,7 @@ void WebApplicationWindow::onLoadingChanged(QWebLoadRequest *request)
         mWindow->show();
 }
 
-#ifndef WITH_UNMODIFIED_QTWEBKIT
-
-void WebApplicationWindow::onCreateNewPage(QWebNewPageRequest *request)
+void WebApplicationWindow::onCreateNewPage(QQuickWebEngineNewViewRequest *request)
 {
     mApplication->createWindow(request);
 }
@@ -357,46 +378,6 @@ void WebApplicationWindow::onClosePage()
     qDebug() << __PRETTY_FUNCTION__;
     mApplication->closeWindow(this);
 }
-
-void WebApplicationWindow::onSyncMessageReceived(const QVariantMap& message, QString& response)
-{
-    if (!message.contains("data"))
-        return;
-
-    QString data = message.value("data").toString();
-
-    QJsonDocument document = QJsonDocument::fromJson(data.toUtf8());
-
-    if (!document.isObject())
-        return;
-
-    QJsonObject rootObject = document.object();
-
-    QString messageType;
-    if (!rootObject.contains("messageType") || !rootObject.value("messageType").isString())
-        return;
-
-    messageType = rootObject.value("messageType").toString();
-    if (messageType != "callSyncExtensionFunction")
-        return;
-
-    if (!(rootObject.contains("extension") && rootObject.value("extension").isString()) ||
-        !(rootObject.contains("func") && rootObject.value("func").isString()) ||
-        !(rootObject.contains("params") && rootObject.value("params").isArray()))
-        return;
-
-    QString extensionName = rootObject.value("extension").toString();
-    QString funcName = rootObject.value("func").toString();
-    QJsonArray params = rootObject.value("params").toArray();
-
-    if (!mExtensions.contains(extensionName))
-        return;
-
-    BaseExtension *extension = mExtensions.value(extensionName);
-    response = extension->handleSynchronousCall(funcName, params);
-}
-
-#endif
 
 void WebApplicationWindow::createDefaultExtensions()
 {
@@ -530,9 +511,13 @@ void WebApplicationWindow::executeScript(const QString &script)
     emit javaScriptExecNeeded(script);
 }
 
-void WebApplicationWindow::registerUserScript(const QUrl &path)
+void WebApplicationWindow::registerUserScript(const QString &path)
 {
-    mUserScripts.append(path);
+    mUserScripts.append(getScriptFromUrl(QString("userScript%1").arg(mUserScripts.size()),
+                                         path,
+                                         mTrustScope == TrustScopeSystem ? QQuickWebEngineScript::DocumentCreation : QQuickWebEngineScript::Deferred,
+                                         mTrustScope == TrustScopeSystem));
+    emit userScriptsChanged();
 }
 
 void WebApplicationWindow::clearMemoryCaches()
@@ -540,7 +525,9 @@ void WebApplicationWindow::clearMemoryCaches()
     if (!mWebView)
         return;
 
-    mWebView->clearMemoryCaches();
+    // Didn't find yet any equivalent for QtWebEngine.
+    // There is a WebCache::clearCache() in Blink, but I didn't see where that was exposed in chromium.
+    // mWebView->clearMemoryCaches();
 }
 
 WebApplication* WebApplicationWindow::application() const
@@ -548,7 +535,7 @@ WebApplication* WebApplicationWindow::application() const
     return mApplication;
 }
 
-QQuickWebView *WebApplicationWindow::webView() const
+QQuickWebEngineView *WebApplicationWindow::webView() const
 {
     return mWebView;
 }
@@ -568,9 +555,9 @@ bool WebApplicationWindow::headless() const
     return mHeadless;
 }
 
-QList<QUrl> WebApplicationWindow::userScripts() const
+QQmlListProperty<QQuickWebEngineScript> WebApplicationWindow::userScripts()
 {
-    return mUserScripts;
+    return QQmlListProperty<QQuickWebEngineScript>(this, mUserScripts);
 }
 
 bool WebApplicationWindow::ready() const
@@ -645,6 +632,11 @@ bool WebApplicationWindow::hasFocus() const
         return false;
 
     return mWindow->isActive();
+}
+
+bool WebApplicationWindow::isMainWindow() const
+{
+    return mApplication->isMainWindow(this);
 }
 
 } // namespace luna

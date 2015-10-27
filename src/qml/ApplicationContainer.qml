@@ -16,9 +16,10 @@
  */
 
 import QtQuick 2.0
-import QtWebKit 3.0
-import QtWebKit.experimental 1.0
-import "extensionmanager.js" as ExtensionManager
+import QtWebEngine 1.1
+import QtWebEngine.experimental 1.0
+import QtWebChannel 1.0
+import Qt.labs.settings 1.0
 import LunaNext.Common 0.1
 import LuneOS.Components 1.0
 import Connman 0.2
@@ -99,12 +100,13 @@ Flickable {
     Component {
         id: webViewComponent
 
-        LunaWebView {
+        LunaWebEngineView {
             id: webView
             objectName: "webView"
 
             function _updateWebViewSize() {
-                    webView.experimental.evaluateJavaScript("if (window.Mojo && window.Mojo.keyboardShown) {" +
+                    // beware: async call
+                    webView.runJavaScript("if (window.Mojo && window.Mojo.keyboardShown) {" +
                                                             "window.Mojo.keyboardShown(" + Qt.inputMethod.visible + ");}");
 
                     var positiveSpace = {
@@ -112,7 +114,8 @@ Flickable {
                         height: webViewContainer.height - (Qt.inputMethod ? Qt.inputMethod.keyboardRectangle.height : 0)
                     };
 
-                    webView.experimental.evaluateJavaScript("if (window.Mojo && window.Mojo.positiveSpaceChanged) {" +
+                    // beware: async call
+                    webView.runJavaScript("if (window.Mojo && window.Mojo.positiveSpaceChanged) {" +
                                                             "window.Mojo.positiveSpaceChanged(" + positiveSpace.width +
                                                             "," + positiveSpace.height + ");}");
 
@@ -132,8 +135,7 @@ Flickable {
                 id: userAgent
             }
 
-            experimental.transparentBackground: (webAppWindow.windowType === "dashboard" ||
-                                                 webAppWindow.windowType === "popupalert")
+            backgroundColor: (webAppWindow.windowType === "dashboard" || webAppWindow.windowType === "popupalert") ? "transparent": "white"
 
             function getUserAgentForApp(url) {
                 /* if the app wants a specific user agent assign it instead of the default one */
@@ -143,19 +145,22 @@ Flickable {
                 return userAgent.defaultUA;
             }
 
-            experimental.userAgent: getUserAgentForApp(null)
+           profile.httpUserAgent: getUserAgentForApp(null)
+           userScripts: webAppWindow.userScripts;
+           experimental.viewport.devicePixelRatio: webAppWindow.devicePixelRatio
 
+           onJavaScriptConsoleMessage: console.warn("CONSOLE JS: " + message);
 
             onNavigationRequested: {
-                var action = WebView.AcceptRequest;
+                var action = WebEngineView.AcceptRequest;
                 var url = request.url.toString();
 
                 if (webApp.urlsAllowed && webApp.urlsAllowed.length !== 0) {
-                    action = WebView.IgnoreRequest;
+                    action = WebEngineView.IgnoreRequest;
                     for (var i = 0; i < webApp.urlsAllowed.length; ++i) {
                         var pattern = webApp.urlsAllowed[i];
                         if (url.match(pattern)) {
-                            action = WebView.AcceptRequest;
+                            action = WebEngineView.AcceptRequest;
                             break;
                         }
                     }
@@ -165,91 +170,80 @@ Flickable {
 
                 // If we're not handling the URL forward it to be opened within the system
                 // default web browser in a safe environment
-                if (request.action === WebView.IgnoreRequest) {
+                if (request.action === WebEngineView.IgnoreRequest) {
                     Qt.openUrlExternally(url);
                     return;
                 }
 
-                webView.experimental.userAgent = getUserAgentForApp(url);
+                profile.httpUserAgent = getUserAgentForApp(url);
             }
 
             Component.onCompleted: {
                 // Let the native side configure us as needed
                 webAppWindow.configureWebView(webView);
+                webView.webChannel = webViewChannel;
 
                 // Only when we have a system application we enable the webOS API and the
                 // PalmServiceBridge to avoid remote applications accessing unwanted system
                 // internals
                 if (webAppWindow.trustScope === "system") {
-                    if (experimental.hasOwnProperty('userScriptsInjectAtStart') &&
-                        experimental.hasOwnProperty('userScriptsForAllFrames')) {
-                        experimental.userScripts = webAppWindow.userScripts;
-                        experimental.userScriptsInjectAtStart = true;
-                        experimental.userScriptsForAllFrames = true;
-                    }
+                    webView.settings.palmServiceBridgeEnabled = true;
+                    webView.settings.luneOSPrivileged = webApp.privileged;
+                    webView.settings.luneOSIdentifier = webApp.identifier;
+                    webView.settings.localContentCanAccessFileUrls = true;
 
-                    if (experimental.preferences.hasOwnProperty("palmServiceBridgeEnabled"))
-                        experimental.preferences.palmServiceBridgeEnabled = true;
-
-                    if (experimental.preferences.hasOwnProperty("privileged"))
-                        experimental.preferences.privileged = webApp.privileged;
-
-                    if (experimental.preferences.hasOwnProperty("identifier"))
-                        experimental.preferences.identifier = webApp.identifier;
-
+                    console.warn("webApp.allowCrossDomainAccess: " + webApp.allowCrossDomainAccess);
                     if (webApp.allowCrossDomainAccess) {
-                        if (experimental.preferences.hasOwnProperty("appRuntime"))
-                            experimental.preferences.appRuntime = false;
+                        if (webView.settings.hasOwnProperty("appRuntime"))
+                            webView.settings.appRuntime = false;
 
-                        experimental.preferences.universalAccessFromFileURLsAllowed = true;
-                        experimental.preferences.fileAccessFromFileURLsAllowed = true;
+                        webView.settings.localContentCanAccessRemoteUrls = true;
                     }
                     else {
-                        if (experimental.preferences.hasOwnProperty("appRuntime"))
-                            experimental.preferences.appRuntime = true;
+                        if (webView.settings.hasOwnProperty("appRuntime"))
+                            webView.settings.appRuntime = true;
 
-                        experimental.preferences.universalAccessFromFileURLsAllowed = false;
-                        experimental.preferences.fileAccessFromFileURLsAllowed = false;
+                        webView.settings.localContentCanAccessRemoteUrls = false;
                     }
                 }
 
-                if (experimental.preferences.hasOwnProperty("logsPageMessagesToSystemConsole"))
-                    experimental.preferences.logsPageMessagesToSystemConsole = true;
+                //if (webView.settings.hasOwnProperty("logsPageMessagesToSystemConsole"))
+                //    webView.settings.logsPageMessagesToSystemConsole = true;
 
-                if (experimental.preferences.hasOwnProperty("suppressIncrementalRendering"))
-                    experimental.preferences.suppressIncrementalRendering = true;
+                //if (webView.settings.hasOwnProperty("suppressIncrementalRendering"))
+                //    webView.settings.suppressIncrementalRendering = true;
             }
 
-            experimental.onMessageReceived: {
-                ExtensionManager.messageHandler(message);
+            WebChannel {
+               id: webViewChannel
             }
-
+            
             Connections {
                 target: webAppWindow
 
                 onJavaScriptExecNeeded: {
-                    webView.experimental.evaluateJavaScript(script);
+                    // beware: async call
+                    webView.runJavaScript(script);
                 }
 
                 onExtensionWantsToBeAdded: {
-                    ExtensionManager.addExtension(name, object);
+                    console.warn("registering " + name + "to WebChannel: " + object);
+                    webViewChannel.registerObject(name, object);
                 }
             }
 
-            Connections {
-                target: webView.experimental
-                onProcessDidCrash: {
-                    if (numRestarts < maxRestarts) {
-                        console.log("ERROR: The web process has crashed. Restart it ...");
-                        webView.url = webAppWindow.url;
-                        webView.reload();
-                        numRestarts += 1;
-                    }
-                    else {
-                        console.log("CRITICAL: restarted application " + numRestarts
-                                    + " times. Closing it now");
-                        Qt.quit();
-                    }
+            onRenderProcessTerminated: {
+                // Whatever the reason, the render process should never stop when we are still alive
+                if (numRestarts < maxRestarts) {
+                    console.log("ERROR: The web process has crashed. Restart it ...");
+                    webView.url = webAppWindow.url;
+                    webView.reload();
+                    numRestarts += 1;
+                }
+                else {
+                    console.log("CRITICAL: restarted application " + numRestarts
+                                + " times. Closing it now");
+                    Qt.quit();
                 }
             }
         }

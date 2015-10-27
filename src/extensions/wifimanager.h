@@ -26,8 +26,6 @@
 #include <useragent.h>
 #include <baseextension.h>
 
-typedef QPair<int,int> CallbackHandle;
-
 class WiFiManager : public luna::BaseExtension
 {
     Q_OBJECT
@@ -38,8 +36,8 @@ public:
 
 public Q_SLOTS:
     void setPowered(bool powered);
-    void retrieveNetworks(int scid, int ecid);
-    void connectNetwork(int scid, int ecid, const QString &network);
+    void retrieveNetworks(int callId);
+    void connectNetwork(int callId, const QString &network);
     void disconnectNetwork(const QString &path);
     void setNetworkOption(const QString &path, const QString &key, const QVariant &value);
     void removeNetwork(const QString &path);
@@ -56,9 +54,9 @@ private Q_SLOTS:
 private:
     NetworkManager *mManager;
     NetworkTechnology *mWifi;
-    QList<CallbackHandle> mScanRequests;
-    CallbackHandle mConnectCallbacks;
-    CallbackHandle mDisconnectCallbacks;
+    QList<int> mCallIds;
+    int mConnectCallbacks;
+    int mDisconnectCallbacks;
     bool mConnecting;
     bool mDisconnecting;
     NetworkService *mNetworkToConnect;
