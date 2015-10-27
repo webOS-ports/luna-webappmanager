@@ -135,8 +135,7 @@ Flickable {
                 id: userAgent
             }
 
-            //experimental.transparentBackground: (webAppWindow.windowType === "dashboard" ||
-            //                                     webAppWindow.windowType === "popupalert")
+            backgroundColor: (webAppWindow.windowType === "dashboard" || webAppWindow.windowType === "popupalert") ? "transparent": "white"
 
             function getUserAgentForApp(url) {
                 /* if the app wants a specific user agent assign it instead of the default one */
@@ -152,17 +151,16 @@ Flickable {
 
            onJavaScriptConsoleMessage: console.warn("CONSOLE JS: " + message);
 
-            /*
             onNavigationRequested: {
-                var action = WebView.AcceptRequest;
+                var action = WebEngineView.AcceptRequest;
                 var url = request.url.toString();
 
                 if (webApp.urlsAllowed && webApp.urlsAllowed.length !== 0) {
-                    action = WebView.IgnoreRequest;
+                    action = WebEngineView.IgnoreRequest;
                     for (var i = 0; i < webApp.urlsAllowed.length; ++i) {
                         var pattern = webApp.urlsAllowed[i];
                         if (url.match(pattern)) {
-                            action = WebView.AcceptRequest;
+                            action = WebEngineView.AcceptRequest;
                             break;
                         }
                     }
@@ -172,14 +170,14 @@ Flickable {
 
                 // If we're not handling the URL forward it to be opened within the system
                 // default web browser in a safe environment
-                if (request.action === WebView.IgnoreRequest) {
+                if (request.action === WebEngineView.IgnoreRequest) {
                     Qt.openUrlExternally(url);
                     return;
                 }
 
-                webView.experimental.userAgent = getUserAgentForApp(url);
+                profile.httpUserAgent = getUserAgentForApp(url);
             }
-            */
+
             Component.onCompleted: {
                 // Let the native side configure us as needed
                 webAppWindow.configureWebView(webView);
@@ -233,24 +231,21 @@ Flickable {
                     webViewChannel.registerObject(name, object);
                 }
             }
-/*
-            Connections {
-                target: webView.experimental
-                onProcessDidCrash: {
-                    if (numRestarts < maxRestarts) {
-                        console.log("ERROR: The web process has crashed. Restart it ...");
-                        webView.url = webAppWindow.url;
-                        webView.reload();
-                        numRestarts += 1;
-                    }
-                    else {
-                        console.log("CRITICAL: restarted application " + numRestarts
-                                    + " times. Closing it now");
-                        Qt.quit();
-                    }
+
+            onRenderProcessTerminated: {
+                // Whatever the reason, the render process should never stop when we are still alive
+                if (numRestarts < maxRestarts) {
+                    console.log("ERROR: The web process has crashed. Restart it ...");
+                    webView.url = webAppWindow.url;
+                    webView.reload();
+                    numRestarts += 1;
+                }
+                else {
+                    console.log("CRITICAL: restarted application " + numRestarts
+                                + " times. Closing it now");
+                    Qt.quit();
                 }
             }
-            */
         }
     }
 

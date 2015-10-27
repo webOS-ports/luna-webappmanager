@@ -169,13 +169,13 @@ QQuickWebEngineScript *WebApplicationWindow::getScriptFromUrl(const QString &isc
     newScript->setSourceCode(QString::fromUtf8(f.readAll()));
     newScript->setInjectionPoint(injectionPoint);
     newScript->setRunOnSubframes(forAllFrames);
+    newScript->setWorldId(QQuickWebEngineScript::MainWorld);
 
     return newScript;
 }
 
 void WebApplicationWindow::createAndSetup(const QVariantMap &windowAttributesMap)
 {
- //   mUserScripts.append(getScriptFromUrl("QmlChannelScript", QString("://qtwebchannel/qwebchannel.js"), true, true));
     if (mTrustScope == TrustScopeSystem) {
         mUserScripts.append(getScriptFromUrl("webosAPI", QString("://qml/webos-api.js"), QQuickWebEngineScript::DocumentCreation, true));
         createDefaultExtensions();
@@ -194,8 +194,6 @@ void WebApplicationWindow::createAndSetup(const QVariantMap &windowAttributesMap
         mRootItem = qobject_cast<QQuickItem*>(component.create());
     }
     else {
-        //QQuickWebViewExperimental::setFlickableViewportEnabled(mApplication->desc().isFlickable());
-
         mWindow = new QQuickView;
         mWindow->installEventFilter(this);
 
@@ -262,7 +260,7 @@ void WebApplicationWindow::configureWebView(QQuickItem *webViewItem)
 
     connect(mWebView, SIGNAL(newViewRequested(QQuickWebEngineNewViewRequest*)),
             this, SLOT(onCreateNewPage(QQuickWebEngineNewViewRequest*)));
-//    connect(mWebView->experimental(), SIGNAL(closePage()), this, SLOT(onClosePage()));
+    connect(mWebView, SIGNAL(windowCloseRequested()), this, SLOT(onClosePage()));
 
     if (mTrustScope == TrustScopeSystem)
         loadAllExtensions();
