@@ -33,7 +33,7 @@ class PalmSystemExtension : public BaseExtension
     Q_OBJECT
 
     Q_PROPERTY(QString launchParams READ launchParams CONSTANT)
-    Q_PROPERTY(bool hasAlphaHole READ hasAlphaHole WRITE setHasAlphaHole)
+    Q_PROPERTY(bool hasAlphaHole READ hasAlphaHole WRITE setHasAlphaHole NOTIFY hasAlphaHoleChanged)
     Q_PROPERTY(QString locale READ locale CONSTANT)
     Q_PROPERTY(QString localeRegion READ localeRegion CONSTANT)
     Q_PROPERTY(QString timeFormat READ timeFormat CONSTANT)
@@ -41,7 +41,7 @@ class PalmSystemExtension : public BaseExtension
     Q_PROPERTY(bool isMinimal READ isMinimal CONSTANT)
     Q_PROPERTY(QString identifier READ identifier CONSTANT)
     Q_PROPERTY(QString screenOrientation READ screenOrientation CONSTANT)
-    Q_PROPERTY(QString windowOrientation READ windowOrientation WRITE setWindowOrientation)
+    Q_PROPERTY(QString windowOrientation READ windowOrientation WRITE setWindowOrientation NOTIFY windowOrientationChanged)
     Q_PROPERTY(QString specifiedWindowOrientation READ specifiedWindowOrientation CONSTANT)
     Q_PROPERTY(QString videoOrientation READ videoOrientation CONSTANT)
     Q_PROPERTY(QString deviceInfo READ deviceInfo CONSTANT)
@@ -137,6 +137,10 @@ public Q_SLOTS:
     int     activityId();
     QString phoneRegion();
     QString version();
+
+Q_SIGNALS:
+    void hasAlphaHoleChanged();
+    void windowOrientationChanged();
 
 private:
     WebApplicationWindow *mApplicationWindow;
