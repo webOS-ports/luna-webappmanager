@@ -228,25 +228,13 @@ void WebApplication::createWindow(QQuickWebEngineNewViewRequest *request)
         qDebug() << __PRETTY_FUNCTION__ << "windowMetric metrics value: " << windowMetrics;
     }
 
-    if (windowFeatures.contains("height")) {
-        QVariant::Type type = windowFeatures["height"].type();
-        if (type == QVariant::Int) {
-            height = windowFeatures["height"].toInt();
-            qDebug() << __PRETTY_FUNCTION__ << "height is in int value: " << height;
-        }
-        
-        else if (type == QVariant::Double) {
-            height = static_cast<int>(windowFeatures["height"].toDouble());
-            qDebug() << __PRETTY_FUNCTION__ << "height is in double value: " << height;
-        }
-
-        if (windowMetrics == "units") {
-            qDebug() << __PRETTY_FUNCTION__ << "windowMetrics == \"units\" Settings::LunaSettings()->gridUnit: " << Settings::LunaSettings()->gridUnit;
-            float gridUnit = Settings::LunaSettings()->gridUnit;
-            height = static_cast<int>(qRound(height * gridUnit));
-            qDebug() << __PRETTY_FUNCTION__ << "height: " << height;
-        }
+    height = request->requestedGeometry().height();
+    if (windowMetrics == "units") {
+        qDebug() << __PRETTY_FUNCTION__ << "windowMetrics == \"units\" Settings::LunaSettings()->gridUnit: " << Settings::LunaSettings()->gridUnit;
+        float gridUnit = Settings::LunaSettings()->gridUnit;
+        height = static_cast<int>(qRound(height * gridUnit));
     }
+    qDebug() << __PRETTY_FUNCTION__ << "height: " << height;
 
     QVariantMap lWindowAttributesMap;
     if( !attributesJsonDocument.isEmpty() )
