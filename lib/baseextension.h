@@ -30,7 +30,7 @@ class ApplicationEnvironment;
 class BaseExtension : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString name READ name)
+    Q_PROPERTY(QString name READ name CONSTANT)
 
 public:
     explicit BaseExtension(const QString &name, ApplicationEnvironment *environment, QObject *parent = 0);
