@@ -49,18 +49,15 @@ void InAppBrowserExtension::open(const QString &url, const QString &frameName)
 
     qDebug() << Q_FUNC_INFO << url << frameName;
 
-    mFrameName = frameName;
-
-    //QQuickWebViewExperimental::setFlickableViewportEnabled(true);
-
     QQmlComponent component(mApplicationWindow->qmlEngine(),
                             QUrl("qrc:///qml/InAppBrowser.qml"));
     mItem = qobject_cast<QQuickItem *>(component.create());
     mItem->setParentItem(mApplicationWindow->rootItem());
     mItem->setProperty("url", QVariant(url));
+    mItem->setProperty("frameName", QVariant(frameName));
 
-    connect(mItem, SIGNAL(done()), this, SLOT(onDone()));
-    connect(mItem, SIGNAL(titleChanged()), this, SLOT(onTitleChanged()));
+    connect(mItem, SIGNAL(done(const QString &)), this, SLOT(onDone(const QString &)));
+    connect(mItem, SIGNAL(titleModified(const QString &)), this, SLOT(onTitleChanged(const QString &)));
 }
 
 void InAppBrowserExtension::close()
@@ -71,19 +68,18 @@ void InAppBrowserExtension::close()
     mItem->setProperty("visible", QVariant(false));
     mItem->deleteLater();
     mItem = 0;
-    mFrameName = "";
 }
 
-void InAppBrowserExtension::onDone()
+void InAppBrowserExtension::onDone(const QString &frameName)
 {
-    mAppEnvironment->executeScript(QString("__InAppBrowser.userClickedDone(\"%1\");").arg(mFrameName));
+    mAppEnvironment->executeScript(QString("__InAppBrowser.userClickedDone(\"%1\");").arg(frameName));
     close();
 }
 
-void InAppBrowserExtension::onTitleChanged()
+void InAppBrowserExtension::onTitleChanged(const QString &frameName)
 {
     QString title = mItem->property("title").toString();
-    mAppEnvironment->executeScript(QString("__InAppBrowser.setTitle(\"%1\",\"%2\");").arg(title).arg(mFrameName));
+    mAppEnvironment->executeScript(QString("__InAppBrowser.setTitle(\"%1\",\"%2\");").arg(title).arg(frameName));
 }
 
 } // namespace luna

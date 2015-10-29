@@ -88,7 +88,9 @@ PalmSystem.getIdentifier = function() {
 }
 
 PalmSystem.getIdentifierForFrame = function(id, url) {
-    return _webOS.execSync("PalmSystem", "getIdentifierForFrame", [id, url]);
+    var _id = id || "";
+    var _url = url || "";
+    return _webOS.execSync("PalmSystem", "getIdentifierForFrame", [_id, _url]);
 }
 
 PalmSystem.addBannerMessage = function(msg, params, icon, soundClass, soundFile, duration, doNotSuppress) {
@@ -105,7 +107,8 @@ PalmSystem.addBannerMessage = function(msg, params, icon, soundClass, soundFile,
 }
 
 PalmSystem.removeBannerMessage = function(id) {
-    _webOS.execWithoutCallback("PalmSystem", "removeBannerMessage", [id]);
+    var _id = id || "";
+    _webOS.execWithoutCallback("PalmSystem", "removeBannerMessage", [_id]);
 }
 
 PalmSystem.clearBannerMessages = function() {
@@ -113,11 +116,18 @@ PalmSystem.clearBannerMessages = function() {
 }
 
 PalmSystem.playSoundNotification = function(soundClass, file, duration, wakeUpScreen) {
-    _webOS.execWithoutCallback("PalmSystem", "playSoundNotification", [soundClass, file, duration, wakeUpScreen]);
+    var _soundClass = soundClass || "";
+    var _file = file || "";
+    var _duration = duration || 0;
+    var _wakeUpScreen = wakeUpScreen || false;
+    _webOS.execWithoutCallback("PalmSystem", "playSoundNotification", [_soundClass, _file, _duration, _wakeUpScreen]);
 }
 
 PalmSystem.simulateMouseClick = function(pageX, pageY, pressed) {
-    _webOS.execWithoutCallback("PalmSystem", "simulateMouseClick", [pageX, pageY, pressed]);
+    var _pageX = pageX || 0.;
+    var _pageY = pageY || 0.;
+    var _pressed = pressed || false;
+    _webOS.execWithoutCallback("PalmSystem", "simulateMouseClick", [_pageX, _pageY, _pressed]);
 }
 
 PalmSystem.paste = function() {
@@ -133,7 +143,8 @@ PalmSystem.pastedFromClipboard = function() {
 }
 
 PalmSystem.setWindowOrientation = function(orientation) {
-    _webOS.execWithoutCallback("PalmSystem", "setWindowOrientation", [orientation]);
+    var _orientation = orientation || 0;
+    _webOS.execWithoutCallback("PalmSystem", "setWindowOrientation", [_orientation]);
 }
 
 PalmSystem.encrypt = function(key, str) {
@@ -153,7 +164,8 @@ PalmSystem.markFirstUseDone = function() {
 }
 
 PalmSystem.enableFullScreenMode = function(enable) {
-    _webOS.execWithoutCallback("PalmSystem", "enableFullScreenMode", [enable]);
+    var _enable = enable || false;
+    _webOS.execWithoutCallback("PalmSystem", "enableFullScreenMode", [_enable]);
 }
 
 PalmSystem.activate = function() {
@@ -173,11 +185,14 @@ PalmSystem.stageReady = function() {
 }
 
 PalmSystem.setAlertSound = function(soundClass, file) {
-    _webOS.execWithoutCallback("PalmSystem", "setAlertSound", [soundClass, file]);
+    var _soundClass = soundClass || "";
+    var _file = file || "";
+    _webOS.execWithoutCallback("PalmSystem", "setAlertSound", [_soundClass, _file]);
 }
 
 PalmSystem.receivePageUpDownInLandscape = function(enable) {
-    _webOS.execWithoutCallback("PalmSystem", "receivePageUpDownInLandscape", [enable]);
+    var _enable = enable || false;
+    _webOS.execWithoutCallback("PalmSystem", "receivePageUpDownInLandscape", [_enable]);
 }
 
 PalmSystem.show = function() {
@@ -189,7 +204,8 @@ PalmSystem.hide = function() {
 }
 
 PalmSystem.enableDockMode = function(enable) {
-    _webOS.execWithoutCallback("PalmSystem", "enableDockMode", [enable]);
+    var _enable = enable || false;
+    _webOS.execWithoutCallback("PalmSystem", "enableDockMode", [_enable]);
 }
 
 PalmSystem.getLocalizedString = function(str) {
@@ -215,7 +231,8 @@ PalmSystem.cancelVibrations = function() {
 }
 
 PalmSystem.setWindowProperties = function(props) {
-    _webOS.execWithoutCallback("PalmSystem", "setWindowProperties", [props]);
+    var _props = props || "";
+    _webOS.execWithoutCallback("PalmSystem", "setWindowProperties", [_props]);
 }
 
 PalmSystem.addActiveCallBanner = function(icon, message, timeStart) {
@@ -229,7 +246,9 @@ PalmSystem.updateActiveCallBanner = function(icon, message, timeStart) {
 }
 
 PalmSystem.applyLaunchFeedback = function(offsetX, offsetY) {
-    _webOS.execWithoutCallback("PalmSystem", "applyLaunchFeedback");
+    var _offsetX = offsetX || 0;
+    var _offsetY = offsetY || 0;
+    _webOS.execWithoutCallback("PalmSystem", "applyLaunchFeedback", [_offsetX, _offsetY]);
 }
 
 PalmSystem.launcherReady = function() {
@@ -252,31 +271,41 @@ PalmSystem.printFrame = function(frameName, lpsJobid, widthPx, heightPx, printDp
 }
 
 PalmSystem.editorFocused = function(focused, fieldType, fieldActions) {
-    _webOS.execWithoutCallback("PalmSystem", "editorFocused", [focused, fieldType, fieldActions]);
+    var _focused = focused || false;
+    var _fieldType = fieldType || 0;
+    var _fieldActions = fieldActions || 0;
+    _webOS.execWithoutCallback("PalmSystem", "editorFocused", [_focused, _fieldType, _fieldActions]);
 }
 
 PalmSystem.allowResizeOnPositiveSpaceChange = function(allowResize) {
-    _webOS.execWithoutCallback("PalmSystem", "allowResizeOnPositiveSpaceChange", [allowResize]);
+    var _allowResize = allowResize || false;
+    _webOS.execWithoutCallback("PalmSystem", "allowResizeOnPositiveSpaceChange", [_allowResize]);
 }
 
 PalmSystem.keepAlive = function(keep) {
-    _webOS.execWithoutCallback("PalmSystem", "keepAlive", [keep]);
+    var _keep = keep || false;
+    _webOS.execWithoutCallback("PalmSystem", "keepAlive", [_keep]);
 }
 
 PalmSystem.useSimulatedMouseClicks = function(uses) {
-    _webOS.execWithoutCallback("PalmSystem", "useSimulatedMouseClicks", [uses]);
+    var _uses = uses || false;
+    _webOS.execWithoutCallback("PalmSystem", "useSimulatedMouseClicks", [_uses]);
 }
 
 PalmSystem.handleTapAndHoldEvent = function(pageX, pageY) {
-    _webOS.execWithoutCallback("PalmSystem", "handleTapAndHoldEvent", [pageX, pageY]);
+    var _pageX = pageX || 0.;
+    var _pageY = pageY || 0.;
+    _webOS.execWithoutCallback("PalmSystem", "handleTapAndHoldEvent", [_pageX, _pageY]);
 }
 
 PalmSystem.setManualKeyboardEnabled = function(enabled) {
-    _webOS.execWithoutCallback("PalmSystem", "setManualKeyboardEnabled", [enabled]);
+    var _enabled = enabled || false;
+    _webOS.execWithoutCallback("PalmSystem", "setManualKeyboardEnabled", [_enabled]);
 }
 
 PalmSystem.keyboardShow = function(fieldType) {
-    _webOS.execWithoutCallback("PalmSystem", "keyboardShow", [fieldType]);
+    var _fieldType = fieldType || false;
+    _webOS.execWithoutCallback("PalmSystem", "keyboardShow", [_fieldType]);
 }
 
 PalmSystem.keyboardHide = function() {
