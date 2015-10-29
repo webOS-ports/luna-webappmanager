@@ -16,8 +16,7 @@
  */
 
 import QtQuick 2.0
-import QtWebKit 3.0
-import QtWebKit.experimental 1.0
+import LuneOS.Components 1.0
 import LunaNext.Common 0.1
 
 Item {
@@ -25,8 +24,12 @@ Item {
 
     property string title: webView.title
     property string url: ""
+    property string frameName: ""
 
-    signal done
+    signal done(string frameName)
+    signal titleModified(string frameName)
+
+    onTitleChanged: titleModified(frameName);
 
     anchors.fill: parent
     z: 10
@@ -38,7 +41,7 @@ Item {
         opacity: 0.5
     }
 
-    WebView {
+    LunaWebEngineView {
         id: webView
         anchors.top: parent.top
         anchors.left: parent.left
@@ -46,7 +49,6 @@ Item {
         anchors.bottom: doneButton.top
         anchors.margins: Units.gu(1)
         url: browserView.url
-        experimental.transparentBackground: false
     }
 
     Item {

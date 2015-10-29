@@ -39,13 +39,12 @@ public Q_SLOTS:
     void close();
 
 private Q_SLOTS:
-    void onDone();
-    void onTitleChanged();
+    void onDone(const QString &frameName);
+    void onTitleChanged(const QString &frameName);
 
 private:
     WebApplicationWindow *mApplicationWindow;
     QQuickItem *mItem;
-    QString mFrameName;
 };
 
 } // namespace luna
