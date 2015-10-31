@@ -32,7 +32,7 @@ class PalmSystemExtension : public BaseExtension
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString launchParams READ launchParams CONSTANT)
+    Q_PROPERTY(QString launchParams READ launchParams NOTIFY launchParamsChanged)
     Q_PROPERTY(bool hasAlphaHole READ hasAlphaHole WRITE setHasAlphaHole NOTIFY hasAlphaHoleChanged)
     Q_PROPERTY(QString locale READ locale CONSTANT)
     Q_PROPERTY(QString localeRegion READ localeRegion CONSTANT)
@@ -141,6 +141,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void hasAlphaHoleChanged();
     void windowOrientationChanged();
+    void launchParamsChanged(bool needRelaunch);
 
 private:
     WebApplicationWindow *mApplicationWindow;

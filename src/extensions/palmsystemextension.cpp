@@ -44,6 +44,7 @@ PalmSystemExtension::PalmSystemExtension(WebApplicationWindow *applicationWindow
     mLunaPubHandle(NULL, true)
 {
     applicationWindow->registerUserScript(QString("://extensions/PalmSystem.js"));
+    connect(applicationWindow->application(), SIGNAL(parametersChanged(bool)), this, SIGNAL(launchParamsChanged(bool)));
 
     mLunaPubHandle.attachToLoop(g_main_context_default());
 }

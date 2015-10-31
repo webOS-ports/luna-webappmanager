@@ -139,15 +139,14 @@ var QWebChannel = function(transport, initCallback)
 
     this.handlePropertyUpdate = function(message)
     {
-        for (var i in message.data) {
-            var data = message.data[i];
+        message.data.map(function(data) {
             var object = channel.objects[data.object];
             if (object) {
                 object.propertyUpdate(data.signals, data.properties);
             } else {
                 console.warn("Unhandled property update: " + data.object + "::" + data.signal);
             }
-        }
+        });
         channel.exec({type: QWebChannelMessageTypes.idle});
     }
 
@@ -442,7 +441,20 @@ var webOSApiChannel = new QWebChannel(qt.webChannelTransport, function(channel) 
     // all published objects are available in channel.objects under
     // the identifier set in their attached WebChannel.id property
     _webOS.objects = channel.objects;
+
+    // Handle relaunch requests here
+    if( _webOS.objects.hasOwnProperty("PalmSystem") ) {
+        _webOS.objects.PalmSystem.launchParamsChanged.connect(function(needRelaunch) {
+            if( needRelaunch ) {
+                console.log("relaunchRequested with params '" + _webOS.objects.PalmSystem.launchParams + "'");
+                Mojo.relaunch();
+            }
+        });
+    }
 });
+
+var _callId = 0;
+function getNextCallId() { _callId++; return _callId; }
 
 /**
  * Execute a call to a extension function

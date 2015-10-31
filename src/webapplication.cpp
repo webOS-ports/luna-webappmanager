@@ -171,13 +171,11 @@ void WebApplication::relaunch(const QString &parameters)
     qDebug() << __PRETTY_FUNCTION__ << "Relaunching application" << mDescription.getId() << "with parameters" << parameters;
 
     mParameters = parameters;
-    emit parametersChanged();
+    emit parametersChanged(true);
 
     if( !mMainWindow ) {
         createMainWindow();
     }
-
-    mMainWindow->executeScript(QString("Mojo.relaunch();"));
 }
 
 void WebApplication::createMainWindow()
