@@ -97,7 +97,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void closed();
-    void parametersChanged();
+    void parametersChanged(bool needRelaunch = false);
 
 private:
     void processParameters();
