@@ -191,19 +191,16 @@ Flickable {
                     webView.settings.luneOSPrivileged = webApp.privileged;
                     webView.settings.luneOSIdentifier = webApp.identifier;
                     webView.settings.localContentCanAccessFileUrls = true;
+                    webView.settings.localContentCanAccessRemoteUrls = true;
 
                     console.warn("webApp.allowCrossDomainAccess: " + webApp.allowCrossDomainAccess);
                     if (webApp.allowCrossDomainAccess) {
                         if (webView.settings.hasOwnProperty("appRuntime"))
                             webView.settings.appRuntime = false;
-
-                        webView.settings.localContentCanAccessRemoteUrls = true;
                     }
                     else {
                         if (webView.settings.hasOwnProperty("appRuntime"))
                             webView.settings.appRuntime = true;
-
-                        webView.settings.localContentCanAccessRemoteUrls = false;
                     }
                 }
 
