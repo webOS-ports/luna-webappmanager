@@ -3,6 +3,14 @@
 window.PalmSystem = {}
 window.PalmSystem.locales = {}
 
+function __runStageReadyHooks() {
+    // run hooks on client side, specific to webos apps
+    var style = document.createElement("style");
+    document.head.appendChild(style);
+    style.sheet.insertRule(".onyx { font-family: Prelude, 'Helvetica Neue', 'Nimbus Sans L', Arial, sans-serif; }", 0)
+    style.sheet.insertRule("body { font-family: Prelude, 'Helvetica Neue', 'Nimbus Sans L', Arial, sans-serif; }", 0)
+}
+
 Object.defineProperty(window.PalmSystem, "launchParams", {
   get: function() { return _webOS.getProperty("PalmSystem", "launchParams"); }
 });
@@ -181,6 +189,9 @@ PalmSystem.stagePreparing = function() {
 }
 
 PalmSystem.stageReady = function() {
+    // first, run hooks
+    __runStageReadyHooks();
+    // now really call stageReady
     _webOS.execWithoutCallback("PalmSystem", "stageReady");
 }
 
