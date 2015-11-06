@@ -93,7 +93,7 @@ var QWebChannel = function(transport, initCallback)
         }
         if (channel.execId === Number.MAX_VALUE) {
             // wrap
-            channel.execId = Number.MIN_VALUE;
+            channel.execId = 0;
         }
         if (data.hasOwnProperty("id")) {
             console.error("Cannot exec message with property id: " + JSON.stringify(data));
@@ -106,7 +106,7 @@ var QWebChannel = function(transport, initCallback)
 
     this.execSync = function(data)
     {
-        data.id = 0; // unused
+        data.id = -1; // unused
         var response = channel.sendSync(data);
         var dataResponse = response.data;
         if (typeof dataResponse === "string") {
