@@ -93,7 +93,7 @@ var QWebChannel = function(transport, initCallback)
         }
         if (channel.execId === Number.MAX_VALUE) {
             // wrap
-            channel.execId = Number.MIN_VALUE;
+            channel.execId = 0;
         }
         if (data.hasOwnProperty("id")) {
             console.error("Cannot exec message with property id: " + JSON.stringify(data));
@@ -106,7 +106,7 @@ var QWebChannel = function(transport, initCallback)
 
     this.execSync = function(data)
     {
-        data.id = 0; // unused
+        data.id = -1; // unused
         var response = channel.sendSync(data);
         var dataResponse = response.data;
         if (typeof dataResponse === "string") {
@@ -133,8 +133,13 @@ var QWebChannel = function(transport, initCallback)
             console.error("Invalid response message received: ", JSON.stringify(message));
             return;
         }
-        channel.execCallbacks[message.id](message.data);
-        delete channel.execCallbacks[message.id];
+        if(typeof channel.execCallbacks[message.id] === 'undefined') {
+            console.log("INVALID ID for message: " + JSON.stringify(message));
+        }
+        else {
+            channel.execCallbacks[message.id](message.data);
+            delete channel.execCallbacks[message.id];
+        }
     }
 
     this.handlePropertyUpdate = function(message)
