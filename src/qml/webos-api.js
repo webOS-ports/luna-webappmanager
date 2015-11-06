@@ -133,8 +133,13 @@ var QWebChannel = function(transport, initCallback)
             console.error("Invalid response message received: ", JSON.stringify(message));
             return;
         }
-        channel.execCallbacks[message.id](message.data);
-        delete channel.execCallbacks[message.id];
+        if(typeof channel.execCallbacks[message.id] === 'undefined') {
+            console.log("INVALID ID for message: " + JSON.stringify(message));
+        }
+        else {
+            channel.execCallbacks[message.id](message.data);
+            delete channel.execCallbacks[message.id];
+        }
     }
 
     this.handlePropertyUpdate = function(message)

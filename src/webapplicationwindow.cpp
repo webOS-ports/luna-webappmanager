@@ -177,7 +177,7 @@ QQuickWebEngineScript *WebApplicationWindow::getScriptFromUrl(const QString &isc
 void WebApplicationWindow::createAndSetup(const QVariantMap &windowAttributesMap)
 {
     if (mTrustScope == TrustScopeSystem) {
-        mUserScripts.append(getScriptFromUrl("webosAPI", QString("://qml/webos-api.js"), QQuickWebEngineScript::DocumentCreation, true));
+        mUserScripts.append(getScriptFromUrl("webosAPI", QString("://qml/webos-api.js"), QQuickWebEngineScript::DocumentCreation, false));
         createDefaultExtensions();
     }
 
@@ -516,7 +516,7 @@ void WebApplicationWindow::registerUserScript(const QString &path)
     mUserScripts.append(getScriptFromUrl(QString("userScript%1").arg(mUserScripts.size()),
                                          path,
                                          mTrustScope == TrustScopeSystem ? QQuickWebEngineScript::DocumentCreation : QQuickWebEngineScript::Deferred,
-                                         mTrustScope == TrustScopeSystem));
+                                         false));
     emit userScriptsChanged();
 }
 
