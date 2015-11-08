@@ -538,6 +538,7 @@ _webOS.execWithoutCallback = function(extensionName, functionName, parameters) {
 _webOS.getProperty = function(extensionName, propertyName) {
     if( _webOS.objects.hasOwnProperty(extensionName) ) {
         var extensionObj = _webOS.objects[extensionName];
+        console.log("_webOS.getProperty ("+extensionName+"."+propertyName+")="+extensionObj[propertyName]);
         return extensionObj[propertyName];
     }
 
