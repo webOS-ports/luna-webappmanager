@@ -30,7 +30,7 @@ public:
     explicit ApplicationEnvironment(QObject *parent = 0);
 
     virtual void executeScript(const QString &script) = 0;
-    virtual void registerUserScript(const QString &path) = 0;
+    virtual void registerUserScript(const QString &path, bool executeOnSubFrames = false) = 0;
 };
 
 } // namespace luna

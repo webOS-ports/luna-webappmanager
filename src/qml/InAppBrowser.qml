@@ -84,7 +84,7 @@ Item {
         MouseArea {
             anchors.fill: parent
             onClicked: {
-                done();
+                done(frameName);
             }
         }
     }

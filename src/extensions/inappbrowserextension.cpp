@@ -30,7 +30,7 @@ InAppBrowserExtension::InAppBrowserExtension(WebApplicationWindow *applicationWi
     mApplicationWindow(applicationWindow),
     mItem(0)
 {
-    applicationWindow->registerUserScript(QString("://extensions/InAppBrowser.js"));
+    applicationWindow->registerUserScript(QString("://extensions/InAppBrowser.js"), true);
 }
 
 InAppBrowserExtension::~InAppBrowserExtension()

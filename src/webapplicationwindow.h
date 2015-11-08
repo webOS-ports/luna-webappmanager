@@ -98,7 +98,7 @@ public:
     void setKeepAlive(bool alive);
 
     void executeScript(const QString &script);
-    void registerUserScript(const QString &path);
+    void registerUserScript(const QString &path, bool executeOnSubFrames = false);
 
     QString getIdentifierForFrame(const QString& id, const QString& url);
 
