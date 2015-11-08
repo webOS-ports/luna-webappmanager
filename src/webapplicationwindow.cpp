@@ -511,12 +511,12 @@ void WebApplicationWindow::executeScript(const QString &script)
     emit javaScriptExecNeeded(script);
 }
 
-void WebApplicationWindow::registerUserScript(const QString &path)
+void WebApplicationWindow::registerUserScript(const QString &path, bool executeOnSubFrames)
 {
     mUserScripts.append(getScriptFromUrl(QString("userScript%1").arg(mUserScripts.size()),
                                          path,
                                          mTrustScope == TrustScopeSystem ? QQuickWebEngineScript::DocumentCreation : QQuickWebEngineScript::Deferred,
-                                         false));
+                                         executeOnSubFrames));
     emit userScriptsChanged();
 }
 

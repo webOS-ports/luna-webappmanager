@@ -1,9 +1,9 @@
 navigator.InAppBrowser = {};
 navigator.InAppBrowser.open = function(url) {
-    _webOS.execWithoutCallback("InAppBrowser", "open", [url, window.name]);
+    window.top._webOS.execWithoutCallback("InAppBrowser", "open", [url, window.name]);
 }
 navigator.InAppBrowser.close = function() {
-    _webOS.execWithoutCallback("InAppBrowser", "close");
+    window.top._webOS.execWithoutCallback("InAppBrowser", "close");
 }
 
 navigator.InAppBrowser.ontitlechanged = null;
