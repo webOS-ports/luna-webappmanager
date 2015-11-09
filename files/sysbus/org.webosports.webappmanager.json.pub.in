@@ -2,13 +2,18 @@
     "role": {
         "exeName":"@WEBOS_INSTALL_SBINDIR@/LunaWebAppManager",
         "type": "privileged",
-        "allowedNames": ["org.webosports.webappmanager",""]
+        "allowedNames": ["org.webosports.webappmanager","qtpositioning_LunaWebAppMgr",""]
     },
     "permissions": [
         {
             "service":"org.webosports.webappmanager",
             "inbound":["*"],
             "outbound":["*"]
+        },
+        {
+            "service":"qtpositioning_LunaWebAppMgr",
+            "inbound":["org.webosports.location"],
+            "outbound":["org.webosports.location"]
         }
     ]
 }
