@@ -452,6 +452,7 @@ var webOSApiChannel = new QWebChannel(qt.webChannelTransport, function(channel) 
         _webOS.objects.PalmSystem.launchParamsChanged.connect(function(needRelaunch) {
             if( needRelaunch ) {
                 console.log("relaunchRequested with params '" + _webOS.objects.PalmSystem.launchParams + "'");
+                _webOS.objects.PalmSystem.activate();
                 Mojo.relaunch();
             }
         });
