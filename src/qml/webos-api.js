@@ -452,6 +452,7 @@ var webOSApiChannel = new QWebChannel(qt.webChannelTransport, function(channel) 
         _webOS.objects.PalmSystem.launchParamsChanged.connect(function(needRelaunch) {
             if( needRelaunch ) {
                 console.log("relaunchRequested with params '" + _webOS.objects.PalmSystem.launchParams + "'");
+                _webOS.objects.PalmSystem.activate();
                 Mojo.relaunch();
             }
         });
@@ -538,6 +539,7 @@ _webOS.execWithoutCallback = function(extensionName, functionName, parameters) {
 _webOS.getProperty = function(extensionName, propertyName) {
     if( _webOS.objects.hasOwnProperty(extensionName) ) {
         var extensionObj = _webOS.objects[extensionName];
+        console.log("_webOS.getProperty ("+extensionName+"."+propertyName+")="+extensionObj[propertyName]);
         return extensionObj[propertyName];
     }
 
