@@ -121,6 +121,7 @@ Q_SIGNALS:
     void visibleChanged();
     void focusChanged();
     void userScriptsChanged();
+    void activeChanged();
 
 protected:
     bool eventFilter(QObject *object, QEvent *event);
@@ -158,6 +159,7 @@ private:
     int mParentWindowId;
     bool mLoadingAnimationDisabled;
     bool mLaunchedHidden;
+    bool mIsActive;
 
     void assignCorrectTrustScope();
     void createAndSetup(const QVariantMap &windowAttributesMap);
@@ -168,6 +170,7 @@ private:
     void updateWindowProperty(const QString &name);
     void setupPage();
     void notifyAppAboutFocusState(bool focus);
+    void setIsActive(bool active);
 };
 
 } // namespace luna

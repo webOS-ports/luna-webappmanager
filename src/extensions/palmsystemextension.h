@@ -45,7 +45,7 @@ class PalmSystemExtension : public BaseExtension
     Q_PROPERTY(QString specifiedWindowOrientation READ specifiedWindowOrientation CONSTANT)
     Q_PROPERTY(QString videoOrientation READ videoOrientation CONSTANT)
     Q_PROPERTY(QString deviceInfo READ deviceInfo CONSTANT)
-    Q_PROPERTY(bool isActivated READ isActivated CONSTANT)
+    Q_PROPERTY(bool isActivated READ isActivated NOTIFY isActivatedChanged)
     Q_PROPERTY(int activityId READ activityId CONSTANT)
     Q_PROPERTY(QString phoneRegion READ phoneRegion CONSTANT)
     Q_PROPERTY(QString version READ version CONSTANT)
@@ -141,6 +141,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void hasAlphaHoleChanged();
     void windowOrientationChanged();
+    void isActivatedChanged();
     void launchParamsChanged(bool needRelaunch);
 
 private:
