@@ -68,7 +68,8 @@ WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QU
     mWindowId(0),
     mParentWindowId(parentWindowId),
     mLoadingAnimationDisabled(false),
-    mLaunchedHidden(application->id() == "com.palm.launcher")
+    mLaunchedHidden(application->id() == "com.palm.launcher"),
+    mIsActive(false)
 {
     qDebug() << __PRETTY_FUNCTION__ << this << size;
 
@@ -313,6 +314,7 @@ void WebApplicationWindow::notifyAppAboutFocusState(bool focus)
 
     QString action = focus ? "stageActivated" : "stageDeactivated";
 
+    setIsActive(focus);
     emit focusChanged();
 
     if (mTrustScope == TrustScopeSystem)
@@ -493,6 +495,7 @@ void WebApplicationWindow::focus()
     if (!mWindow->isVisible())
         mWindow->show();
 
+    setIsActive(true);
     mWindow->raise();
 }
 
@@ -504,6 +507,7 @@ void WebApplicationWindow::unfocus()
     qDebug() << __PRETTY_FUNCTION__ << "id" << mApplication->id();
 
     mWindow->lower();
+    setIsActive(false);
 }
 
 void WebApplicationWindow::executeScript(const QString &script)
@@ -570,12 +574,18 @@ QSize WebApplicationWindow::size() const
     return mSize;
 }
 
+void WebApplicationWindow::setIsActive(bool active)
+{
+    bool previousActive = mIsActive;
+    mIsActive = active;
+    if (previousActive != active) {
+        emit activeChanged();
+    }
+}
+
 bool WebApplicationWindow::active() const
 {
-    if (mWindow)
-        return mWindow->isActive();
-
-    return true;
+    return mIsActive;
 }
 
 QString WebApplicationWindow::trustScope() const
