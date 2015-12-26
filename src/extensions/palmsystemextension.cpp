@@ -261,9 +261,9 @@ QString PalmSystemExtension::getIdentifierForFrame(const QString&id, const QStri
     return mApplicationWindow->getIdentifierForFrame(id, url);
 }
 
-QString PalmSystemExtension::addBannerMessage(const QString&msgTitle, const QString &launchParams,
-                                              const QString&msgIconUrl, const QString &soundClass,
-                                              const QString&soundFile, int duration,
+QString PalmSystemExtension::addBannerMessage(const QString &msgTitle, const QString &launchParams,
+                                              const QString &msgIconUrl, const QString &soundClass,
+                                              const QString &soundFile, int duration,
                                               bool doNotSuppress)
 {
     qDebug() << __PRETTY_FUNCTION__ << msgTitle << ":" << launchParams;
@@ -299,6 +299,10 @@ QString PalmSystemExtension::addBannerMessage(const QString&msgTitle, const QStr
     notificationParams.insert("title", msgTitle);
     notificationParams.insert("launchParams", launchParams);
     notificationParams.insert("iconUrl", iconUrl);
+	notificationParams.insert("soundClass", soundClass);
+	notificationParams.insert("soundFile", soundFile);
+	notificationParams.insert("duration", duration);
+	notificationParams.insert("doNotSuppress", doNotSuppress);
     notificationParams.insert("expireTimeout", "0");
 
     QJsonDocument document(notificationParams);
