@@ -232,6 +232,9 @@ void WebApplication::createWindow(QQuickWebEngineNewViewRequest *request)
         float gridUnit = Settings::LunaSettings()->gridUnit;
         height = static_cast<int>(qRound(height * gridUnit));
     }
+    else {
+        height *= Settings::LunaSettings()->layoutScale;
+    }
     qDebug() << __PRETTY_FUNCTION__ << "height: " << height;
 
     QVariantMap lWindowAttributesMap;
