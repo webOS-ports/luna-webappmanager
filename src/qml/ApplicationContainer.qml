@@ -67,9 +67,6 @@ Flickable {
     }
 
     Component.onCompleted: {
-        if (webApp.isLauncher())
-            return;
-
         webViewLoader.sourceComponent = webViewComponent;
     }
 
@@ -79,22 +76,6 @@ Flickable {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.bottom: keyboardContainer.top
-    }
-
-    Connections {
-        target: webAppWindow
-        onVisibleChanged: {
-            if (!webApp.isLauncher())
-                return;
-
-            if (!webAppWindow.visible)
-                return;
-
-            if (webViewLoader.sourceComponent !== null)
-                return;
-
-            webViewLoader.sourceComponent = webViewComponent;
-        }
     }
 
     Component {
