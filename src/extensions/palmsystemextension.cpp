@@ -263,7 +263,7 @@ QString PalmSystemExtension::getIdentifierForFrame(const QString&id, const QStri
 
 QString PalmSystemExtension::addBannerMessage(const QString &msgTitle, const QString &launchParams,
                                               const QString &msgIconUrl, const QString &soundClass,
-                                              const QString &soundFile, int duration,
+                                              const QString &msgSoundFile, int duration,
                                               bool doNotSuppress)
 {
     qDebug() << __PRETTY_FUNCTION__ << msgTitle << ":" << launchParams;
@@ -271,14 +271,15 @@ QString PalmSystemExtension::addBannerMessage(const QString &msgTitle, const QSt
     QString appId = mApplicationWindow->application()->id();
 
     QString iconUrl = msgIconUrl;
-    if (iconUrl.isEmpty()) {
-        qDebug() << __PRETTY_FUNCTION__ << "iconUrl is empty: " << iconUrl;
+    QString soundFile = msgSoundFile;
+    if (msgIconUrl.isEmpty()) {
         iconUrl = mApplicationWindow->application()->icon().toString();
-        qDebug() << __PRETTY_FUNCTION__ << "iconUrl after setting mApplicationWindow->application()->icon(): " << iconUrl;
+        qDebug() << __PRETTY_FUNCTION__ << "iconUrl was empty. New value after setting mApplicationWindow->application()->icon(): " << iconUrl;
     }
 
-    else if (!QFileInfo(iconUrl).isAbsolute()) {
-        qDebug() << __PRETTY_FUNCTION__ << "iconUrl is not empty: " << iconUrl;
+    if( (!msgIconUrl.isEmpty()   && !QFileInfo(msgIconUrl).isAbsolute())     ||
+        (!msgSoundFile.isEmpty() && !QFileInfo(msgSoundFile).isAbsolute()) )
+    {
         QString appBasePath;
 
         LS::Call call = mLunaPubHandle.callOneReply("luna://com.palm.applicationManager/getAppBasePath",
@@ -289,11 +290,21 @@ QString PalmSystemExtension::addBannerMessage(const QString &msgTitle, const QSt
         QJsonObject response = QJsonDocument::fromJson(message.getPayload()).object();
         appBasePath = QFileInfo(QUrl(response.value("basePath").toString()).path()).absolutePath();
 
-        iconUrl.prepend("/");
-        iconUrl.prepend(appBasePath);
+        if (!msgIconUrl.isEmpty() && !QFileInfo(msgIconUrl).isAbsolute()) {
+            qDebug() << __PRETTY_FUNCTION__ << "iconUrl is a relative path: " << iconUrl;
+            iconUrl.prepend("/");
+            iconUrl.prepend(appBasePath);
+        }
+
+        if (!msgSoundFile.isEmpty() && !QFileInfo(msgSoundFile).isAbsolute()) {
+            qDebug() << __PRETTY_FUNCTION__ << "soundFile is a relative path: " << msgSoundFile;
+            soundFile.prepend("/");
+            soundFile.prepend(appBasePath);
+        }
     }
 
     qDebug() << __PRETTY_FUNCTION__ << "Final iconUrl: " << iconUrl;
+    qDebug() << __PRETTY_FUNCTION__ << "Final soundFile: " << soundFile;
 
     QJsonObject notificationParams;
     notificationParams.insert("title", msgTitle);
