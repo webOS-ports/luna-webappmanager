@@ -277,8 +277,8 @@ QString PalmSystemExtension::addBannerMessage(const QString &msgTitle, const QSt
         qDebug() << __PRETTY_FUNCTION__ << "iconUrl was empty. New value after setting mApplicationWindow->application()->icon(): " << iconUrl;
     }
 
-    if( (!msgIconUrl.isEmpty()   && !QFileInfo(msgIconUrl).isAbsolute())     ||
-        (!msgSoundFile.isEmpty() && !QFileInfo(msgSoundFile).isAbsolute()) )
+    if( (!msgIconUrl.isEmpty()   && !QFileInfo(msgIconUrl).isAbsolute() && !msgIconUrl.startsWith("file://"))    ||
+        (!msgSoundFile.isEmpty() && !QFileInfo(msgSoundFile).isAbsolute() && !msgSoundFile.startsWith("file://")) )
     {
         QString appBasePath;
 
