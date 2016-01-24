@@ -52,9 +52,9 @@ __BluetoothManager.deviceDisappeared= function(address) {
       navigator.BluetoothManager.ondevicedisappeared(address);
 }
 
-__BluetoothManager.propertyChanged = function(key, deviceInfo) {
+__BluetoothManager.propertyChanged = function(keyValueObject) {
     if (typeof navigator.BluetoothManager.onpropertychanged === 'function')
-      navigator.BluetoothManager.onpropertychanged(key, deviceInfo);
+      navigator.BluetoothManager.onpropertychanged(keyValueObject);
 }
 
 __BluetoothManager.requestPinCode= function(deviceInfo) {

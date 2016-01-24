@@ -317,7 +317,7 @@ void BluetoothManager::propertyChanged(const QString &key, const QVariant &value
 
     document.setObject(btObj);
     QString payload = document.toJson();
-    mAppEnvironment->executeScript(QString("__BluetoothManager.propertyChanged(%1,%2);").arg(key, payload));
+    mAppEnvironment->executeScript(QString("__BluetoothManager.propertyChanged(%1);").arg(payload));
 }
 
 void BluetoothManager::pairingDone()
