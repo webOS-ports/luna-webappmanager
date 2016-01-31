@@ -147,6 +147,9 @@ void WiFiManager::handleUserInputRequested(const QString &servicePath, const QVa
     if (fields.contains("Passphrase")) {
         replyFields.insert("Passphrase", QVariant(mNetworkPassword));
     }
+    if (fields.contains("Name")) {
+        replyFields.insert("Name", QVariant(mNetworkName));
+    }
 
     mAgent.sendUserReply(replyFields);
 }
@@ -242,6 +245,10 @@ void WiFiManager::connectNetwork(int callId, const QString &network)
     if (!root.contains("password") || !root.value("password").isString()) {
         callback(callId, false /*keepCallback*/, false /*success*/, "Invalid arguments");
         return;
+    }
+
+    if (root.contains("name") && root.value("name").isString()) {
+        mNetworkName = root.value("name").toString();
     }
 
     mNetworkPassword = root.value("password").toString();
