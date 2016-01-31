@@ -35,6 +35,7 @@ class BluetoothManager : public luna::BaseExtension
     Q_OBJECT
 public:
     explicit BluetoothManager(luna::ApplicationEnvironment *environment, QObject *parent = 0);
+    ~BluetoothManager();
 
     void initialize();
 
@@ -44,6 +45,7 @@ public Q_SLOTS:
     void connectDevice(const QString &address);
     void disconnectDevice(const QString &address);
     void removeDevice(const QString &address);
+    void resetDevicesList();
 
     void providePinCode(uint tag, bool provided, const QString &code);
     void providePasskey(uint tag, bool provided, const uint passkey);

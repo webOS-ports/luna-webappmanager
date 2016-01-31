@@ -65,6 +65,11 @@ BluetoothManager::BluetoothManager(luna::ApplicationEnvironment *environment, QO
     environment->registerUserScript(QString("://extensions/BluetoothManager.js"));
 }
 
+BluetoothManager::~BluetoothManager()
+{
+    mBluetooth->deleteLater();
+}
+
 void BluetoothManager::initialize()
 {
     bool Powered = mTechnology ? mTechnology->powered() : false;
@@ -128,6 +133,17 @@ void BluetoothManager::removeDevice(const QString &address)
 
     mBluetooth->setSelectedDevice(address);
     mBluetooth->removeDevice();
+}
+
+void BluetoothManager::resetDevicesList()
+{
+    if (!mTechnology) {
+        qDebug() << "Bluetooth is not available";
+        return;
+    }
+
+    DeviceModel *mDeviceModel = mBluetooth->getDeviceModel();
+    mDeviceModel->resetDevicesList();
 }
 
 void BluetoothManager::providePinCode(uint tag, bool provided, const QString &code)
