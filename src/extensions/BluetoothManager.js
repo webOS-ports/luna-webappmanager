@@ -88,6 +88,10 @@ navigator.BluetoothManager.removeDevice = function(address) {
     _webOS.execWithoutCallback("BluetoothManager", "removeDevice", [address]);
 }
 
+navigator.BluetoothManager.resetDevicesList = function() {
+    _webOS.execWithoutCallback("BluetoothManager", "resetDevicesList");
+}
+
 navigator.BluetoothManager.providePinCode = function(tag, provided, pinCode) {
     _webOS.execWithoutCallback("BluetoothManager", "providePinCode", [tag, provided, pinCode]);
 }

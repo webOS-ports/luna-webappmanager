@@ -75,6 +75,7 @@ public:
     void startDiscovery();
     void toggleDiscovery();
     void trySetDiscoverable(bool discoverable);
+    void resetDevicesList();
 
 Q_SIGNALS:
     void poweredChanged(bool powered);

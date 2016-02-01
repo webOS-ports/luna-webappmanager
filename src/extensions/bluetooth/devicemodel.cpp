@@ -324,6 +324,12 @@ void DeviceModel::addDevice(QSharedPointer<Device> &device)
     }
 }
 
+void DeviceModel::resetDevicesList()
+{
+    for (auto device : m_devices)
+        emit deviceFound(device);
+}
+
 void DeviceModel::removeRow(int row)
 {
     if (0<=row && row<m_devices.size()) {
