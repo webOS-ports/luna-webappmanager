@@ -325,15 +325,18 @@ void BluetoothManager::deviceDisappeared(QString address)
 
 void BluetoothManager::propertyChanged(const QString &key, const QVariant &value)
 {
-    QJsonDocument document;
-
-        QJsonObject btObj;
-
-        btObj.insert(key, QJsonValue::fromVariant(value));
-
-    document.setObject(btObj);
-    QString payload = document.toJson();
-    mAppEnvironment->executeScript(QString("__BluetoothManager.propertyChanged(%1);").arg(payload));
+    if (value.type() == QVariant::Bool)
+    {
+	mAppEnvironment->executeScript(
+	    QString("__BluetoothManager.propertyChanged(\"%1\",%2);").
+	    arg(key, value.toBool() ? "true" : "false"));
+    }
+    else // Assume QString
+    {
+	mAppEnvironment->executeScript(
+	    QString("__BluetoothManager.propertyChanged(\"%1\",\"%2\");").
+	    arg(key, value.toString()));
+    }
 }
 
 void BluetoothManager::pairingDone()
