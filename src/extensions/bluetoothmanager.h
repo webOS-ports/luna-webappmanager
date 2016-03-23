@@ -71,6 +71,8 @@ private:
     NetworkTechnology *mTechnology;
     Bluetooth *mBluetooth;
     Agent *mBtAgent;
+
+    void connectBtSignals();
 };
 
 #endif // BLUETOOTHMANAGER_H

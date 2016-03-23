@@ -35,6 +35,9 @@ BluetoothManager::BluetoothManager(luna::ApplicationEnvironment *environment, QO
     connect(mManager, SIGNAL(technologiesChanged()), this, SLOT(technologiesChanged()));
 
     mTechnology = mManager->getTechnology("bluetooth");
+    if (mTechnology)
+        connectBtSignals();
+
     mBluetooth = new Bluetooth();
 
     DeviceModel *mDeviceModel = mBluetooth->getDeviceModel();
@@ -74,6 +77,11 @@ void BluetoothManager::initialize()
 {
     bool Powered = mTechnology ? mTechnology->powered() : false;
     mAppEnvironment->executeScript(QString("__BluetoothManager.setPowered(%1);").arg(Powered ? "true" : "false"));
+}
+
+void BluetoothManager::connectBtSignals()
+{
+    connect(mTechnology, &NetworkTechnology::poweredChanged, this, &BluetoothManager::initialize);
 }
 
 void BluetoothManager::setPowered(bool powered)
@@ -271,6 +279,7 @@ void BluetoothManager::technologiesChanged()
         mTechnology = mManager->getTechnology("bluetooth");
         if (mTechnology) {
             initialize();
+            connectBtSignals();
         }
     }
 }
