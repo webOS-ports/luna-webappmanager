@@ -60,6 +60,7 @@ void WiFiManager::initialize()
 void WiFiManager::connectWifiSignals()
 {
     connect(mWifi, SIGNAL(scanFinished()), this, SLOT(scanFinished()));
+    connect(mWifi, &NetworkTechnology::poweredChanged, this, &WiFiManager::initialize);
 }
 
 void WiFiManager::managerAvailabilityChanged(bool available)

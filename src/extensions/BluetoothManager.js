@@ -14,6 +14,7 @@ navigator.BluetoothManager.onpropertychanged = null;
 
 navigator.BluetoothManager.onrequestpincode = null;
 navigator.BluetoothManager.onrequestpasskey = null;
+navigator.BluetoothManager.ondisplaypasskey = null;
 navigator.BluetoothManager.onconfirmpasskey = null;
 
 __BluetoothManager.setPowered = function(powered) {
@@ -72,6 +73,11 @@ __BluetoothManager.requestConfirmPasskey= function(deviceInfo) {
       navigator.BluetoothManager.onconfirmpasskey(deviceInfo);
 }
 
+__BluetoothManager.requestDisplayPasskey= function(deviceInfo) {
+    if (typeof navigator.BluetoothManager.ondisplaypasskey === 'function')
+      navigator.BluetoothManager.ondisplaypasskey(deviceInfo);
+}
+
 navigator.BluetoothManager.discover = function(value) {
     _webOS.execWithoutCallback("BluetoothManager", "discover", [value]);
 }
@@ -104,6 +110,6 @@ navigator.BluetoothManager.confirmPasskey = function(tag, confirmed) {
     _webOS.execWithoutCallback("BluetoothManager", "confirmPasskey", [tag, confirmed]);
 }
 
-navigator.BluetoothManager.displayPasskeyCallback = function(tag,confirmed) {
+navigator.BluetoothManager.displayPasskeyCallback = function(tag) {
     _webOS.execWithoutCallback("BluetoothManager", "displayPasskeyCallback", [tag]);
 }
