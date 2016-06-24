@@ -27,9 +27,11 @@
 #include <QtWebEngine/private/qquickwebenginescript_p.h>
 
 #include <applicationenvironment.h>
+#include <webapplicationredirecthandler.h>
 
 class QQuickView;
 class QQuickItem;
+class QQuickWebEngineProfile;
 
 namespace luna
 {
@@ -138,6 +140,7 @@ private Q_SLOTS:
 
 private:
     QQuickWebEngineScript *getScriptFromUrl(const QString &iscriptName, QString iUrl, QQuickWebEngineScript::InjectionPoint injectionPoint, bool forAllFrames);
+    void installUrlSchemeHandlers(QQuickWebEngineProfile *webViewProfile);
 
     WebApplication *mApplication;
     QMap<QString, BaseExtension*> mExtensions;
@@ -146,6 +149,7 @@ private:
     QQuickView *mWindow;
     bool mHeadless;
     QQuickWebEngineView *mWebView;
+    WebApplicationRedirectHandler mRedirectHandler;
     QUrl mUrl;
     QString mWindowType;
     bool mKeepAlive;

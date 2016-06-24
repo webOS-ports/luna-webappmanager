@@ -26,6 +26,7 @@
 #include <QTimer>
 #include <QDir>
 
+#include <QtWebEngine/QQuickWebEngineProfile>
 #include <QtWebEngine/private/qquickwebengineview_p.h>
 #include <QtWebEngine/private/qquickwebenginescript_p.h>
 #include <QtWebEngine/private/qquickwebengineloadrequest_p.h>
@@ -58,6 +59,7 @@ WebApplicationWindow::WebApplicationWindow(WebApplication *application, const QU
     mRootItem(0),
     mWindow(0),
     mHeadless(headless),
+    mRedirectHandler(application->id()),
     mUrl(url),
     mWindowType(windowType),
     mKeepAlive(false),
@@ -245,6 +247,33 @@ void WebApplicationWindow::createAndSetup(const QVariantMap &windowAttributesMap
     }
 }
 
+void WebApplicationWindow::installUrlSchemeHandlers(QQuickWebEngineProfile *webViewProfile)
+{
+    if(!webViewProfile) return;
+
+    LS::Handle lunaPrvHandle(NULL, false);
+    lunaPrvHandle.attachToLoop(g_main_context_default());
+    LS::Call callGetMimeTable = lunaPrvHandle.callOneReply("luna://com.palm.applicationManager/dumpMimeTable",
+                                                           "{}",
+                                                           mApplication->id().toUtf8().constData());
+    LS::Message message(callGetMimeTable.get(1000));
+    QJsonObject response = QJsonDocument::fromJson(message.getPayload()).object();
+    QJsonArray redirectsArray = response.value("redirects").toArray();
+
+    QJsonArray::const_iterator i;
+    for (i = redirectsArray.constBegin(); i != redirectsArray.constEnd(); ++i) {
+        QJsonObject lArrayObject = i->toObject();
+        QString redirectUrlPattern = lArrayObject.value("url").toString();
+
+        if(redirectUrlPattern.startsWith("^") && redirectUrlPattern.endsWith(":") && !redirectUrlPattern.endsWith("?:")) {
+            // extract the scheme from the url pattern
+            QString lSchemeFromUri = redirectUrlPattern.mid(1, redirectUrlPattern.length()-2);
+            qDebug() << __PRETTY_FUNCTION__ << "installing scheme handler for " << lSchemeFromUri;
+            webViewProfile->installUrlSchemeHandler(lSchemeFromUri.toLatin1(), &mRedirectHandler);
+        }
+    }
+}
+
 void WebApplicationWindow::configureWebView(QQuickItem *webViewItem)
 {
     qDebug() << __PRETTY_FUNCTION__ << "Configuring application webview ...";
@@ -262,6 +291,9 @@ void WebApplicationWindow::configureWebView(QQuickItem *webViewItem)
     connect(mWebView, SIGNAL(newViewRequested(QQuickWebEngineNewViewRequest*)),
             this, SLOT(onCreateNewPage(QQuickWebEngineNewViewRequest*)));
     connect(mWebView, SIGNAL(windowCloseRequested()), this, SLOT(onClosePage()));
+
+    // Configure all the scheme handlers
+    installUrlSchemeHandlers(mWebView->profile());
 
     if (mTrustScope == TrustScopeSystem)
         loadAllExtensions();
