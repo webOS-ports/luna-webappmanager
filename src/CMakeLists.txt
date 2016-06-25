@@ -19,6 +19,7 @@ set(SOURCES
     webapplication.cpp
     webapplicationplugin.cpp
     webapplicationwindow.cpp
+    webapplicationredirecthandler.cpp
     applicationdescription.cpp
     activity.cpp
     systemtime.cpp
@@ -41,6 +42,7 @@ set(HEADERS
     webapplication.h
     webapplicationplugin.h
     webapplicationwindow.h
+    webapplicationredirecthandler.h
     applicationdescription.h
     activity.h
     systemtime.h
