@@ -12,5 +12,6 @@
         <file>qml/images/palm-notification-button-press.png</file>
         <file>qml/images/palm-notification-button.png</file>
         <file>qml/setupViewport.js</file>
+        <file>qml/images/loading-bg.png</file>
     </qresource>
 </RCC>
