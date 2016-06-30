@@ -70,6 +70,11 @@ Flickable {
         webViewLoader.sourceComponent = webViewComponent;
     }
 
+    Image  {
+        anchors.fill: parent
+        source: "images/loading-bg.png";
+    }
+
     Loader {
         id: webViewLoader
         anchors.left: parent.left
