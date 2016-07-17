@@ -295,16 +295,9 @@ QString PalmSystemExtension::addBannerMessage(const QString &msgTitle, const QSt
             iconUrl.prepend("/");
             iconUrl.prepend(appBasePath);
         }
-
-        if (!msgSoundFile.isEmpty() && !QFileInfo(msgSoundFile).isAbsolute()) {
-            qDebug() << __PRETTY_FUNCTION__ << "soundFile is a relative path: " << msgSoundFile;
-            soundFile.prepend("/");
-            soundFile.prepend(appBasePath);
-        }
     }
 
     qDebug() << __PRETTY_FUNCTION__ << "Final iconUrl: " << iconUrl;
-    qDebug() << __PRETTY_FUNCTION__ << "Final soundFile: " << soundFile;
 
     QJsonObject notificationParams;
     notificationParams.insert("title", msgTitle);
