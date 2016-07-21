@@ -272,41 +272,15 @@ QString PalmSystemExtension::addBannerMessage(const QString &msgTitle, const QSt
 
     QString iconUrl = msgIconUrl;
     QString soundFile = msgSoundFile;
-    if (msgIconUrl.isEmpty()) {
-        iconUrl = mApplicationWindow->application()->icon().toString();
-        qDebug() << __PRETTY_FUNCTION__ << "iconUrl was empty. New value after setting mApplicationWindow->application()->icon(): " << iconUrl;
-    }
-
-    if( (!msgIconUrl.isEmpty()   && !QFileInfo(msgIconUrl).isAbsolute() && !msgIconUrl.startsWith("file://"))    ||
-        (!msgSoundFile.isEmpty() && !QFileInfo(msgSoundFile).isAbsolute() && !msgSoundFile.startsWith("file://")) )
-    {
-        QString appBasePath;
-
-        LS::Call call = mLunaPubHandle.callOneReply("luna://com.palm.applicationManager/getAppBasePath",
-                                                    QString("{\"appId\":\"%1\"}").arg(appId).toUtf8().constData(),
-                                                    appId.toUtf8().constData());
-        LS::Message message(call.get(1000));
-
-        QJsonObject response = QJsonDocument::fromJson(message.getPayload()).object();
-        appBasePath = QFileInfo(QUrl(response.value("basePath").toString()).path()).absolutePath();
-
-        if (!msgIconUrl.isEmpty() && !QFileInfo(msgIconUrl).isAbsolute()) {
-            qDebug() << __PRETTY_FUNCTION__ << "iconUrl is a relative path: " << iconUrl;
-            iconUrl.prepend("/");
-            iconUrl.prepend(appBasePath);
-        }
-    }
-
-    qDebug() << __PRETTY_FUNCTION__ << "Final iconUrl: " << iconUrl;
-
     QJsonObject notificationParams;
+    
     notificationParams.insert("title", msgTitle);
     notificationParams.insert("launchParams", launchParams);
     notificationParams.insert("iconUrl", iconUrl);
-	notificationParams.insert("soundClass", soundClass);
-	notificationParams.insert("soundFile", soundFile);
-	notificationParams.insert("duration", duration);
-	notificationParams.insert("doNotSuppress", doNotSuppress);
+    notificationParams.insert("soundClass", soundClass);
+    notificationParams.insert("soundFile", soundFile);
+    notificationParams.insert("duration", duration);
+    notificationParams.insert("doNotSuppress", doNotSuppress);
     notificationParams.insert("expireTimeout", "0");
 
     QJsonDocument document(notificationParams);
