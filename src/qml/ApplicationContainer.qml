@@ -113,12 +113,18 @@ Flickable {
 
             Connections {
                 target: Qt.inputMethod
-                onVisibleChanged: _updateWebViewSize();
-                onKeyboardRectangleChanged: _updateWebViewSize();
+                onVisibleChanged: webView._updateWebViewSize();
+                onKeyboardRectangleChanged: webView._updateWebViewSize();
             }
 
             UserAgent {
                 id: userAgent
+            }
+
+            focus: true
+            Connections {
+                target: webAppWindow
+                onFocusChanged: if(webAppWindow.focus) Qt.inputMethod.show();
             }
 
             backgroundColor: (webAppWindow.windowType === "dashboard" || webAppWindow.windowType === "popupalert") ? "transparent": "white"
