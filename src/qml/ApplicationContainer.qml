@@ -124,7 +124,7 @@ Flickable {
             focus: true
             Connections {
                 target: webAppWindow
-                onFocusChanged: if(webAppWindow.focus) Qt.inputMethod.show();
+                onFocusChanged: if(!webAppWindow.focus) webView.focus = false;
             }
 
             backgroundColor: (webAppWindow.windowType === "dashboard" || webAppWindow.windowType === "popupalert") ? "transparent": "white"
