@@ -98,6 +98,13 @@ void PalmSystemExtension::setWindowProperties(const QString &properties)
 void PalmSystemExtension::enableFullScreenMode(bool enable)
 {
     qDebug() << __PRETTY_FUNCTION__ << enable;
+
+    QString appId = mApplicationWindow->application()->id();
+    QString enableStr = enable ? "true" : "false";
+
+    LS::Call call = mLunaPubHandle.callOneReply("luna://org.webosports.luna/enableFullScreenMode",
+                                                QString("{\"enable\": %1}").arg(enableStr).toUtf8().constData(),
+                                                appId.toUtf8().constData());
 }
 
 void PalmSystemExtension::removeBannerMessage(int id)
@@ -106,13 +113,8 @@ void PalmSystemExtension::removeBannerMessage(int id)
 
     QString appId = mApplicationWindow->application()->id();
 
-    QJsonObject params;
-    params.insert("id", id);
-
-    QJsonDocument document(params);
-
     LS::Call call = mLunaPubHandle.callOneReply("luna://org.webosports.notifications/close",
-                                                document.toJson().constData(),
+                                                QString("{\"id\":\"%1\"}").arg(appId).toUtf8().constData(),
                                                 appId.toUtf8().constData());
 }
 
