@@ -26,27 +26,27 @@ import Connman 0.2
 import "."
 
 Flickable {
-   id: webViewContainer
+    id: webViewContainer
 
-   anchors.fill: parent
+    anchors.fill: parent
 
-   property int numRestarts: 0
-   property int maxRestarts: 3
+    property int numRestarts: 0
+    property int maxRestarts: 3
 
-   NetworkManager {
-       id: networkManager
+    NetworkManager {
+        id: networkManager
 
-       property string oldState: "unknown"
+        property string oldState: "unknown"
 
-       onStateChanged: {
-           // When we are online again reload the web view in order to start the application
-           // which is still visible to the user
-           if (webApp.internetConnectivityRequired &&
-               oldState !== networkManager.state &&
-               networkManager.state === "online")
-               webView.reload();
-       }
-   }
+        onStateChanged: {
+            // When we are online again reload the web view in order to start the application
+            // which is still visible to the user
+            if (webApp.internetConnectivityRequired &&
+                    oldState !== networkManager.state &&
+                    networkManager.state === "online")
+                webViewComponent.webView.reload();
+        }
+    }
 
     Rectangle {
         id: offlinePanel
@@ -91,24 +91,24 @@ Flickable {
             objectName: "webView"
 
             function _updateWebViewSize() {
-                    // beware: async call
-                    webView.runJavaScript("if (window.Mojo && window.Mojo.keyboardShown) {" +
-                                                            "window.Mojo.keyboardShown(" + Qt.inputMethod.visible + ");}");
+                // beware: async call
+                webView.runJavaScript("if (window.Mojo && window.Mojo.keyboardShown) {" +
+                                      "window.Mojo.keyboardShown(" + Qt.inputMethod.visible + ");}");
 
-                    var positiveSpace = {
-                        width: webViewContainer.width,
-                        height: webViewContainer.height - (Qt.inputMethod ? Qt.inputMethod.keyboardRectangle.height : 0)
-                    };
+                var positiveSpace = {
+                    width: webViewContainer.width,
+                    height: webViewContainer.height - (Qt.inputMethod ? Qt.inputMethod.keyboardRectangle.height : 0)
+                };
 
-                    // beware: async call
-                    webView.runJavaScript("if (window.Mojo && window.Mojo.positiveSpaceChanged) {" +
-                                                            "window.Mojo.positiveSpaceChanged(" + positiveSpace.width +
-                                                            "," + positiveSpace.height + ");}");
+                // beware: async call
+                webView.runJavaScript("if (window.Mojo && window.Mojo.positiveSpaceChanged) {" +
+                                      "window.Mojo.positiveSpaceChanged(" + positiveSpace.width +
+                                      "," + positiveSpace.height + ");}");
 
-                    if (Qt.inputMethod.visible && webAppWindow.focus)
-                        keyboardContainer.height = Qt.inputMethod.keyboardRectangle.height;
-                    else
-                        keyboardContainer.height = 0;
+                if (Qt.inputMethod.visible && webAppWindow.focus)
+                    keyboardContainer.height = Qt.inputMethod.keyboardRectangle.height;
+                else
+                    keyboardContainer.height = 0;
             }
 
             Connections {
@@ -117,9 +117,7 @@ Flickable {
                 onKeyboardRectangleChanged: webView._updateWebViewSize();
             }
 
-            UserAgent {
-                id: userAgent
-            }
+
 
             focus: true
             Connections {
@@ -129,19 +127,10 @@ Flickable {
 
             backgroundColor: (webAppWindow.windowType === "dashboard" || webAppWindow.windowType === "popupalert") ? "transparent": "white"
 
-            function getUserAgentForApp(url) {
-                /* if the app wants a specific user agent assign it instead of the default one */
-                if (webApp.userAgent.length > 0)
-                    return webApp.userAgent;
+            userScripts: webAppWindow.userScripts;
+            experimental.viewport.devicePixelRatio: webAppWindow.devicePixelRatio
 
-                return userAgent.defaultUA;
-            }
-
-           profile.httpUserAgent: getUserAgentForApp(null)
-           userScripts: webAppWindow.userScripts;
-           experimental.viewport.devicePixelRatio: webAppWindow.devicePixelRatio
-
-           onJavaScriptConsoleMessage: console.warn("CONSOLE JS: " + message);
+            onJavaScriptConsoleMessage: console.warn("CONSOLE JS: " + message);
 
             onNavigationRequested: {
                 var action = WebEngineView.AcceptRequest;
@@ -166,8 +155,6 @@ Flickable {
                     Qt.openUrlExternally(url);
                     return;
                 }
-
-                profile.httpUserAgent = getUserAgentForApp(url);
             }
 
             Component.onCompleted: {
@@ -175,6 +162,11 @@ Flickable {
                 webAppWindow.configureWebView(webView);
                 webView.webChannel = webViewChannel;
 
+
+                // LunaWebEngineView will set the standard UA already, we only overwrite it when appinfo.json provides one.
+                if(webApp.userAgent.length > 0){
+                    webView.profile.httpUserAgent = webApp.userAgent;
+                }
                 // Only when we have a system application we enable the webOS API and the
                 // PalmServiceBridge to avoid remote applications accessing unwanted system
                 // internals
@@ -204,7 +196,7 @@ Flickable {
             }
 
             WebChannel {
-               id: webViewChannel
+                id: webViewChannel
             }
             
             Connections {
