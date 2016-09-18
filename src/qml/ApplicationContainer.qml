@@ -44,7 +44,7 @@ Flickable {
             if (webApp.internetConnectivityRequired &&
                     oldState !== networkManager.state &&
                     networkManager.state === "online")
-                webView.reload();
+                webViewComponent.webView.reload();
         }
     }
 
