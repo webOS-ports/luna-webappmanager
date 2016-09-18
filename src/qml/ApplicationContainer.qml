@@ -117,9 +117,7 @@ Flickable {
                 onKeyboardRectangleChanged: webView._updateWebViewSize();
             }
 
-            UserAgent {
-                id: userAgent
-            }
+
 
             focus: true
             Connections {
@@ -129,15 +127,6 @@ Flickable {
 
             backgroundColor: (webAppWindow.windowType === "dashboard" || webAppWindow.windowType === "popupalert") ? "transparent": "white"
 
-            function getUserAgentForApp(url) {
-                /* if the app wants a specific user agent assign it instead of the default one */
-                if (webApp.userAgent.length > 0)
-                    return webApp.userAgent;
-
-                return userAgent.defaultUA;
-            }
-
-           profile.httpUserAgent: getUserAgentForApp(null)
            userScripts: webAppWindow.userScripts;
            experimental.viewport.devicePixelRatio: webAppWindow.devicePixelRatio
 
@@ -166,8 +155,6 @@ Flickable {
                     Qt.openUrlExternally(url);
                     return;
                 }
-
-                profile.httpUserAgent = getUserAgentForApp(url);
             }
 
             Component.onCompleted: {
@@ -175,6 +162,11 @@ Flickable {
                 webAppWindow.configureWebView(webView);
                 webView.webChannel = webViewChannel;
 
+
+                // LunaWebEngineView will set the standard UA already, we only overwrite it when appinfo.json provides one.
+                if(webApp.userAgent.length > 0){
+                   webView.profile.httpUserAgent = webApp.userAgent;
+                }
                 // Only when we have a system application we enable the webOS API and the
                 // PalmServiceBridge to avoid remote applications accessing unwanted system
                 // internals
