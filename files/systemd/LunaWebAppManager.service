@@ -4,7 +4,7 @@ After=luna-next.service
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/LunaWebAppManager --verbose
+ExecStart=/usr/sbin/LunaWebAppManager --verbose --allow-file-access-from-files
 Restart=always
 
 [Install]
