@@ -34,12 +34,14 @@
 static gboolean option_version = FALSE;
 static gboolean option_verbose = FALSE;
 static gboolean option_systemd = FALSE;
+static gboolean option_allowfiles = TRUE;
 
 static GOptionEntry options[] = {
     { "verbose", 0, 0, G_OPTION_ARG_NONE, &option_verbose, "Enable verbose logging" },
     { "version", 'v', 0, G_OPTION_ARG_NONE, &option_version,
         "Show version information and exit" },
     { "systemd", 0, 0, G_OPTION_ARG_NONE, &option_systemd, "Start with systemd support" },
+    { "allow-file-access-from-files", 0, 0, G_OPTION_ARG_NONE, &option_allowfiles, "Allow file access from files" },
     { NULL },
 };
 
@@ -103,7 +105,18 @@ int main(int argc, char **argv)
     context = g_option_context_new(NULL);
     g_option_context_add_main_entries(context, options, NULL);
 
-    if (!g_option_context_parse(context, &argc, &argv, &error)) {
+    /*
+     * the g_option_context_parse will modify argc and argv, but Qt keeps a pointer
+     * on these references. So we only give copies of argc and argv to g_option_context_parse.
+     * */
+    int _argc = argc;
+    char **_argv = new char*[argc+1];
+    for(int _i=0; _i<argc; ++_i) {
+        _argv[_i] = argv[_i];
+    }
+    _argv[argc]=NULL;
+
+    if (!g_option_context_parse(context, &_argc, &_argv, &error)) {
         if (error) {
             g_printerr("%s\n", error->message);
             g_error_free(error);
@@ -114,6 +127,7 @@ int main(int argc, char **argv)
     }
 
     g_option_context_free(context);
+    delete[] _argv; _argv = NULL; _argc = 0;
 
     if (option_version) {
         g_message("LunaWebAppManager %s", VERSION);
