@@ -16,6 +16,7 @@ navigator.BluetoothManager.onrequestpincode = null;
 navigator.BluetoothManager.onrequestpasskey = null;
 navigator.BluetoothManager.ondisplaypasskey = null;
 navigator.BluetoothManager.onconfirmpasskey = null;
+navigator.BluetoothManager.onpairingdone = null;
 
 __BluetoothManager.setPowered = function(powered) {
     __BluetoothManager.powered = powered;
@@ -76,6 +77,11 @@ __BluetoothManager.requestConfirmPasskey= function(deviceInfo) {
 __BluetoothManager.requestDisplayPasskey= function(deviceInfo) {
     if (typeof navigator.BluetoothManager.ondisplaypasskey === 'function')
       navigator.BluetoothManager.ondisplaypasskey(deviceInfo);
+}
+
+__BluetoothManager.pairingDone = function() {
+    if (typeof navigator.BluetoothManager.onpairingdone === 'function')
+      navigator.BluetoothManager.onpairingdone();
 }
 
 navigator.BluetoothManager.discover = function(value) {
