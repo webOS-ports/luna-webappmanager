@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-import QtQuick 2.0
-import QtWebEngine 1.1
-import QtWebEngine.experimental 1.0
+import QtQuick 2.6
+import QtWebEngine 1.4
 import QtWebChannel 1.0
 import Qt.labs.settings 1.0
 import LunaNext.Common 0.1
@@ -128,7 +127,7 @@ Flickable {
             backgroundColor: (webAppWindow.windowType === "dashboard" || webAppWindow.windowType === "popupalert") ? "transparent": "white"
 
             userScripts: webAppWindow.userScripts;
-            experimental.viewport.devicePixelRatio: webAppWindow.devicePixelRatio
+            devicePixelRatio: webAppWindow.devicePixelRatio
 
             onJavaScriptConsoleMessage: console.warn("CONSOLE JS: " + message);
 
