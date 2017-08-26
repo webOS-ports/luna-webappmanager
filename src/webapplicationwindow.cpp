@@ -27,8 +27,8 @@
 #include <QDir>
 
 #include <QtWebEngine/QQuickWebEngineProfile>
+#include <QQuickWebEngineScript>
 #include <QtWebEngine/private/qquickwebengineview_p.h>
-#include <QtWebEngine/private/qquickwebenginescript_p.h>
 #include <QtWebEngine/private/qquickwebengineloadrequest_p.h>
 #include <QtWebEngine/private/qquickwebenginenewviewrequest_p.h>
 
