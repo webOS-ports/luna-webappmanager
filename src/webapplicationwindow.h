@@ -23,8 +23,8 @@
 #include <QQuickWindow>
 #include <QTimer>
 
+#include <QQuickWebEngineScript>
 #include <QtWebEngine/private/qquickwebengineview_p.h>
-#include <QtWebEngine/private/qquickwebenginescript_p.h>
 
 #include <applicationenvironment.h>
 #include <webapplicationredirecthandler.h>
