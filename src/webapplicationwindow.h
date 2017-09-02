@@ -162,7 +162,6 @@ private:
     int mWindowId;
     int mParentWindowId;
     bool mLoadingAnimationDisabled;
-    bool mLaunchedHidden;
     bool mIsActive;
 
     void assignCorrectTrustScope();
