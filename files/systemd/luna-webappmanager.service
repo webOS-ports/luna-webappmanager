@@ -4,7 +4,7 @@ After=luna-next.service
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/LunaWebAppManager --verbose --allow-file-access-from-files --disable-namespace-sandbox --disable-seccomp-filter-sandbox --disable-es3-gl-context
+ExecStart=/usr/sbin/LunaWebAppManager --verbose --allow-file-access-from-files --disable-namespace-sandbox --disable-seccomp-filter-sandbox --disable-es3-gl-context --ppapi-flash-version=26.0.0.151 --ppapi-flash-path=/usr/lib/chromium/libpepflashplayer.so --register-pepper-plugins=/usr/lib/chromium/libwidevinecdmadapter.so;application/x-ppapi-widevine-cdm
 Restart=always
 
 [Install]
