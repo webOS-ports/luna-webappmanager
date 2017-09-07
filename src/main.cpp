@@ -38,6 +38,7 @@ static gboolean option_allowfiles = TRUE;
 static gboolean option_disablenamespacesandbox = TRUE;
 static gboolean option_disableseccompbpf = TRUE;
 static gboolean option_disablees3glcontext = TRUE;
+static gboolean option_alwaysauhtorizeplugins = TRUE;
 static gchar *option_ppapiflashversion;
 static gchar *option_ppapiflashpath;
 static gchar *option_registerpepperplugins;
@@ -50,6 +51,7 @@ static GOptionEntry options[] = {
     { "disable-namespace-sandbox", 0, 0, G_OPTION_ARG_NONE, &option_disablenamespacesandbox, "Disable namespace sandbox" },
     { "disable-seccomp-filter-sandbox", 0, 0, G_OPTION_ARG_NONE, &option_disableseccompbpf, "Disable seccomp filter sandbox" },
     { "disable-es3-gl-context", 0, 0, G_OPTION_ARG_NONE, &option_disablees3glcontext, "Disable OpenGL ES3 context" },
+    { "always-authorize-plugins", 0, 0, G_OPTION_ARG_NONE, &option_alwaysauhtorizeplugins, "Always allow plugins" },
     { "ppapi-flash-version", 0, 0, G_OPTION_ARG_STRING, &option_ppapiflashversion, "Define Flash version" },
     { "ppapi-flash-path", 0, 0, G_OPTION_ARG_STRING, &option_ppapiflashpath, "Path to Flash plugin" },
     { "register-pepper-plugins", 0, 0, G_OPTION_ARG_STRING_ARRAY, &option_registerpepperplugins, "Path to Pepper plugins" },
