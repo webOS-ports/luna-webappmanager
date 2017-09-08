@@ -4,7 +4,7 @@ After=luna-next.service
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/LunaWebAppManager --verbose --allow-file-access-from-files --disable-namespace-sandbox --disable-seccomp-filter-sandbox --disable-es3-gl-context
+ExecStart=/usr/sbin/LunaWebAppManager --verbose --allow-file-access-from-files --disable-namespace-sandbox --disable-seccomp-filter-sandbox
 Restart=always
 
 [Install]

@@ -37,7 +37,6 @@ static gboolean option_systemd = FALSE;
 static gboolean option_allowfiles = TRUE;
 static gboolean option_disablenamespacesandbox = TRUE;
 static gboolean option_disableseccompbpf = TRUE;
-static gboolean option_disablees3glcontext = TRUE;
 
 static GOptionEntry options[] = {
     { "verbose", 0, 0, G_OPTION_ARG_NONE, &option_verbose, "Enable verbose logging" },
@@ -47,7 +46,6 @@ static GOptionEntry options[] = {
     { "allow-file-access-from-files", 0, 0, G_OPTION_ARG_NONE, &option_allowfiles, "Allow file access from files" },
     { "disable-namespace-sandbox", 0, 0, G_OPTION_ARG_NONE, &option_disablenamespacesandbox, "Disable namespace sandbox" },
     { "disable-seccomp-filter-sandbox", 0, 0, G_OPTION_ARG_NONE, &option_disableseccompbpf, "Disable seccomp filter sandbox" },
-    { "disable-es3-gl-context", 0, 0, G_OPTION_ARG_NONE, &option_disablees3glcontext, "Disable OpenGL ES3 context" },
     { NULL },
 };
 
