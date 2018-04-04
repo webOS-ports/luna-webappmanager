@@ -52,16 +52,16 @@ ApplicationDescription::~ApplicationDescription()
 void ApplicationDescription::initializeFromData(const QString &data)
 {
     struct json_object* root = json_tokener_parse( data.toUtf8().constData() );
-    if( !root || is_error( root ) )
-    {
+    if (!root) {
         qWarning() << "Failed to parse application description";
         return;
     }
 
     fromJsonObject(root);
 
-    if(root && !is_error(root))
+    if (root) {
         json_object_put(root);
+    }
 }
 
 QUrl ApplicationDescription::locateEntryPoint(const QString &entryPoint) const
