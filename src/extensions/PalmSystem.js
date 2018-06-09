@@ -2,6 +2,7 @@
 
 window.PalmSystem = {}
 window.PalmSystem.locales = {}
+window.PalmSystem.__nextPalmSystemBridgeId = 1;
 
 function __runStageReadyHooks() {
     // run hooks on client side, specific to webos apps
@@ -92,7 +93,7 @@ Object.defineProperty(window.PalmSystem, "phoneRegion", {
 });
 
 PalmSystem.getIdentifier = function() {
-    return __PalmSystem.identifier;
+    return _webOS.getProperty("PalmSystem", "identifier");
 }
 
 PalmSystem.getIdentifierForFrame = function(id, url) {
@@ -328,7 +329,7 @@ PalmSystem.getResource = function(a, b) {
     var _b = b || "";
     var result = _webOS.execSync("PalmSystem", "getResource", [_a, _b]);
 
-    if (result.length == 0)
+    if (result.length === 0)
       return "";
 
     if (b === "const json")
@@ -340,3 +341,20 @@ PalmSystem.getResource = function(a, b) {
 function palmGetResource(a, b) {
     return PalmSystem.getResource(a, b);
 }
+
+function PalmSystemBridge() {
+    // identify uniquely this object within the web app
+    this.palmSystemBridgeId = window.PalmSystem.__nextPalmSystemBridgeId;
+    window.PalmSystem.__nextPalmSystemBridgeId++;
+
+    this.onservicecallback = function(message) {/*do nothing*/}
+    this.call = function(uri, payload) {
+        var _uri = uri || "";
+        var _payload = payload || "";
+        var result = _webOS.exec(this.onservicecallback, this.onservicecallback, "PalmSystem", "LS2Call", [this.palmSystemBridgeId, _uri, _payload]);
+    }
+    this.cancel = function() {
+        _webOS.execWithoutCallback("PalmSystem", "LS2Cancel", [this.palmSystemBridgeId]);
+    }
+}
+

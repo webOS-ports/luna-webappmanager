@@ -19,6 +19,7 @@
 #define PALMSYSTEMPLUGIN_H
 
 #include <QString>
+#include <QSharedPointer>
 
 #include <baseextension.h>
 #include <luna-service2++/handle.hpp>
@@ -58,6 +59,9 @@ public:
                                          const QString&msgIconUrl, const QString &soundClass,
                                          const QString&soundFile, int duration,
                                          bool doNotSuppress);
+
+    Q_INVOKABLE void LS2Call(int callId, int bridgeId, const QString &uri, const QString &payload);
+    Q_INVOKABLE void LS2Cancel(int bridgeId);
 
 public Q_SLOTS:
 
@@ -144,10 +148,41 @@ Q_SIGNALS:
     void isActivatedChanged();
     void launchParamsChanged(bool needRelaunch);
 
+    void palmBridgeServiceCall(QString body);
 private:
     WebApplicationWindow *mApplicationWindow;
 
     LS::Handle mLunaPubHandle;
+    LS::Handle mLunaPrivHandle;
+    class PalmServiceBridgeObject {
+    public:
+        PalmServiceBridgeObject():
+            bridgeId(0),
+            callId(0),
+            palmExt(nullptr),
+            currentBridgeCall(nullptr) {}
+        PalmServiceBridgeObject(const PalmServiceBridgeObject &other):
+            bridgeId(other.bridgeId),
+            callId(other.callId),
+            palmExt(other.palmExt),
+            currentBridgeCall(other.currentBridgeCall) {}
+        PalmServiceBridgeObject &operator=(const PalmServiceBridgeObject &other) {
+            bridgeId = other.bridgeId;
+            callId = other.callId;
+            palmExt = other.palmExt;
+            currentBridgeCall = other.currentBridgeCall;
+            return *this;
+        }
+        int bridgeId;
+        int callId;
+        PalmSystemExtension *palmExt;
+        QSharedPointer<LS::Call> currentBridgeCall;
+
+        bool handleReply(LSHandle *sh, LSMessage *reply);
+    };
+    QHash<int, PalmServiceBridgeObject> mListBridges;
+
+    static bool replyCallback(LSHandle* sh, LSMessage* reply, void* context);
 };
 
 } // namespace luna

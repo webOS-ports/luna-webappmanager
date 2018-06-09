@@ -24,6 +24,7 @@
 #include <QUrl>
 #include <QtWebEngineVersion>
 
+#include <luna-service2/lunaservice.h>
 #include <luna-service2++/message.hpp>
 #include <luna-service2++/call.hpp>
 
@@ -41,7 +42,8 @@ namespace luna
 PalmSystemExtension::PalmSystemExtension(WebApplicationWindow *applicationWindow, QObject *parent) :
     BaseExtension("PalmSystem", applicationWindow, parent),
     mApplicationWindow(applicationWindow),
-    mLunaPubHandle(NULL, true)
+    mLunaPubHandle(NULL, true),
+    mLunaPrivHandle(NULL, false)
 {
     applicationWindow->registerUserScript(QString("://extensions/PalmSystem.js"));
     if( applicationWindow->isMainWindow() )
@@ -52,6 +54,7 @@ PalmSystemExtension::PalmSystemExtension(WebApplicationWindow *applicationWindow
     connect(applicationWindow, SIGNAL(activeChanged()), this, SIGNAL(isActivatedChanged()));
 
     mLunaPubHandle.attachToLoop(g_main_context_default());
+    mLunaPrivHandle.attachToLoop(g_main_context_default());
 }
 
 void PalmSystemExtension::stageReady()
@@ -300,5 +303,51 @@ QString PalmSystemExtension::addBannerMessage(const QString &msgTitle, const QSt
     return QString("%1").arg(response.value("id").toInt());
 }
 
+void PalmSystemExtension::LS2Call(int callId, int bridgeId, const QString &uri, const QString &payload)
+{
+    PalmServiceBridgeObject &lBridgeObject = mListBridges[bridgeId]; // this will create a new PalmServiceBridgeObject if needed
+    lBridgeObject.bridgeId = bridgeId;
+    lBridgeObject.callId = callId;
+    lBridgeObject.palmExt = this;
+
+    bool isPriviledged = mApplicationWindow->application()->privileged();
+    if(isPriviledged)
+        lBridgeObject.currentBridgeCall.reset(new LS::Call(mLunaPrivHandle.callMultiReply(uri.toLatin1().data(),
+                                                                                          payload.toLatin1().data(),
+                                                                                          &replyCallback, &lBridgeObject,
+                                                                                          mApplicationWindow->application()->id().toLatin1().data())));
+    else
+        lBridgeObject.currentBridgeCall.reset(new LS::Call(mLunaPubHandle.callMultiReply(uri.toLatin1().data(),
+                                                                                         payload.toLatin1().data(),
+                                                                                         &replyCallback, &lBridgeObject,
+                                                                                         mApplicationWindow->application()->id().toLatin1().data())));
+}
+
+void PalmSystemExtension::LS2Cancel(int bridgeId)
+{
+    PalmServiceBridgeObject &lBridgeObject = mListBridges[bridgeId]; // this will create a new PalmServiceBridgeObject if needed
+    lBridgeObject.currentBridgeCall->cancel();
+}
+
+bool PalmSystemExtension::PalmServiceBridgeObject::handleReply(LSHandle *sh, LSMessage *reply)
+{
+    if(reply && palmExt)
+    {
+        LS::Message _reply(reply);
+        palmExt->callback(callId, true, true, _reply.getPayload());
+    }
+
+    return true;
+}
+
+bool PalmSystemExtension::replyCallback(LSHandle* sh, LSMessage* reply, void* context)
+{
+    if (context)
+    {
+        PalmServiceBridgeObject *pBridgeObject = static_cast<PalmServiceBridgeObject *>(context);
+        pBridgeObject->handleReply(sh, reply);
+    }
+    return true;
+}
 
 } // namespace luna
