@@ -5,7 +5,7 @@ set(SOURCES_LIB
     applicationenvironment.h)
 
 add_library(webapp-plugin SHARED ${SOURCES_LIB})
-qt5_use_modules(webapp-plugin Core)
+target_link_libraries(webapp-plugin Qt5::Core)
 
 install(FILES baseextension.h applicationenvironment.h applicationplugin.h DESTINATION include/webapp-plugin)
 

@@ -65,12 +65,12 @@ set(WEBOS_FRAMEWORK qml/webos-api.js)
 install (FILES ${WEBOS_FRAMEWORK} DESTINATION ${WEBOS_INSTALL_WEBOS_FRAMEWORKSDIR}/webos)
 
 add_executable(LunaWebAppManager ${SOURCES} ${HEADERS} ${RESOURCES})
-qt5_use_modules(LunaWebAppManager Quick Gui WebEngine WebChannel DBus)
 target_link_libraries(LunaWebAppManager
     webapp-plugin
     ${LS2_LIBRARIES}
 #    ${LS2CXX_LIBRARIES}
     -lluna-service2++
+    Qt5::Quick Qt5::Gui Qt5::WebEngine Qt5::WebChannel Qt5::DBus
     ${GLIB2_LIBRARIES}
     ${SYSTEMD_LIBRARIES}
     ${PBNJSON_C_LIBRARIES}
