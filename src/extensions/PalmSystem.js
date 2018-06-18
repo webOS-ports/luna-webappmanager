@@ -2,7 +2,7 @@
 
 window.PalmSystem = {}
 window.PalmSystem.locales = {}
-window.PalmSystem.__nextPalmSystemBridgeId = 1;
+window.PalmSystem.__nextPalmServiceBridgeId = 1;
 
 function __runStageReadyHooks() {
     // run hooks on client side, specific to webos apps
@@ -342,19 +342,19 @@ function palmGetResource(a, b) {
     return PalmSystem.getResource(a, b);
 }
 
-function PalmSystemBridge() {
+function PalmServiceBridge() {
     // identify uniquely this object within the web app
-    this.palmSystemBridgeId = window.PalmSystem.__nextPalmSystemBridgeId;
-    window.PalmSystem.__nextPalmSystemBridgeId++;
+    this.palmServiceBridgeId = window.PalmSystem.__nextPalmServiceBridgeId;
+    window.PalmSystem.__nextPalmServiceBridgeId++;
 
     this.onservicecallback = function(message) {/*do nothing*/}
     this.call = function(uri, payload) {
         var _uri = uri || "";
         var _payload = payload || "";
-        var result = _webOS.exec(this.onservicecallback, this.onservicecallback, "PalmSystem", "LS2Call", [this.palmSystemBridgeId, _uri, _payload]);
+        var result = _webOS.exec(this.onservicecallback, this.onservicecallback, "PalmSystem", "LS2Call", [this.palmServiceBridgeId, _uri, _payload]);
     }
     this.cancel = function() {
-        _webOS.execWithoutCallback("PalmSystem", "LS2Cancel", [this.palmSystemBridgeId]);
+        _webOS.execWithoutCallback("PalmSystem", "LS2Cancel", [this.palmServiceBridgeId]);
     }
 }
 

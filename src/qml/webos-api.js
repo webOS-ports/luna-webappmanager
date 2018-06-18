@@ -482,10 +482,10 @@ _webOS.exec = function(successCallback, errorCallback, extensionName, functionNa
             var callbackFunction = function(callbackId, keepCallback, success, payload) {
                 if( callbackId === callId ) {
                     if( success && typeof(successCallback) === "function" ) {
-                        successCallback.apply(this, payload);
+                        successCallback.call(this, payload);
                     }
                     else if( !success && typeof(errorCallback) === "function" ) {
-                        errorCallback.apply(this, payload);
+                        errorCallback.call(this, payload);
                     }
 
                     if( !keepCallback ) {
@@ -524,7 +524,8 @@ _webOS.execWithoutCallback = function(extensionName, functionName, parameters) {
         var extensionObj = _webOS.objects[extensionName];
         if( extensionObj.hasOwnProperty(functionName) ) {
 
-            extensionObj[functionName].apply(this, parameters, function (ret) {console.log(functionName + " returned " + ret)});
+            parameters.push(function (ret) {console.log(functionName + " returned " + ret)});
+            extensionObj[functionName].apply(this, parameters);
             return true;
         }
     }
