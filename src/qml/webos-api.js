@@ -161,11 +161,12 @@ var QWebChannel = function(transport, initCallback)
     };
 
     this.finalizeInit = function(data) {
-        for (var objectName in data) {
+        var objectName;
+        for (objectName in data) {
             var object = new QObject(objectName, data[objectName], channel);
         }
         // now unwrap properties, which might reference other registered objects
-        for (var objectName in channel.objects) {
+        for (objectName in channel.objects) {
             channel.objects[objectName].unwrapProperties();
         }
         if (initCallback) {
@@ -427,8 +428,8 @@ function QObject(name, data, webChannel)
 
     data.signals.forEach(function(signal) { addSignal(signal, false); });
 
-    for (var name in data.enums) {
-        object[name] = data.enums[name];
+    for (var nameObj in data.enums) {
+        object[nameObj] = data.enums[nameObj];
     }
 }
 
@@ -481,10 +482,10 @@ _webOS.exec = function(successCallback, errorCallback, extensionName, functionNa
             var callbackFunction = function(callbackId, keepCallback, success, payload) {
                 if( callbackId === callId ) {
                     if( success && typeof(successCallback) === "function" ) {
-                        successCallback.apply(this, payload);
+                        successCallback.call(this, payload);
                     }
                     else if( !success && typeof(errorCallback) === "function" ) {
-                        errorCallback.apply(this, payload);
+                        errorCallback.call(this, payload);
                     }
 
                     if( !keepCallback ) {
@@ -523,7 +524,8 @@ _webOS.execWithoutCallback = function(extensionName, functionName, parameters) {
         var extensionObj = _webOS.objects[extensionName];
         if( extensionObj.hasOwnProperty(functionName) ) {
 
-            extensionObj[functionName].apply(this, parameters, function (ret) {console.log(functionName + " returned " + ret)});
+            parameters.push(function (ret) {console.log(functionName + " returned " + ret)});
+            extensionObj[functionName].apply(this, parameters);
             return true;
         }
     }

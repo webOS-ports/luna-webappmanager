@@ -4,6 +4,7 @@ After=luna-next.service
 
 [Service]
 Type=simple
+EnvironmentFile=-/etc/luna-next/qtwebengine.conf 
 ExecStart=/usr/sbin/LunaWebAppManager --verbose --allow-file-access-from-files
 Restart=always
 
