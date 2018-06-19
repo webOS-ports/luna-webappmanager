@@ -129,8 +129,6 @@ Flickable {
             userScripts: webAppWindow.userScripts;
             devicePixelRatio: webAppWindow.devicePixelRatio
 
-            onJavaScriptConsoleMessage: console.warn("CONSOLE JS: " + message);
-
             onNavigationRequested: {
                 var action = WebEngineView.AcceptRequest;
                 var url = request.url.toString();
@@ -170,9 +168,6 @@ Flickable {
                 // PalmServiceBridge to avoid remote applications accessing unwanted system
                 // internals
                 if (webAppWindow.trustScope === "system") {
-                    webView.settings.palmServiceBridgeEnabled = true;
-                    webView.settings.luneOSPrivileged = webApp.privileged;
-                    webView.settings.luneOSIdentifier = webApp.identifier;
                     webView.settings.localContentCanAccessFileUrls = true;
                     webView.settings.localContentCanAccessRemoteUrls = true;
 
