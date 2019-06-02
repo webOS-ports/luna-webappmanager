@@ -77,7 +77,7 @@ void Activity::setup()
 
     QJsonObject activity;
     activity.insert("name", mAppId);
-    activity.insert("description", (qint64) mProcessId);
+    activity.insert("description", QString::number((qint64) mProcessId));
 
     QJsonObject activityType;
     activityType.insert("foreground", true);
