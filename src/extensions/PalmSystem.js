@@ -2,6 +2,7 @@
 
 window.PalmSystem = {}
 window.PalmSystem.locales = {}
+
 window.PalmSystem.__nextPalmServiceBridgeId = 1;
 
 function __runStageReadyHooks() {
@@ -11,6 +12,10 @@ function __runStageReadyHooks() {
     style.sheet.insertRule(".onyx { font-family: Prelude, 'Helvetica Neue', 'Nimbus Sans L', Arial, sans-serif; }", 0)
     style.sheet.insertRule("body { font-family: Prelude, 'Helvetica Neue', 'Nimbus Sans L', Arial, sans-serif; }", 0)
 }
+
+Object.defineProperty(window.PalmSystem, "_webOS", {
+  get: function() { return _webOS; }
+});
 
 Object.defineProperty(window.PalmSystem, "launchParams", {
   get: function() { return _webOS.getProperty("PalmSystem", "launchParams"); }
@@ -338,23 +343,7 @@ PalmSystem.getResource = function(a, b) {
     return result;
 }
 
-function palmGetResource(a, b) {
+window.palmGetResource = function(a, b) {
     return PalmSystem.getResource(a, b);
-}
-
-function PalmServiceBridge() {
-    // identify uniquely this object within the web app
-    this.palmServiceBridgeId = window.PalmSystem.__nextPalmServiceBridgeId;
-    window.PalmSystem.__nextPalmServiceBridgeId++;
-
-    this.onservicecallback = function(message) {/*do nothing*/}
-    this.call = function(uri, payload) {
-        var _uri = uri || "";
-        var _payload = payload || "";
-        var result = _webOS.exec(this.onservicecallback, this.onservicecallback, "PalmSystem", "LS2Call", [this.palmServiceBridgeId, _uri, _payload]);
-    }
-    this.cancel = function() {
-        _webOS.execWithoutCallback("PalmSystem", "LS2Cancel", [this.palmServiceBridgeId]);
-    }
 }
 

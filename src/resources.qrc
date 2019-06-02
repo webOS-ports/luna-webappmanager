@@ -3,6 +3,7 @@
         <file>qml/webos-api.js</file>
         <file>qml/ApplicationContainer.qml</file>
         <file>extensions/PalmSystem.js</file>
+        <file>extensions/PalmSystemBridge.js</file>
         <file>extensions/WiFiManager.js</file>
         <file>extensions/BluetoothManager.js</file>
         <file>qml/InAppBrowser.qml</file>
