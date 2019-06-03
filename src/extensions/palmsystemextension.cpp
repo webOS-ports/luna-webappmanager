@@ -45,7 +45,8 @@ PalmSystemExtension::PalmSystemExtension(WebApplicationWindow *applicationWindow
     mLunaPubHandle(NULL, true),
     mLunaPrivHandle(NULL, false)
 {
-    applicationWindow->registerUserScript(QString("://extensions/PalmSystem.js"));
+    applicationWindow->registerUserScript(QString("://extensions/PalmSystem.js"), false);
+    applicationWindow->registerUserScript(QString("://extensions/PalmSystemBridge.js"), true);
     if( applicationWindow->isMainWindow() )
     {
         connect(applicationWindow->application(), SIGNAL(parametersChanged(bool)), this, SIGNAL(launchParamsChanged(bool)));
