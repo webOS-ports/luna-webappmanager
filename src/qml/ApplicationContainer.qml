@@ -127,7 +127,7 @@ Flickable {
             backgroundColor: (webAppWindow.windowType === "dashboard" || webAppWindow.windowType === "popupalert") ? "transparent": "white"
 
             userScripts: webAppWindow.userScripts;
-            devicePixelRatio: webAppWindow.devicePixelRatio
+            //devicePixelRatio: webAppWindow.devicePixelRatio
 
             onNavigationRequested: {
                 var action = WebEngineView.AcceptRequest;
