@@ -231,7 +231,7 @@ void WebApplicationWindow::createAndSetup(const QVariantMap &windowAttributesMap
         setWindowProperty(QString("_LUNE_WINDOW_LOADING_ANIMATION_DISABLED"), QVariant(mApplication->loadingAnimationDisabled()));
         setWindowProperty(QString("_LUNE_APP_ICON"), QVariant(mApplication->icon()));
         setWindowProperty(QString("_LUNE_APP_ID"), QVariant(mApplication->id()));
-
+        
         connect(mWindow, SIGNAL(visibleChanged(bool)), this, SLOT(onVisibleChanged(bool)));
 
         QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
@@ -373,9 +373,22 @@ void WebApplicationWindow::onLoadingChanged(QQuickWebEngineLoadRequest *request)
         extension->initialize();
 
     // Fix the viewport of the app
-    QFile f("://qml/setupViewport.js");
-    if (f.open(QIODevice::ReadOnly)) {
-        mWebView->runJavaScript(QString::fromUtf8(f.readAll()));
+    if (Settings::LunaSettings()->compatApps.find(mApplication->id().toStdString()) !=
+        Settings::LunaSettings()->compatApps.end()) 
+    {
+        QFile f("://qml/setupViewport-legacy.js");
+        if (f.open(QIODevice::ReadOnly)) {
+            QString strSetupViewport(QString::fromUtf8(f.readAll()));
+            strSetupViewport.replace("__LEGACY_SCALING__", QString::number(Settings::LunaSettings()->layoutScaleCompat/Settings::LunaSettings()->layoutScale, 'f'));
+            mWebView->runJavaScript(strSetupViewport);
+        }
+    }
+    else
+    {
+        QFile f("://qml/setupViewport.js");
+        if (f.open(QIODevice::ReadOnly)) {
+            mWebView->runJavaScript(QString::fromUtf8(f.readAll()));
+        }
     }
 
     // If we're a headless app we don't show the window and in case of an
