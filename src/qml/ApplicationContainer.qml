@@ -96,7 +96,7 @@ Flickable {
 
                 var positiveSpace = {
                     width: webViewContainer.width,
-                    height: webViewContainer.height - (Qt.inputMethod ? Qt.inputMethod.keyboardRectangle.height : 0)
+                    height: webViewContainer.height - (Qt.inputMethod ? Qt.inputMethod.keyboardRectangle.height/Screen.pixelDensity : 0)
                 };
 
                 // beware: async call
@@ -105,7 +105,7 @@ Flickable {
                                       "," + positiveSpace.height + ");}");
 
                 if (Qt.inputMethod.visible && webAppWindow.focus)
-                    keyboardContainer.height = Qt.inputMethod.keyboardRectangle.height;
+                    keyboardContainer.height = Qt.inputMethod.keyboardRectangle.height/Screen.pixelDensity;
                 else
                     keyboardContainer.height = 0;
             }
@@ -127,7 +127,6 @@ Flickable {
             backgroundColor: (webAppWindow.windowType === "dashboard" || webAppWindow.windowType === "popupalert") ? "transparent": "white"
 
             userScripts: webAppWindow.userScripts;
-            devicePixelRatio: webAppWindow.devicePixelRatio
 
             onNavigationRequested: {
                 var action = WebEngineView.AcceptRequest;
