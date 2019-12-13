@@ -42,8 +42,8 @@ namespace luna
 PalmSystemExtension::PalmSystemExtension(WebApplicationWindow *applicationWindow, QObject *parent) :
     BaseExtension("PalmSystem", applicationWindow, parent),
     mApplicationWindow(applicationWindow),
-    mLunaPubHandle(NULL, true),
-    mLunaPrivHandle(NULL, false)
+    mLunaPubHandle(applicationWindow->application()->id().toUtf8().constData(), true),
+    mLunaPrivHandle(applicationWindow->application()->id().toUtf8().constData(), false)
 {
     applicationWindow->registerUserScript(QString("://extensions/PalmSystem.js"), false);
     applicationWindow->registerUserScript(QString("://extensions/PalmSystemBridge.js"), true);
