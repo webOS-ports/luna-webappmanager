@@ -373,21 +373,12 @@ void WebApplicationWindow::onLoadingChanged(QQuickWebEngineLoadRequest *request)
         extension->initialize();
 
     // Fix the viewport of the app
-    if (Settings::LunaSettings()->compatApps.find(mApplication->id().toStdString()) !=
-        Settings::LunaSettings()->compatApps.end()) 
-    {
-        QFile f("://qml/setupViewport-legacy.js");
-        if (f.open(QIODevice::ReadOnly)) {
-            QString strSetupViewport(QString::fromUtf8(f.readAll()));
-            strSetupViewport.replace("__LEGACY_SCALING__", QString::number(Settings::LunaSettings()->layoutScaleCompat/Settings::LunaSettings()->layoutScale, 'f'));
-            mWebView->runJavaScript(strSetupViewport);
-        }
-    }
-    else
     {
         QFile f("://qml/setupViewport.js");
         if (f.open(QIODevice::ReadOnly)) {
-            mWebView->runJavaScript(QString::fromUtf8(f.readAll()));
+            QString strSetupViewport(QString::fromUtf8(f.readAll()));
+            strSetupViewport.replace("__SCALING__", QString::number(devicePixelRatio(), 'f'));
+            mWebView->runJavaScript(strSetupViewport);
         }
     }
 

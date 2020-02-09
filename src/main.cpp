@@ -84,7 +84,7 @@ int main(int argc, char **argv)
         setenv("XDG_RUNTIME_DIR", XDG_RUNTIME_DIR_DEFAULT, 0);
         setenv("QT_IM_MODULE", "Maliit", 0);
         setenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1", 0);
-        setenv("QT_SCALE_FACTOR", QString::number(Settings::LunaSettings()->layoutScale, 'f').toLatin1().constData(), 0);
+//        setenv("QT_SCALE_FACTOR", QString::number(Settings::LunaSettings()->layoutScale, 'f').toLatin1().constData(), 0);
     }
 
     QString storagePath = "/media/cryptofs/.sysmgr";
