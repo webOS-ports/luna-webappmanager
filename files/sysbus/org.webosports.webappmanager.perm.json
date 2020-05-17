@@ -1,0 +1,20 @@
+{
+    "com.palm.webappmanager": [
+        "activities",
+        "applications.internal",
+        "networking",
+        "settings.read",
+        "signals.all",
+        "signals.register",
+        "system"
+    ],
+    "org.webosports.webappmanager": [
+        "activities",
+        "applications.internal",
+        "networking",
+        "settings.read",
+        "signals.all",
+        "signals.register",
+        "system"
+    ]
+}

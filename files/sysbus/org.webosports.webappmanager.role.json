@@ -1,10 +1,15 @@
 {
     "exeName":"/usr/sbin/LunaWebAppManager",
     "type": "privileged",
-    "allowedNames": ["org.webosports.webappmanager","qtpositioning_LunaWebAppMgr",""],
+    "allowedNames": ["com.palm.webappmanager", "org.webosports.webappmanager","qtpositioning_LunaWebAppMgr",""],
     "permissions": [
         {
             "service":"",
+            "inbound":["*"],
+            "outbound":["*"]
+        },
+        {
+            "service":"com.palm.webappmanager",
             "inbound":["*"],
             "outbound":["*"]
         },
