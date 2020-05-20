@@ -1,4 +1,7 @@
 {
+    "": [
+        "all"
+    ],
     "com.palm.webappmanager": [
         "activities",
         "applications.internal",
