@@ -34,6 +34,8 @@ public:
 
     void notifyAppHasStarted(const QString& appId, int64_t processId);
     void notifyAppHasFinished(const QString& appId, int64_t processId);
+    
+    LS::Handle &getServiceHandle() { return *this; }
 
 private:
     bool launchApp(LSMessage &message);

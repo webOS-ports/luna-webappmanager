@@ -57,6 +57,8 @@ public:
     void clearMemoryCaches(qint64 processId);
     void clearMemoryCaches(const QString& appId);
 
+    WebAppManagerService *getService() { return mService; }
+
 private Q_SLOTS:
     void onApplicationClosed();
     void onAboutToQuit();

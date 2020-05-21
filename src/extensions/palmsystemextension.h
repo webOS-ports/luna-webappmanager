@@ -152,8 +152,8 @@ Q_SIGNALS:
 private:
     WebApplicationWindow *mApplicationWindow;
 
-    LS::Handle mLunaPubHandle;
-    LS::Handle mLunaPrivHandle;
+    LS::Handle &getLunaHandle();
+
     class PalmServiceBridgeObject {
     public:
         PalmServiceBridgeObject():
