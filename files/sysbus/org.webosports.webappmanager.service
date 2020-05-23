@@ -1,4 +1,4 @@
 [D-BUS Service]
-Name=org.webosports.webappmanager
+Name=org.webosports.webappmanager;com.palm.webappmanager
 Exec=/usr/sbin/LunaWebAppManager
 Type=static

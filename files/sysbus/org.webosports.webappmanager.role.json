@@ -1,7 +1,7 @@
 {
     "exeName":"/usr/sbin/LunaWebAppManager",
     "type": "privileged",
-    "allowedNames": ["com.palm.webappmanager", "org.webosports.webappmanager","qtpositioning_LunaWebAppMgr","com.palm.*", "org.webosports.*", "com.palm.launchger", "com.palm.systemui", ""],
+    "allowedNames": ["com.palm.webappmanager", "org.webosports.webappmanager", "qtpositioning_LunaWebAppMgr", "com.palm.*", "org.webosports.*", ""],
     "permissions": [
         {
             "service":"",
@@ -10,16 +10,6 @@
         },
         {
             "service":"com.palm.*",
-            "inbound":["*"],
-            "outbound":["*"]
-        },
-        {
-            "service":"com.palm.launcher",
-            "inbound":["*"],
-            "outbound":["*"]
-        },
-        {
-            "service":"com.palm.systemui",
             "inbound":["*"],
             "outbound":["*"]
         },
