@@ -39,6 +39,8 @@
 #include "applicationdescription.h"
 #include "webapplication.h"
 #include "webapplicationwindow.h"
+#include "webappmanager.h"
+#include "webappmanagerservice.h"
 
 #include "extensions/palmsystemextension.h"
 #include "extensions/wifimanager.h"
@@ -250,11 +252,13 @@ void WebApplicationWindow::installUrlSchemeHandlers(QQuickWebEngineProfile *webV
 {
     if(!webViewProfile) return;
 
-    LS::Handle lunaPrvHandle(NULL, false);
-    lunaPrvHandle.attachToLoop(g_main_context_default());
-    LS::Call callGetMimeTable = lunaPrvHandle.callOneReply("luna://com.palm.applicationManager/dumpMimeTable",
+    WebAppManager *pWebAppManager = (WebAppManager*)qGuiApp;
+    if(!pWebAppManager || !pWebAppManager->getService()) return;
+
+    LS::Handle &serviceHandle(pWebAppManager->getService()->getServiceHandle());
+    LS::Call callGetMimeTable = serviceHandle.callOneReply("luna://com.palm.applicationManager/dumpMimeTable",
                                                            "{}",
-                                                           mApplication->id().toUtf8().constData());
+                                                           mApplication->identifier().toUtf8().constData());
     LS::Message message(callGetMimeTable.get(1000));
     QJsonObject response = QJsonDocument::fromJson(message.getPayload()).object();
     QJsonArray redirectsArray = response.value("redirects").toArray();

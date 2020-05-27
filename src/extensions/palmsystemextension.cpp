@@ -52,8 +52,6 @@ PalmSystemExtension::PalmSystemExtension(WebApplicationWindow *applicationWindow
     }
 
     connect(applicationWindow, SIGNAL(activeChanged()), this, SIGNAL(isActivatedChanged()));
-
-    getLunaHandle().attachToLoop(g_main_context_default());
 }
 
 LS::Handle &PalmSystemExtension::getLunaHandle()
