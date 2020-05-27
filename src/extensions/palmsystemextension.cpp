@@ -109,7 +109,7 @@ void PalmSystemExtension::enableFullScreenMode(bool enable)
 {
     qDebug() << __PRETTY_FUNCTION__ << enable;
 
-    QString appId = mApplicationWindow->application()->id();
+    QString appId = mApplicationWindow->application()->identifier();
     QString enableStr = enable ? "true" : "false";
 
     LS::Call call = getLunaHandle().callOneReply("luna://org.webosports.luna/enableFullScreenMode",
@@ -121,7 +121,7 @@ void PalmSystemExtension::removeBannerMessage(int id)
 {
     qDebug() << __PRETTY_FUNCTION__;
 
-    QString appId = mApplicationWindow->application()->id();
+    QString appId = mApplicationWindow->application()->identifier();
 
     LS::Call call = getLunaHandle().callOneReply("luna://org.webosports.notifications/close",
                                                 QString("{\"id\":\"%1\"}").arg(appId).toUtf8().constData(),
@@ -132,7 +132,7 @@ void PalmSystemExtension::clearBannerMessages()
 {
     qDebug() << __PRETTY_FUNCTION__;
 
-    QString appId = mApplicationWindow->application()->id();
+    QString appId = mApplicationWindow->application()->identifier();
 
     LS::Call call = getLunaHandle().callOneReply("luna://org.webosports.notifications/closeAll",
                                                 "{}", appId.toUtf8().constData());
@@ -280,7 +280,7 @@ QString PalmSystemExtension::addBannerMessage(const QString &msgTitle, const QSt
 {
     qDebug() << __PRETTY_FUNCTION__ << msgTitle << ":" << launchParams;
 
-    QString appId = mApplicationWindow->application()->id();
+    QString appId = mApplicationWindow->application()->identifier();
 
     QString iconUrl = msgIconUrl;
     QString soundFile = msgSoundFile;
@@ -320,7 +320,7 @@ void PalmSystemExtension::LS2Call(int callId, int bridgeId, const QString &uri, 
     lBridgeObject.currentBridgeCall.reset(new LS::Call(getLunaHandle().callMultiReply(uri.toLatin1().data(),
                                                                                       payload.toLatin1().data(),
                                                                                       &replyCallback, &lBridgeObject,
-                                                                                      mApplicationWindow->application()->id().toLatin1().data())));
+                                                                                      mApplicationWindow->application()->identifier().toLatin1().data())));
 }
 
 void PalmSystemExtension::LS2Cancel(int bridgeId)
