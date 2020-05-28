@@ -1,5 +1,5 @@
 {
-    "exeName":"/usr/sbin/LunaWebAppManager",
+    "exeName":"@WEBOS_INSTALL_SBINDIR@/LunaWebAppManager",
     "type": "privileged",
     "allowedNames": ["com.palm.webappmanager", "org.webosports.webappmanager", "qtpositioning_LunaWebAppMgr", "com.palm.*", "org.webosports.*", ""],
     "permissions": [
