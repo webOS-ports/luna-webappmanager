@@ -114,7 +114,7 @@ WebApplication::WebApplication(WebAppManager *launcher, const QUrl& url, const Q
     mLauncher(launcher),
     mDescription(desc),
     mProcessId(processId),
-    mIdentifier(QString("%1 %2").arg(mDescription.getId()).arg(mProcessId)),
+    mIdentifier(QString("%1-%2").arg(mDescription.getId()).arg(mProcessId)),
     mParameters(parameters),
     mMainWindow(0),
     mMainUrl(url),
@@ -124,6 +124,9 @@ WebApplication::WebApplication(WebAppManager *launcher, const QUrl& url, const Q
     mActivity(mIdentifier, desc.getId(), processId)
 {
     qDebug() << __PRETTY_FUNCTION__ << this;
+
+    if (url.toString(QUrl::None).startsWith("file:///usr/palm/applications/com.palm.systemui"))
+        mIdentifier = QString("com.palm.systemui-%1").arg(mProcessId);
 
     // Only system applications with a specific id prefix are privileged to access
     // the private luna bus
