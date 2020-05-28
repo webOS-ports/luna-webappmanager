@@ -23,10 +23,12 @@
 #include <QFileInfo>
 #include <QUrl>
 #include <QtWebEngineVersion>
+#include <QMap>
 
 #include <luna-service2/lunaservice.h>
 #include <luna-service2++/message.hpp>
 #include <luna-service2++/call.hpp>
+#include <luna-service2++/handle.hpp>
 
 #include <LocalePreferences.h>
 
@@ -40,10 +42,31 @@
 
 namespace luna
 {
+
+// little utility to return one application service per iAppId
+class LunaAppServicesManager {
+public:
+    LS::Handle &getAppService(const QString &iAppServiceName, const QString &iAppId) {
+        if (!mapAppServiceName.contains(iAppId)) {
+            mapAppServiceName[iAppId] = new LS::Handle(iAppServiceName.toUtf8().constData(), iAppId.toUtf8().constData());
+        }
+
+        return *(mapAppServiceName[iAppId]);
+    }
+
+    ~LunaAppServicesManager() {
+        for(auto h: mapAppServiceName.values()) {
+            if(h) delete h;
+        }
+    }
+private:
+    QMap<QString, LS::Handle*> mapAppServiceName;
+} _lunaAppServicesManager;
+
 PalmSystemExtension::PalmSystemExtension(WebApplicationWindow *applicationWindow, QObject *parent) :
     BaseExtension("PalmSystem", applicationWindow, parent),
     mApplicationWindow(applicationWindow),
-    mLunaAppHandle(applicationWindow->application()->identifier().toUtf8().constData(), applicationWindow->application()->id().toUtf8().constData())
+    mLunaAppHandle(_lunaAppServicesManager.getAppService(applicationWindow->application()->identifier(), applicationWindow->application()->id()))
 {
     applicationWindow->registerUserScript(QString("://extensions/PalmSystem.js"), false);
     applicationWindow->registerUserScript(QString("://extensions/PalmSystemBridge.js"), true);
@@ -62,9 +85,8 @@ LS::Handle &PalmSystemExtension::getLunaHandle()
     WebAppManager *pWebAppManager = (WebAppManager*)qGuiApp;
     if(pWebAppManager && pWebAppManager->getService()) return pWebAppManager->getService()->getServiceHandle();
     
-    // fallback
-    static LS::Handle mLunaHandle("org.webosports.webappmanager-palmsystem");
-    return mLunaHandle;
+    // fallback on application service
+    return mLunaAppHandle;
 }
 
 void PalmSystemExtension::stageReady()
