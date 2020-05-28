@@ -151,6 +151,7 @@ Q_SIGNALS:
     void palmBridgeServiceCall(QString body);
 private:
     WebApplicationWindow *mApplicationWindow;
+    LS::Handle mLunaAppHandle;
 
     LS::Handle &getLunaHandle();
 
