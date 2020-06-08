@@ -113,8 +113,12 @@ Flickable {
 
             Connections {
                 target: Qt.inputMethod
-                onVisibleChanged: webView._updateWebViewSize();
-                onKeyboardRectangleChanged: webView._updateWebViewSize();
+                function onVisibleChanged () {
+                    webView._updateWebViewSize();
+                }
+                function onKeyboardRectangleChanged () {
+                    webView._updateWebViewSize();
+                }
             }
 
 
@@ -122,7 +126,11 @@ Flickable {
             focus: true
             Connections {
                 target: webAppWindow
-                onFocusChanged: if(!webAppWindow.focus) webView.focus = false;
+                function onFocusChanged() { 
+                    if(!webAppWindow.focus) {
+                        webView.focus = false;
+                    }
+                }
             }
 
             backgroundColor: (webAppWindow.windowType === "dashboard" || webAppWindow.windowType === "popupalert") ? "transparent": "white"
@@ -196,12 +204,12 @@ Flickable {
             Connections {
                 target: webAppWindow
 
-                onJavaScriptExecNeeded: {
+                function onJavaScriptExecNeeded(script) {
                     // beware: async call
                     webView.runJavaScript(script);
                 }
 
-                onExtensionWantsToBeAdded: {
+                function onExtensionWantsToBeAdded(name, object) {
                     console.warn("registering " + name + "to WebChannel: " + object);
                     webViewChannel.registerObject(name, object);
                 }
