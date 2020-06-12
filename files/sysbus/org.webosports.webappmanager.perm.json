@@ -4,8 +4,11 @@
     ],
     "com.palm.webappmanager": [
         "activities",
+        "activities.manage",
         "applications.internal",
         "networking",
+        "networking.internal",
+        "services",
         "settings.read",
         "signals.all",
         "signals.register",
@@ -13,8 +16,11 @@
     ],
     "org.webosports.webappmanager": [
         "activities",
+        "activities.manage",
         "applications.internal",
         "networking",
+        "networking.internal",
+        "services",
         "settings.read",
         "signals.all",
         "signals.register",
