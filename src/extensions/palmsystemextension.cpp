@@ -23,15 +23,19 @@
 #include <QFileInfo>
 #include <QUrl>
 #include <QtWebEngineVersion>
+#include <QMap>
 
 #include <luna-service2/lunaservice.h>
 #include <luna-service2++/message.hpp>
 #include <luna-service2++/call.hpp>
+#include <luna-service2++/handle.hpp>
 
 #include <LocalePreferences.h>
 
 #include "../webapplication.h"
 #include "../webapplicationwindow.h"
+#include "../webappmanager.h"
+#include "../webappmanagerservice.h"
 #include "../systemtime.h"
 #include "palmsystemextension.h"
 #include "deviceinfo.h"
@@ -39,11 +43,34 @@
 namespace luna
 {
 
+// little utility to return one application service per iAppId
+class LunaAppServicesManager {
+public:
+    LS::Handle &getAppService(const QString &iAppServiceName, const QString &iAppId) {
+        if (!mapAppServiceName.contains(iAppId)) {
+            try {
+                mapAppServiceName[iAppId] = new LS::Handle(iAppServiceName.toUtf8().constData(), iAppId.toUtf8().constData());
+            }  catch (LS::Error &error) {
+                mapAppServiceName[iAppId] = new LS::Handle();
+            }
+        }
+
+        return *(mapAppServiceName[iAppId]);
+    }
+
+    ~LunaAppServicesManager() {
+        for(auto h: mapAppServiceName.values()) {
+            if(h) delete h;
+        }
+    }
+private:
+    QMap<QString, LS::Handle*> mapAppServiceName;
+} _lunaAppServicesManager;
+
 PalmSystemExtension::PalmSystemExtension(WebApplicationWindow *applicationWindow, QObject *parent) :
     BaseExtension("PalmSystem", applicationWindow, parent),
     mApplicationWindow(applicationWindow),
-    mLunaPubHandle(applicationWindow->application()->id().toUtf8().constData(), true),
-    mLunaPrivHandle(applicationWindow->application()->id().toUtf8().constData(), false)
+    mLunaAppHandle(_lunaAppServicesManager.getAppService(applicationWindow->application()->identifier(), applicationWindow->application()->id()))
 {
     applicationWindow->registerUserScript(QString("://extensions/PalmSystem.js"), false);
     applicationWindow->registerUserScript(QString("://extensions/PalmSystemBridge.js"), true);
@@ -53,9 +80,19 @@ PalmSystemExtension::PalmSystemExtension(WebApplicationWindow *applicationWindow
     }
 
     connect(applicationWindow, SIGNAL(activeChanged()), this, SIGNAL(isActivatedChanged()));
+    
+    try {
+        mLunaAppHandle.attachToLoop(g_main_context_default());
+    }  catch (LS::Error &error) {}
+}
 
-    mLunaPubHandle.attachToLoop(g_main_context_default());
-    mLunaPrivHandle.attachToLoop(g_main_context_default());
+LS::Handle &PalmSystemExtension::getLunaHandle()
+{
+    WebAppManager *pWebAppManager = (WebAppManager*)qGuiApp;
+    if(pWebAppManager && pWebAppManager->getService()) return pWebAppManager->getService()->getServiceHandle();
+    
+    // fallback on application service
+    return mLunaAppHandle;
 }
 
 void PalmSystemExtension::stageReady()
@@ -103,33 +140,39 @@ void PalmSystemExtension::enableFullScreenMode(bool enable)
 {
     qDebug() << __PRETTY_FUNCTION__ << enable;
 
-    QString appId = mApplicationWindow->application()->id();
+    QString appId = mApplicationWindow->application()->identifier();
     QString enableStr = enable ? "true" : "false";
 
-    LS::Call call = mLunaPubHandle.callOneReply("luna://org.webosports.luna/enableFullScreenMode",
-                                                QString("{\"enable\": %1}").arg(enableStr).toUtf8().constData(),
-                                                appId.toUtf8().constData());
+    try {
+        LS::Call call = getLunaHandle().callOneReply("luna://org.webosports.luna/enableFullScreenMode",
+                                                    QString("{\"enable\": %1}").arg(enableStr).toUtf8().constData(),
+                                                    appId.toUtf8().constData());
+    }  catch (LS::Error &error) {}
 }
 
 void PalmSystemExtension::removeBannerMessage(int id)
 {
     qDebug() << __PRETTY_FUNCTION__;
 
-    QString appId = mApplicationWindow->application()->id();
+    QString appId = mApplicationWindow->application()->identifier();
 
-    LS::Call call = mLunaPubHandle.callOneReply("luna://org.webosports.notifications/close",
-                                                QString("{\"id\":\"%1\"}").arg(appId).toUtf8().constData(),
-                                                appId.toUtf8().constData());
+    try {
+        LS::Call call = getLunaHandle().callOneReply("luna://org.webosports.notifications/close",
+                                                    QString("{\"id\":\"%1\"}").arg(appId).toUtf8().constData(),
+                                                    appId.toUtf8().constData());
+    }  catch (LS::Error &error) {}
 }
 
 void PalmSystemExtension::clearBannerMessages()
 {
     qDebug() << __PRETTY_FUNCTION__;
 
-    QString appId = mApplicationWindow->application()->id();
+    QString appId = mApplicationWindow->application()->identifier();
 
-    LS::Call call = mLunaPubHandle.callOneReply("luna://org.webosports.notifications/closeAll",
-                                                "{}", appId.toUtf8().constData());
+    try {
+        LS::Call call = getLunaHandle().callOneReply("luna://org.webosports.notifications/closeAll",
+                                                    "{}", appId.toUtf8().constData());
+    }  catch (LS::Error &error) {}
 }
 
 void PalmSystemExtension::keepAlive(bool keep)
@@ -274,7 +317,7 @@ QString PalmSystemExtension::addBannerMessage(const QString &msgTitle, const QSt
 {
     qDebug() << __PRETTY_FUNCTION__ << msgTitle << ":" << launchParams;
 
-    QString appId = mApplicationWindow->application()->id();
+    QString appId = mApplicationWindow->application()->identifier();
 
     QString iconUrl = msgIconUrl;
     QString soundFile = msgSoundFile;
@@ -290,13 +333,16 @@ QString PalmSystemExtension::addBannerMessage(const QString &msgTitle, const QSt
     notificationParams.insert("expireTimeout", "0");
 
     QJsonDocument document(notificationParams);
+    QJsonObject response;
 
-    LS::Call call = mLunaPubHandle.callOneReply("luna://org.webosports.notifications/create",
-                                                document.toJson().constData(),
-                                                appId.toUtf8().constData());
-    LS::Message message(call.get(1000));
+    try {
+        LS::Call call = getLunaHandle().callOneReply("luna://org.webosports.notifications/create",
+                                                    document.toJson().constData(),
+                                                    appId.toUtf8().constData());
+        LS::Message message(call.get(1000));
 
-    QJsonObject response = QJsonDocument::fromJson(message.getPayload()).object();
+        response = QJsonDocument::fromJson(message.getPayload()).object();
+    }  catch (LS::Error &error) {}
 
     if (!response.contains("id"))
         return QString("");
@@ -311,17 +357,11 @@ void PalmSystemExtension::LS2Call(int callId, int bridgeId, const QString &uri, 
     lBridgeObject.callId = callId;
     lBridgeObject.palmExt = this;
 
-    bool isPriviledged = mApplicationWindow->application()->privileged();
-    if(isPriviledged)
-        lBridgeObject.currentBridgeCall.reset(new LS::Call(mLunaPrivHandle.callMultiReply(uri.toLatin1().data(),
-                                                                                          payload.toLatin1().data(),
-                                                                                          &replyCallback, &lBridgeObject,
-                                                                                          mApplicationWindow->application()->id().toLatin1().data())));
-    else
-        lBridgeObject.currentBridgeCall.reset(new LS::Call(mLunaPubHandle.callMultiReply(uri.toLatin1().data(),
+    try {
+        lBridgeObject.currentBridgeCall.reset(new LS::Call(mLunaAppHandle.callMultiReply(uri.toLatin1().data(),
                                                                                          payload.toLatin1().data(),
-                                                                                         &replyCallback, &lBridgeObject,
-                                                                                         mApplicationWindow->application()->id().toLatin1().data())));
+                                                                                         &replyCallback, &lBridgeObject)));
+    }  catch (LS::Error &error) {}
 }
 
 void PalmSystemExtension::LS2Cancel(int bridgeId)

@@ -1,4 +1,4 @@
 [D-BUS Service]
 Name=org.webosports.webappmanager
-Exec=/usr/sbin/LunaWebAppManager
+Exec=@WEBOS_INSTALL_SBINDIR@/LunaWebAppManager
 Type=static
