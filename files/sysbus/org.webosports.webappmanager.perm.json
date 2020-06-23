@@ -25,5 +25,8 @@
         "signals.all",
         "signals.register",
         "system"
+    ],
+    "qtpositioning_LunaWebAppMgr": [
+        "services"
     ]
 }
