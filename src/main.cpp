@@ -137,7 +137,7 @@ int main(int argc, char **argv)
     }
 
     if (QFile::exists("/var/luna/dev-mode-enabled"))
-        setenv("QTWEBENGINE_REMOTE_DEBUGGING", "1122", 0);
+        setenv("QTWEBENGINE_REMOTE_DEBUGGING", "0.0.0.0:1122", 0);
 
     LocalePreferences::instance();
     luna::SystemTime::instance();
